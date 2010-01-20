@@ -1,0 +1,42 @@
+<!DOCTYPE ui:UiBinder SYSTEM "http://dl.google.com/gwt/DTD/xhtml.ent">
+<ui:UiBinder xmlns:ui="urn:ui:com.google.gwt.uibinder"
+	xmlns:g="urn:import:com.google.gwt.user.client.ui">
+	<ui:style>
+		.record {
+			border: 1px dotted black;
+			margin-left: 0px;
+			padding: 0px;
+		}
+		
+		.name {
+			font-style: italics;
+			font-size: 14px;
+			padding-right: .5em;
+			display: inline;
+		}
+		
+		.link {
+			font-size: 14px;
+			padding-right: .5em;
+			display: inline;
+		}
+	</ui:style>
+
+<!-- 
+	<g:FlowPanel styleName='{style.record}'>
+		<g:HTML styleName='{style.name}' ui:field="name" />
+
+		<g:HTML styleName='{style.inline}'>
+			voted for
+		</g:HTML>
+
+		<g:HTML styleName='{style.inline}' ui:field="link" />
+	</g:FlowPanel>
+-->
+	<div class='{style.record}'>
+		<span styleName='{style.name}' ui:field="name" />
+			voted for
+		<span class='{style.link}' ui:field="link" />
+	</div>
+
+</ui:UiBinder> 

@@ -1,0 +1,57 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE web-app
+    PUBLIC "-//Sun Microsystems, Inc.//DTD Web Application 2.3//EN"
+    "http://java.sun.com/dtd/web-app_2_3.dtd">
+
+<web-app>
+  
+  <!-- Servlets -->
+  <servlet>
+    <servlet-name>rnaServlet</servlet-name>
+    <servlet-class>rapidnews.server.RNAServiceImpl</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>rnaServlet</servlet-name>
+    <url-pattern>/rapid_news_awards/rna</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>apiServlet</servlet-name>
+    <servlet-class>rapidnews.server.APIServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>apiServlet</servlet-name>
+    <url-pattern>/1/*</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>voteServlet</servlet-name>
+    <servlet-class>rapidnews.server.VoteServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>voteServlet</servlet-name>
+    <url-pattern>/vote</url-pattern>
+  </servlet-mapping>
+  
+  <servlet>
+    <servlet-name>makeDataServlet</servlet-name>
+    <servlet-class>rapidnews.server.MakeDataServlet</servlet-class>
+  </servlet>
+  
+  <servlet-mapping>
+    <servlet-name>makeDataServlet</servlet-name>
+    <url-pattern>/makeData</url-pattern>
+  </servlet-mapping>
+  
+
+  <!-- Default page to serve -->
+    <welcome-file-list>
+        <welcome-file>index.jsp</welcome-file>
+        <welcome-file>index.html</welcome-file>
+        <welcome-file>Rapid_News_Awards.html</welcome-file>
+    </welcome-file-list>
+    
+</web-app>
