@@ -2,22 +2,12 @@
 	xmlns:g='urn:import:com.google.gwt.user.client.ui' xmlns:rna='urn:import:rapidnews.client'>
 
 	<ui:style>
-		.yellow {
-			background-color: #F7F57D;
+
+		.outerframe {
+			border: 1px solid black;
+			margin-left: 200px;
 		}
-		
-		.purple {
-			background-color: #6600CC;
-		}
-		
-		.red {
-			background-color: #CC0000;
-		}
-		
-		.black {
-			background-color: black;
-		}
-		
+			
 		.top {
 			padding: 10px;
 			text-align: center;
@@ -27,9 +17,8 @@
 		}
 		
 		.tools {
-			margin-left: auto;
-			margin-right:auto;
-		}
+			margin-left: 46%;
+			}
 		
 		.status {
 			height: 20px;
@@ -37,20 +26,11 @@
 			text-align: center;
 		}
 		
-		.west {
-			height: 400px;
-			width: 150px;
-		}
-		
 		.votes {
 			border-left: 0px;
 			width: 950px;
 		}
 		
-		.outerframe {
-			border: 1px solid black;
-			margin-left: 200px;
-		}
 	</ui:style>
 
 	<g:VerticalPanel styleName='{style.outerframe}'>

@@ -4,15 +4,11 @@ import rapidnews.shared.Edition;
 import rapidnews.shared.Reader;
 import rapidnews.shared.Vote;
 
-import com.google.gwt.dom.client.Element;
-import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.FlexTable;
 import com.google.gwt.user.client.ui.HTML;
-import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.HasVerticalAlignment;
+import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.VerticalPanel;
-
-// Fixme rename to leaderboard
 
 public class Votes extends Composite {
 
@@ -20,18 +16,26 @@ public class Votes extends Composite {
 
 	public Votes() {
 		vPanel = new VerticalPanel();
-		vPanel.setSpacing(5);
+		vPanel.setSpacing(0);
+		vPanel.setVerticalAlignment(HasVerticalAlignment.ALIGN_MIDDLE);
 		initWidget(vPanel);
 		setStyleName("rna-votes");
 	}
 
+	private class Record extends InlineHTML {
+		public Record(VoteRecord vr) {
+			super(vr.getElement());
+		}
+	}
+	
 	public void setEdition(Edition result) {
 		vPanel.clear();
 		for (Reader r : result.getReaders()) {
 			for (Vote v : r.getVotes()) {
-				// Element e = new VoteRecord(r.getName(), v.getLink().getUrl()).getElement();
-				//vPanel.getElement().appendChild(e);
-				vPanel.add(new VoteRecord(r.getName(), v.getLink().getUrl()));
+				Record rec = new Record(new VoteRecord(r.getName(), v.getLink().getUrl()));
+				vPanel.add(rec);
+				vPanel.setCellWidth(rec, "100%");
+
 			}
 
 		}

@@ -3,40 +3,38 @@
 	xmlns:g="urn:import:com.google.gwt.user.client.ui">
 	<ui:style>
 		.record {
-			border: 1px dotted black;
-			margin-left: 0px;
-			padding: 0px;
+			border: 1px solid black;
+			height: 50px;
 		}
 		
 		.name {
-			font-style: italics;
-			font-size: 14px;
-			padding-right: .5em;
-			display: inline;
+			font-weight: bold;
+			font-size: 1em;
+			color: #2276BB;
 		}
 		
 		.link {
-			font-size: 14px;
-			padding-right: .5em;
-			display: inline;
+			font-weight: bold;
+			color: #2276BB;
+			font-size: 1em;
 		}
+		
 	</ui:style>
 
-<!-- 
-	<g:FlowPanel styleName='{style.record}'>
-		<g:HTML styleName='{style.name}' ui:field="name" />
-
-		<g:HTML styleName='{style.inline}'>
-			voted for
-		</g:HTML>
-
-		<g:HTML styleName='{style.inline}' ui:field="link" />
-	</g:FlowPanel>
--->
+<!--
 	<div class='{style.record}'>
-		<span styleName='{style.name}' ui:field="name" />
+			<span class='{style.name}' ui:field="name" />
 			voted for
-		<span class='{style.link}' ui:field="link" />
+			<span class='{style.link}' ui:field="link" />
+	</div>
+-->
+
+	<div class='{style.record}'>
+	<p>
+			<span class='{style.name}' ui:field="name" />
+			voted for
+			<span class='{style.link}' ui:field="link" />
+</p>
 	</div>
 
 </ui:UiBinder> 
