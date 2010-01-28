@@ -3,7 +3,7 @@
 	xmlns:g="urn:import:com.google.gwt.user.client.ui">
 	<ui:style>
 		.record {
-			border: 1px solid black;
+			border-top: 1px solid #DCDCDC;
 			height: 50px;
 		}
 		

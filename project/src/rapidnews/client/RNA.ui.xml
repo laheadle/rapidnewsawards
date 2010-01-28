@@ -2,23 +2,39 @@
 	xmlns:g='urn:import:com.google.gwt.user.client.ui' xmlns:rna='urn:import:rapidnews.client'>
 
 	<ui:style>
-
 		.outerframe {
-			border: 1px solid black;
 			margin-left: 200px;
+			width: 950px;
 		}
-			
+		
 		.top {
 			padding: 10px;
-			text-align: center;
-			font-size: large;
 			height: 30px;
+			width: 100%;
 			background-color: #FFFF5E;
 		}
 		
+		.title {
+			text-align: center;
+			font-size: large;
+		}
+		
+		.previous {
+			font-weight: bold;
+			text-align: left;
+			color: #2276BB;
+		}
+		
+		.ticker {
+			font-weight: bold;
+			font-style: italic;
+			text-align: right;
+		}
+		
 		.tools {
-			margin-left: 46%;
-			}
+			background-color: white;
+			margin-left: 0;
+		}
 		
 		.status {
 			height: 20px;
@@ -27,23 +43,26 @@
 		}
 		
 		.votes {
-			border-left: 0px;
-			width: 950px;
+			width: 100%
 		}
-		
 	</ui:style>
 
 	<g:VerticalPanel styleName='{style.outerframe}'>
 
-		<g:Label styleName='{style.top}'>Rapid News Awards</g:Label>
+		<g:HorizontalPanel styleName='{style.top}'>
+			<g:Label styleName='{style.previous}'> Previous Edition </g:Label>
+			<g:Label styleName='{style.title}'>Rapid News Awards #1 </g:Label>
+			<g:Label styleName='{style.ticker}'> 5h 32m Remaining </g:Label>
+		</g:HorizontalPanel>
 
 		<g:Button styleName='{style.tools}' ui:field='refresh'>
 			Refresh
 		</g:Button>
 
 		<g:Label styleName='{style.status}' ui:field='status'></g:Label>
-			<rna:Votes styleName='{style.votes}' ui:field='votes'>
-			</rna:Votes>
+
+		<rna:Votes styleName='{style.votes}' ui:field='votes'></rna:Votes>
+
 	</g:VerticalPanel>
 
 </ui:UiBinder>
