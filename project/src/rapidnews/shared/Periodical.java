@@ -30,8 +30,7 @@ public class Periodical {
 	
 	public Periodical() {
 		editions = new LinkedList<Edition>();
-	}
-	
+	}	
 	
 
 	public String getName() {

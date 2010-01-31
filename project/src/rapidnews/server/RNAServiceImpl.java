@@ -45,4 +45,9 @@ RNAService {
 		}
 		return e;
 	}
+
+	@Override
+	public Boolean isCurrent(Edition e) {
+		return true;
+	}
 }
