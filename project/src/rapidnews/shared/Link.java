@@ -28,6 +28,5 @@ public class Link implements IsSerializable {
 	}
 
 	public Link() {
-		this.url = "";
 	}
 }

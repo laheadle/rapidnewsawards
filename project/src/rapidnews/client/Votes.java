@@ -5,7 +5,6 @@ import rapidnews.shared.Reader;
 import rapidnews.shared.Vote;
 
 import com.google.gwt.user.client.ui.Composite;
-import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
 import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.VerticalPanel;

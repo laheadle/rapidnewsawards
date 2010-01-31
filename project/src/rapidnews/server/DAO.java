@@ -2,7 +2,9 @@ package rapidnews.server;
 
 import java.util.LinkedList;
 
+import rapidnews.shared.Edition;
 import rapidnews.shared.Link;
+import rapidnews.shared.Periodical;
 import rapidnews.shared.Reader;
 import rapidnews.shared.Vote;
 
@@ -19,6 +21,8 @@ public class DAO extends DAOBase
         ObjectifyService.factory().register(Reader.class);
         ObjectifyService.factory().register(Vote.class);
         ObjectifyService.factory().register(Link.class);
+        ObjectifyService.factory().register(Periodical.class);
+        ObjectifyService.factory().register(Edition.class);
         ObjectifyService.factory().setDatastoreTimeoutRetryCount(3);
     }
 
@@ -89,6 +93,26 @@ public class DAO extends DAOBase
     		ofy().put(l);
     		return l;
     	}
+	}
+
+	public Periodical findPeriodicalByName(String name, boolean fillRefs) throws EntityNotFoundException {
+    	Periodical p = findByFieldName(Periodical.class, "name", name);
+    	if (fillRefs) {
+    		LinkedList<Edition> editions = findEditionsByPeriodical(p, true);
+    		p.setEditions(editions);
+    	}
+    	
+    	p.setCurrentEdition(get(p.getCurrentEditionKey()));
+    	return p;
+	}
+
+	private LinkedList<Edition> findEditionsByPeriodical(Periodical p, boolean fillRefs) {
+		OQuery<Edition> q = fact().createQuery(Edition.class).filter("periodicalKey", p.getOKey());
+		LinkedList<Edition> editions = new LinkedList<Edition>(ofy().prepare(q).asList());
+		for (Edition e : editions) {
+			// TODO xxx fill in readers
+		}
+		return editions;
 	}
     
 

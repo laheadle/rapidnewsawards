@@ -3,8 +3,8 @@
 
 	<ui:style>
 		.outerframe {
-			margin-left: 200px;
-			width: 950px;
+			margin-left: 350px;
+			width: 700px;
 		}
 		
 		.top {
@@ -52,14 +52,22 @@
 		<g:HorizontalPanel styleName='{style.top}'>
 			<g:Label styleName='{style.previous}'> Previous Edition </g:Label>
 			<g:Label styleName='{style.title}'>Rapid News Awards #1 </g:Label>
-			<g:Label styleName='{style.ticker}'> 5h 32m Remaining </g:Label>
+			<g:Label styleName='{style.ticker}' ui:field="ticker"> 5h 32m
+				Remaining </g:Label>
 		</g:HorizontalPanel>
 
-		<g:Button styleName='{style.tools}' ui:field='refresh'>
-			Refresh
-		</g:Button>
 
-		<g:Label styleName='{style.status}' ui:field='status'></g:Label>
+		<g:HorizontalPanel>
+			<g:cell verticalAlignment='ALIGN_MIDDLE'>
+				<g:Button styleName='{style.tools}' ui:field='refresh'>
+					Refresh
+				</g:Button>
+			</g:cell>
+			<g:cell width="520px" verticalAlignment='ALIGN_MIDDLE'>
+				<g:Label styleName='{style.status}' ui:field='status'></g:Label>
+			</g:cell>
+		</g:HorizontalPanel>
+
 
 		<rna:Votes styleName='{style.votes}' ui:field='votes'></rna:Votes>
 

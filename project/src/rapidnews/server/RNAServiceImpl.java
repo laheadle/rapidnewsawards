@@ -1,6 +1,8 @@
 package rapidnews.server;
 
 import rapidnews.client.RNAService;
+import rapidnews.shared.Edition;
+import rapidnews.shared.Periodical;
 import rapidnews.shared.Reader;
 
 import com.google.appengine.api.datastore.EntityNotFoundException;
@@ -21,14 +23,25 @@ RNAService {
 
 	private static final Logger log = Logger.getLogger(RNAServiceImpl.class.getName());
 
-	public rapidnews.shared.Edition sendEdition() {
-		rapidnews.shared.Edition e = new rapidnews.shared.Edition();
+	public Edition sendEdition() {
+		
+		Periodical p;
+		try {
+			p = DAO.instance.findPeriodicalByName("Journalism", true);
+		} catch (EntityNotFoundException e2) {
+	        log.warning("No Periodical found");
+	        return null;
+		}
+		
+		Edition e = p.getCurrentEdition();
+		
 		Reader r;
 		try {
 			r = DAO.instance.findReaderByUsername("megangarber", true);
 			e.addReader(r);
 		} catch (EntityNotFoundException e1) {
 	        log.warning("No reader found");
+	        return null;
 		}
 		return e;
 	}

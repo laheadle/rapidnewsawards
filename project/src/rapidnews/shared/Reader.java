@@ -22,7 +22,9 @@ public class Reader implements IsSerializable {
 	@Transient
 	public LinkedList<Vote> votes;
 
-	public Reader() {} // required by objectify
+	public Reader() {
+		this.votes = new LinkedList<Vote>();
+	}
 	
 	public Reader(String name, String username, LinkedList<Vote> votes) {
 		this.name = name;
@@ -32,8 +34,7 @@ public class Reader implements IsSerializable {
 
 	public Reader(String name, String username) {
 		this(name, username, new LinkedList<Vote>());
-	}
-	
+	}	
 
 	public String getName() {
 		return name;
