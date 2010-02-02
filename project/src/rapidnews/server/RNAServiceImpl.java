@@ -19,35 +19,21 @@ import java.util.logging.Logger;
 @SuppressWarnings("serial")
 public class RNAServiceImpl extends RemoteServiceServlet implements
 RNAService {
-
-
 	private static final Logger log = Logger.getLogger(RNAServiceImpl.class.getName());
 
-	public Edition sendEdition() {
+	public Edition sendEdition() {		
+		final Reader r;
 		
-		Periodical p;
-		try {
-			p = DAO.instance.findPeriodicalByName("Journalism", true);
-		} catch (EntityNotFoundException e2) {
-	        log.warning("No Periodical found");
-	        return null;
-		}
-		
-		Edition e = p.getCurrentEdition();
-		
-		Reader r;
 		try {
 			r = DAO.instance.findReaderByUsername("megangarber", true);
-			e.addReader(r);
 		} catch (EntityNotFoundException e1) {
 	        log.warning("No reader found");
 	        return null;
 		}
-		return e;
-	}
 
-	@Override
-	public Boolean isCurrent(Edition e) {
-		return true;
+		final Edition e = DAO.instance.getCurrentEdition("Journalism");
+		e.addReader(r);
+
+		return e;
 	}
 }

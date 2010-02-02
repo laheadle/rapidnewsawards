@@ -22,18 +22,29 @@ public class Edition implements IsSerializable {
 	
 	private Date end;
 
+	private int number;
+
 	public Edition() {
 		readers = new LinkedList<Reader>();
 	}
 
-	public Edition(Periodical m, Date end) {
+	public Edition(Periodical m, Date end, int number) {
 		this();
 		periodicalKey = m.getOKey();
 		this.end = end;
+		this.number = number;
 	}
 
 	public LinkedList<Reader> getReaders() {
 		return readers;
+	}
+	
+	@Override
+	public boolean equals(Object e) {
+		if(!(e instanceof Edition)) {
+			return false;
+		}
+		return id.equals(((Edition) e).id);
 	}
 	
 	public void addReader(Reader r) {
@@ -46,6 +57,14 @@ public class Edition implements IsSerializable {
 
 	public OKey<Edition> getOKey() {
 		return new OKey<Edition>(Edition.class, id);
+	}
+
+	public boolean isExpired() {
+		return this.end.before(new Date());
+	}
+
+	public int getNumber() {
+		return number;
 	}
 
 }

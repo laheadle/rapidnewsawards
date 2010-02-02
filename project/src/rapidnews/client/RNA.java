@@ -27,6 +27,7 @@ public class RNA extends Composite implements EntryPoint  {
 
 	@UiField Label status;
 	@UiField Label ticker;
+	@UiField Label title;	
 	@UiField Votes votes;
 	@UiField Button refresh;
 
@@ -65,6 +66,10 @@ public class RNA extends Composite implements EntryPoint  {
 	    tickerTimer = new Timer() {
 	      public void run() {
 	    	  long remaining = edition.getEnd().getTime() - new Date().getTime();
+	    	  if (remaining <= 0) {
+		    	  ticker.setText("Edition Complete!");	    		  
+		    	  return;
+	    	  }
 	    	  long minutes = remaining / (1000 * 60);
 	    	  long hours = minutes / 60;
 	    	  minutes = minutes % 60;
@@ -87,6 +92,7 @@ public class RNA extends Composite implements EntryPoint  {
 
 			public void onSuccess(Edition result) {
 				status.setText("got Edition");
+				title.setText("Rapid News Awards #" + result.getNumber());
 				scheduleTickerTimer();
 				setEdition(result);
 			}

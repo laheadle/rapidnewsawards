@@ -51,9 +51,8 @@
 
 		<g:HorizontalPanel styleName='{style.top}'>
 			<g:Label styleName='{style.previous}'> Previous Edition </g:Label>
-			<g:Label styleName='{style.title}'>Rapid News Awards #1 </g:Label>
-			<g:Label styleName='{style.ticker}' ui:field="ticker"> 5h 32m
-				Remaining </g:Label>
+			<g:Label styleName='{style.title}' ui:field="title">Rapid News Awards </g:Label>
+			<g:Label styleName='{style.ticker}' ui:field="ticker"> Initializing... </g:Label>
 		</g:HorizontalPanel>
 
 

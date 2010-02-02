@@ -10,5 +10,4 @@ import rapidnews.shared.*;
 @RemoteServiceRelativePath("rna")
 public interface RNAService extends RemoteService {
 	Edition sendEdition();
-	Boolean isCurrent(Edition e);
 }

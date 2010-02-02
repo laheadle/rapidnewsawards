@@ -1,6 +1,8 @@
 package rapidnews.server;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
+import java.util.logging.Logger;
 
 import rapidnews.shared.Edition;
 import rapidnews.shared.Link;
@@ -27,6 +29,7 @@ public class DAO extends DAOBase
     }
 
     public static DAO instance = new DAO();
+	private static final Logger log = Logger.getLogger(DAO.class.getName());
     
     public <T> T get(OKey<T> key) throws EntityNotFoundException {
     	return ofy().get(key);
@@ -96,23 +99,54 @@ public class DAO extends DAOBase
 	}
 
 	public Periodical findPeriodicalByName(String name, boolean fillRefs) throws EntityNotFoundException {
-    	Periodical p = findByFieldName(Periodical.class, "name", name);
-    	if (fillRefs) {
-    		LinkedList<Edition> editions = findEditionsByPeriodical(p, true);
+		final Periodical p = findByFieldName(Periodical.class, "name", name);
+		final ArrayList<Edition> editions;
+		
+		// initialize editions array
+		if (fillRefs) {
+    		editions = findEditionsByPeriodical(p, true);
     		p.setEditions(editions);
     	}
+		else {
+			editions = null;
+		}
     	
-    	p.setCurrentEdition(get(p.getCurrentEditionKey()));
-    	return p;
+    	Edition current = get(p.getCurrentEditionKey());
+
+    	if (current.isExpired()) {
+    		// set current to the next edition after current
+    		int i = editions.indexOf(current);
+    		// TODO XXX what if last one?
+    		current = editions.get(i + 1);
+    		p.setcurrentEditionKey(current.getOKey());
+    		ofy().put(p);
+    	}
+    	
+    	assert(get(p.getCurrentEditionKey()).equals(current));    	
+		p.setCurrentEdition(current);
+ 
+		return p;
 	}
 
-	private LinkedList<Edition> findEditionsByPeriodical(Periodical p, boolean fillRefs) {
+	private ArrayList<Edition> findEditionsByPeriodical(Periodical p, boolean fillRefs) {
 		OQuery<Edition> q = fact().createQuery(Edition.class).filter("periodicalKey", p.getOKey());
-		LinkedList<Edition> editions = new LinkedList<Edition>(ofy().prepare(q).asList());
+		ArrayList<Edition> editions = new ArrayList<Edition>(ofy().prepare(q).asList());
+		
 		for (Edition e : editions) {
 			// TODO xxx fill in readers
 		}
 		return editions;
+	}
+
+	public Edition getCurrentEdition(String periodicalName) {
+		final Periodical p;
+		try {
+			p = DAO.instance.findPeriodicalByName(periodicalName, true);
+		} catch (EntityNotFoundException e2) {
+	        log.warning("No Periodical found");
+	        return null;
+		}
+		return p.getCurrentEdition();
 	}
     
 

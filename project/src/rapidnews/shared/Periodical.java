@@ -1,5 +1,6 @@
 package rapidnews.shared;
 
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 import javax.persistence.Entity;
@@ -18,7 +19,7 @@ public class Periodical {
 	private Long id;
 
 	@Transient
-	private LinkedList<Edition> editions;
+	private ArrayList<Edition> editions;
 
 	@Transient
 	private Edition currentEdition;
@@ -29,7 +30,7 @@ public class Periodical {
 	}
 	
 	public Periodical() {
-		editions = new LinkedList<Edition>();
+		editions = new ArrayList<Edition>();
 	}	
 	
 
@@ -53,7 +54,7 @@ public class Periodical {
 		return this.currentEditionKey;
 	}
 
-	public void setEditions(LinkedList<Edition> editions) {
+	public void setEditions(ArrayList<Edition> editions) {
 		this.editions = editions;
 	}
 
