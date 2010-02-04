@@ -27,9 +27,15 @@ public class Votes extends Composite {
 		}
 	}
 	
-	public void setEdition(Edition result) {
+	public void noEdition() {
 		vPanel.clear();
-		for (Reader r : result.getReaders()) {
+	}
+	
+	public void showEdition(Edition e) {
+		assert(e != null);
+		vPanel.clear();
+		
+		for (Reader r : e.getReaders()) {
 			for (Vote v : r.getVotes()) {
 				Record rec = new Record(new VoteRecord(r.getName(), v.getLink().getUrl()));
 				vPanel.add(rec);

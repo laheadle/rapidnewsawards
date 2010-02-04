@@ -32,7 +32,8 @@ RNAService {
 		}
 
 		final Edition e = DAO.instance.getCurrentEdition("Journalism");
-		e.addReader(r);
+		if (e != null)
+			e.addReader(r);
 
 		return e;
 	}

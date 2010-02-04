@@ -66,5 +66,16 @@ public class Periodical {
 		this.currentEdition = edition;
 	}
 
+	public void verifyState() {
+		if (this.currentEdition == null && this.currentEditionKey == null)
+			return; // finalized
+		if (this.currentEdition != null && this.currentEditionKey != null && 
+				this.currentEditionKey.equals(this.currentEdition.getOKey()) &&
+				!this.currentEdition.isExpired())
+			return; // ongoing
+		// inconsistent
+		throw new IllegalStateException();
+	}
+
 	
 }

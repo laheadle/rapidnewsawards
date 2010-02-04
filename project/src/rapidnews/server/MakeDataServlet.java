@@ -60,6 +60,6 @@ public class MakeDataServlet extends HttpServlet {
 		ofy.getTxn().commit();
 
 
-		out.println("created 4 editions");
+		out.println("created " + (i[0] - 1) + " editions");
 	}
 }

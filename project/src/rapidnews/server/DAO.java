@@ -100,33 +100,42 @@ public class DAO extends DAOBase
 
 	public Periodical findPeriodicalByName(String name, boolean fillRefs) throws EntityNotFoundException {
 		final Periodical p = findByFieldName(Periodical.class, "name", name);
-		final ArrayList<Edition> editions;
-		
-		// initialize editions array
-		if (fillRefs) {
-    		editions = findEditionsByPeriodical(p, true);
-    		p.setEditions(editions);
-    	}
-		else {
-			editions = null;
-		}
-    	
-    	Edition current = get(p.getCurrentEditionKey());
 
-    	if (current.isExpired()) {
-    		// set current to the next edition after current
-    		int i = editions.indexOf(current);
-    		// TODO XXX what if last one?
-    		current = editions.get(i + 1);
-    		p.setcurrentEditionKey(current.getOKey());
-    		ofy().put(p);
-    	}
-    	
-    	assert(get(p.getCurrentEditionKey()).equals(current));    	
+		if (p == null)
+			return  null;
+
+		if (!fillRefs) 
+			return p;
+
+		// initialize editions array
+		final ArrayList<Edition> editions = findEditionsByPeriodical(p, true);
+		assert(editions != null && editions.size() > 0);
+		p.setEditions(editions);
+		Edition current = get(p.getCurrentEditionKey());
+		p.setcurrentEditionKey(current.getOKey());
 		p.setCurrentEdition(current);
- 
+
+		try { 
+			while (current.isExpired()) {
+				// set current to the next edition after current
+				int i = editions.indexOf(current);
+				current = editions.get(i + 1);
+				p.setcurrentEditionKey(current.getOKey());
+				p.setCurrentEdition(current);
+				ofy().put(p);
+				assert(get(p.getCurrentEditionKey()).equals(current));    	
+			}
+		}
+		catch (IndexOutOfBoundsException e) {
+			// periodical has ended
+			p.setcurrentEditionKey(null);
+			p.setCurrentEdition(null);
+		}
+
+		p.verifyState();
 		return p;
 	}
+
 
 	private ArrayList<Edition> findEditionsByPeriodical(Periodical p, boolean fillRefs) {
 		OQuery<Edition> q = fact().createQuery(Edition.class).filter("periodicalKey", p.getOKey());

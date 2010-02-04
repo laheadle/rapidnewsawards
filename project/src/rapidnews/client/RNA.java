@@ -65,21 +65,37 @@ public class RNA extends Composite implements EntryPoint  {
 		
 	    tickerTimer = new Timer() {
 	      public void run() {
-	    	  long remaining = edition.getEnd().getTime() - new Date().getTime();
+	    	  long remaining = getRemaining();
 	    	  if (remaining <= 0) {
-		    	  ticker.setText("Edition Complete!");	    		  
+		    	  ticker.setText("Completed");	    		  
 		    	  return;
 	    	  }
 	    	  long minutes = remaining / (1000 * 60);
 	    	  long hours = minutes / 60;
 	    	  minutes = minutes % 60;
-	    	  ticker.setText(new Long(hours).toString() + "h" + new Long(minutes).toString() + "m Remaining");
+	    	  ticker.setText(new Long(hours).toString() + "h" + new Long(minutes + 1).toString() + "m Remaining");
+	      }
+
+	      private long getRemaining() {
+	    	  if (edition == null)
+	    		  return 0;
+
+	    	  return edition.getEnd().getTime() - new Date().getTime();
 	      }
 	    };
 
-	    // run every 5 seconds.
-	    tickerTimer.scheduleRepeating(5000);
+	    // run every second
+	    tickerTimer.scheduleRepeating(1000);
 	  }
+
+	private void cancelTickerTimer() {
+		// TODO say when edition was completed
+		ticker.setText("Completed");
+		if (tickerTimer == null)
+			return;
+		
+		tickerTimer.cancel();		
+	}
 
 	@UiHandler("refresh")
 	void handleClick(ClickEvent e) {
@@ -91,21 +107,26 @@ public class RNA extends Composite implements EntryPoint  {
 		rnaService.sendEdition(new AsyncCallback<Edition>() {
 
 			public void onSuccess(Edition result) {
-				status.setText("got Edition");
-				title.setText("Rapid News Awards #" + result.getNumber());
-				scheduleTickerTimer();
-				setEdition(result);
+				if (result == null) {
+					edition = null;
+					votes.noEdition();
+					status.setText("Rapid News Awards is complete");
+					title.setText("Rapid News Awards");
+					cancelTickerTimer();
+				}
+				else {
+					edition = result;
+					votes.showEdition(result);
+					status.setText("got Edition " + result.getNumber());
+					title.setText("Rapid News Awards #" + result.getNumber());
+					scheduleTickerTimer();
+				}
 			}
 
 			public void onFailure(Throwable caught) {
 				status.setText("FAILED: " + caught);
 			}
 		});
-	}
-
-	private void setEdition(Edition e) {
-		this.edition = e;
-		votes.setEdition(e);
 	}
 
 	/**

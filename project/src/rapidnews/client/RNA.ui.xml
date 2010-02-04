@@ -29,6 +29,7 @@
 			font-weight: bold;
 			font-style: italic;
 			text-align: right;
+			padding-right: 5px;
 		}
 		
 		.tools {
@@ -39,7 +40,7 @@
 		.status {
 			height: 20px;
 			padding: 10px;
-			text-align: center;
+			text-align: left;
 		}
 		
 		.votes {
@@ -54,7 +55,6 @@
 			<g:Label styleName='{style.title}' ui:field="title">Rapid News Awards </g:Label>
 			<g:Label styleName='{style.ticker}' ui:field="ticker"> Initializing... </g:Label>
 		</g:HorizontalPanel>
-
 
 		<g:HorizontalPanel>
 			<g:cell verticalAlignment='ALIGN_MIDDLE'>
