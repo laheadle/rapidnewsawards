@@ -26,7 +26,7 @@ public class RNA extends Composite implements EntryPoint  {
 	interface UB extends UiBinder<Widget, RNA> {}
 
 	@UiField Label status;
-	@UiField Label ticker;
+	@UiField Label ticker; // text describing how much time left until publication
 	@UiField Label title;	
 	@UiField Votes votes;
 	@UiField Button refresh;
@@ -34,7 +34,7 @@ public class RNA extends Composite implements EntryPoint  {
 	// The ticker is updated every minute
 	private Timer tickerTimer;
 	
-	// there is always a current edition
+	// there is always a current edition, until the periodical is terminated
 	private Edition edition;
 	
 	public static RNA getInstance() {
@@ -58,29 +58,37 @@ public class RNA extends Composite implements EntryPoint  {
 		refresh();
 	}
 
+    private void updateTicker() {
+  	  long remaining = getTimeRemaining();
+
+  	  if (remaining <= 0) {
+  		  cancelTickerTimer();
+  		  return;
+  	  }
+  	  
+  	  long minutes = remaining / (1000 * 60);
+  	  long hours = minutes / 60;
+  	  minutes = minutes % 60;
+  	  ticker.setText(new Long(hours).toString() + "h" + new Long(minutes + 1).toString() + "m Remaining");
+	}
+
+	private long getTimeRemaining() {
+  	  if (edition == null)
+  		  return 0;
+
+  	  return edition.getEnd().getTime() - new Date().getTime();
+    }
 
 	private void scheduleTickerTimer() {
 		if (tickerTimer != null)
-			return; // already scheduled
+			tickerTimer.cancel();
+		
+		// sets text right away 
+		updateTicker();
 		
 	    tickerTimer = new Timer() {
 	      public void run() {
-	    	  long remaining = getRemaining();
-	    	  if (remaining <= 0) {
-		    	  ticker.setText("Completed");	    		  
-		    	  return;
-	    	  }
-	    	  long minutes = remaining / (1000 * 60);
-	    	  long hours = minutes / 60;
-	    	  minutes = minutes % 60;
-	    	  ticker.setText(new Long(hours).toString() + "h" + new Long(minutes + 1).toString() + "m Remaining");
-	      }
-
-	      private long getRemaining() {
-	    	  if (edition == null)
-	    		  return 0;
-
-	    	  return edition.getEnd().getTime() - new Date().getTime();
+	    	  updateTicker();
 	      }
 	    };
 
