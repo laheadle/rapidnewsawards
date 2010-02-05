@@ -21,12 +21,16 @@ public class MakeDataServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
 		PrintWriter out = response.getWriter();
+		int editions = makeData();
+		out.println("created 3 readers");
+		out.println("created " + editions + " editions");
+	}
 
+	public static int makeData() {
 		Reader mg = new Reader("Megan Garber", "megangarber");
 		Reader jy = new Reader("Josh Young", "jny2");
 		Reader so = new Reader("Steve Outing", "steveouting");
 		DAO.instance.ofy().put(Arrays.asList(mg, jy, so));
-		out.println("created 3 readers");
 
 		final Periodical p = new Periodical("Journalism");
 		Objectify ofy = DAO.instance.fact().beginTransaction();
@@ -58,8 +62,6 @@ public class MakeDataServlet extends HttpServlet {
 		p.setcurrentEditionKey(editions.get(0).getOKey());
 		ofy.put(p);
 		ofy.getTxn().commit();
-
-
-		out.println("created " + (i[0] - 1) + " editions");
+		return (i[0] - 1);
 	}
 }
