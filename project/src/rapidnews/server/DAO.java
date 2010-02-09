@@ -8,6 +8,7 @@ import rapidnews.shared.Edition;
 import rapidnews.shared.Link;
 import rapidnews.shared.Periodical;
 import rapidnews.shared.Reader;
+import rapidnews.shared.Periodical.EditionsIndex;
 import rapidnews.shared.Reader.VotesIndex;
 
 import com.google.appengine.api.datastore.EntityNotFoundException;
@@ -22,7 +23,8 @@ public class DAO extends DAOBase
 {
     static {
         ObjectifyService.factory().register(Reader.class);
-        ObjectifyService.factory().register(Reader.VotesIndex.class);
+        ObjectifyService.factory().register(VotesIndex.class);
+        ObjectifyService.factory().register(EditionsIndex.class);
         ObjectifyService.factory().register(Link.class);
         ObjectifyService.factory().register(Periodical.class);
         ObjectifyService.factory().register(Edition.class);
@@ -122,6 +124,8 @@ public class DAO extends DAOBase
 		final ArrayList<Edition> editions = findEditionsByPeriodical(p, true);
 		assert(editions != null && editions.size() > 0);
 		p.setEditions(editions);
+		
+		// initialize current edition
 		Edition current = get(p.getCurrentEditionKey());
 		p.setcurrentEditionKey(current.getOKey());
 		p.setCurrentEdition(current);
@@ -149,8 +153,15 @@ public class DAO extends DAOBase
 
 
 	private ArrayList<Edition> findEditionsByPeriodical(Periodical p, boolean fillRefs) {
-		OQuery<Edition> q = fact().createQuery(Edition.class).filter("periodicalKey", p.getOKey());
-		ArrayList<Edition> editions = new ArrayList<Edition>(ofy().prepare(q).asList());
+		OQuery<EditionsIndex> q = fact().createQuery(EditionsIndex.class).ancestor(p);
+		EditionsIndex i = ofy().prepare(q).asSingle();
+		ArrayList<Edition> editions = new ArrayList<Edition>();
+		if (i.editions == null)
+			return editions;
+		if (i.editions.size() > 0)
+			editions = new ArrayList<Edition>(ofy().get(i.editions).values());
+		else
+			throw new AssertionError(); // not reached
 		
 		for (Edition e : editions) {
 			// TODO xxx fill in readers

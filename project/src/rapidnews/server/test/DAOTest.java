@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import rapidnews.server.DAO;
 import rapidnews.server.MakeDataServlet;
+import rapidnews.shared.Edition;
 import rapidnews.shared.Link;
 import rapidnews.shared.Reader;
 
@@ -31,7 +32,7 @@ public class DAOTest extends TestCase {
         ApiProxyLocalImpl proxy = (ApiProxyLocalImpl) ApiProxy.getDelegate();
         proxy.setProperty(LocalDatastoreService.NO_STORAGE_PROPERTY, Boolean.TRUE.toString());
         
-        MakeDataServlet.makeData();
+        MakeDataServlet.makeData(2, MakeDataServlet.ONE_SECOND);
 	}
 
 	@After
@@ -45,6 +46,14 @@ public class DAOTest extends TestCase {
 
         super.tearDown();
 	}
+
+
+	@Test
+	public void testEditions() {
+		Edition e = DAO.instance.getCurrentEdition("Journalism");
+		assertNotNull(e);
+	}
+	
 
 	@Test
 	public void testFindReaderByUsername () {

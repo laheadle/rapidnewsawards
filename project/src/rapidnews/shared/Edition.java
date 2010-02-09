@@ -18,8 +18,6 @@ public class Edition implements IsSerializable {
 	@Id
 	Long id;
 	
-	private OKey<Periodical> periodicalKey;
-	
 	private Date end;
 
 	private int number;
@@ -28,9 +26,8 @@ public class Edition implements IsSerializable {
 		readers = new LinkedList<Reader>();
 	}
 
-	public Edition(Periodical m, Date end, int number) {
+	public Edition(Date end, int number) {
 		this();
-		periodicalKey = m.getOKey();
 		this.end = end;
 		this.number = number;
 	}

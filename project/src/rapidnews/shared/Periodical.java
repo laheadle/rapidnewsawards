@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import javax.persistence.Transient;
 
 import com.googlecode.objectify.OKey;
+import com.googlecode.objectify.annotation.Parent;
 
 @Entity
 public class Periodical {
@@ -23,6 +24,29 @@ public class Periodical {
 
 	@Transient
 	private Edition currentEdition;
+
+	public static class EditionsIndex {
+	    @Id Long id; 
+	    @Parent OKey<Periodical> parent; 
+	    public ArrayList<OKey<Edition>> editions;
+
+	    public void ensureState() {
+	    	if (editions == null)
+	    		editions = new ArrayList<OKey<Edition>>();	    	
+	    }
+	    
+	    public EditionsIndex() {}
+
+		public EditionsIndex(Periodical parent, ArrayList<Edition> editions) {
+			ArrayList<OKey<Edition>> eKeys = new ArrayList<OKey<Edition>>();
+			for(Edition e : editions) {
+				eKeys.add(e.getOKey());
+			}
+	    	this.parent = parent.getOKey();
+	    	this.editions = eKeys;
+		}
+
+	}
 
 	public Periodical(String name) {
 		this();
