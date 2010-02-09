@@ -8,11 +8,12 @@ import rapidnews.shared.Edition;
 import rapidnews.shared.Link;
 import rapidnews.shared.Periodical;
 import rapidnews.shared.Reader;
-import rapidnews.shared.Vote;
+import rapidnews.shared.Reader.VotesIndex;
 
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.googlecode.objectify.OKey;
 import com.googlecode.objectify.OQuery;
+import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.helper.DAOBase;
 
@@ -21,7 +22,7 @@ public class DAO extends DAOBase
 {
     static {
         ObjectifyService.factory().register(Reader.class);
-        ObjectifyService.factory().register(Vote.class);
+        ObjectifyService.factory().register(Reader.VotesIndex.class);
         ObjectifyService.factory().register(Link.class);
         ObjectifyService.factory().register(Periodical.class);
         ObjectifyService.factory().register(Edition.class);
@@ -38,33 +39,40 @@ public class DAO extends DAOBase
     public Reader findReaderByUsername(String username, boolean fillRefs) throws EntityNotFoundException {
     	Reader r = findByFieldName(Reader.class, "username", username);
     	if (fillRefs) {
-    		LinkedList<Vote> votes = findVotesByReader(r, true);
+    		LinkedList<Link> votes = findVotesByReader(r, true);
     		r.setVotes(votes);
     	}
     	return r;
 	}
     
-	public LinkedList<Vote> findVotesByReader(Reader r, boolean fillRefs) throws EntityNotFoundException {
-		OQuery<Vote> q = fact().createQuery(Vote.class).filter("readerKey", r.getOKey());
-		LinkedList<Vote> votes = new LinkedList<Vote>(ofy().prepare(q).asList());
-		for (Vote v: votes) {
-			Link l = findLinkByVote(v);
-			v.setLink(l);
-		}
-		return votes;
+	public LinkedList<Link> findVotesByReader(Reader r, boolean fillRefs) throws EntityNotFoundException {
+		Objectify o = ofy();
+		OQuery<VotesIndex> q = fact().createQuery(VotesIndex.class).ancestor(r);
+		VotesIndex i = o.prepare(q).asSingle();
+		if (i.votes == null)
+			return new LinkedList<Link>();
+		if (i.votes.size() > 0)
+			return new LinkedList<Link>(o.get(i.votes).values());
+		throw new AssertionError(); // not reached
 	}
 
-	public Link findLinkByVote(Vote v) throws EntityNotFoundException {
-		return ofy().get(v.linkKey);
-	}
-
+	/**
+	 * Store a new vote in the DB by a reader for a link
+	 * 
+	 * @param r the reader voting
+	 * @param l the link voted for
+	 * @throws IllegalArgumentException
+	 */
 	public void voteFor(Reader r, Link l) throws IllegalArgumentException {
-		//Objectify ofy = fact().beginTransaction();
 		if (hasVoted(r, l)) {
 			throw new IllegalArgumentException("Already Voted");
 		}
-		ofy().put(new Vote(r, l));
-		//ofy.getTxn().commit();
+		OQuery<VotesIndex> q = fact().createQuery(VotesIndex.class).ancestor(r);
+		Objectify o = fact().beginTransaction();
+		VotesIndex i = o.prepare(q).asSingle();
+		i.voteFor(l);
+		o.put(i);
+		o.getTxn().commit();
 	}
 	
 /*	public <T> OKey<T> getOKey(Class<T> clazz, T) {
@@ -73,7 +81,10 @@ public class DAO extends DAOBase
 */
 
     public boolean hasVoted(Reader r, Link l) {
-    	return findBy2FieldNames(Vote.class, "readerKey", r.getOKey(), "linkKey", l.getOKey()) != null;
+		OQuery<VotesIndex> q = fact().createQuery(VotesIndex.class).ancestor(r).filter("votes =", l.getOKey());
+		int count = ofy().prepareKeysOnly(q).count();
+		assert(count <= 1);
+		return count == 1;
 	}
 
 	// clients should call convenience methods above

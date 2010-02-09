@@ -5,8 +5,8 @@
 	<classpathentry kind="con" path="com.google.gwt.eclipse.core.GWT_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
 	<classpathentry kind="lib" path="lib/objectify-1.0.2.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/appengine-local-runtime.jar"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/appengine-api-stubs.jar"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/code/eclipse-java-galileo-SR1-win32/eclipse/plugins/com.google.appengine.eclipse.sdkbundle.1.3.0_1.3.0.v200912141120/appengine-java-sdk-1.3.0/lib/impl/appengine-api-stubs.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/code/eclipse-java-galileo-SR1-win32/eclipse/plugins/com.google.appengine.eclipse.sdkbundle.1.3.0_1.3.0.v200912141120/appengine-java-sdk-1.3.0/lib/impl/appengine-local-runtime.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

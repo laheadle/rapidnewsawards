@@ -1,8 +1,8 @@
 package rapidnews.client;
 
 import rapidnews.shared.Edition;
+import rapidnews.shared.Link;
 import rapidnews.shared.Reader;
-import rapidnews.shared.Vote;
 
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -36,8 +36,8 @@ public class Votes extends Composite {
 		vPanel.clear();
 		
 		for (Reader r : e.getReaders()) {
-			for (Vote v : r.getVotes()) {
-				Record rec = new Record(new VoteRecord(r.getName(), v.getLink().getUrl()));
+			for (Link v : r.getVotes()) {
+				Record rec = new Record(new VoteRecord(r.getName(), v.getUrl()));
 				vPanel.add(rec);
 				vPanel.setCellWidth(rec, "100%");
 

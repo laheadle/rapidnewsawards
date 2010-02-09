@@ -31,6 +31,9 @@ public class MakeDataServlet extends HttpServlet {
 		Reader jy = new Reader("Josh Young", "jny2");
 		Reader so = new Reader("Steve Outing", "steveouting");
 		DAO.instance.ofy().put(Arrays.asList(mg, jy, so));
+		DAO.instance.ofy().put(new Reader.VotesIndex(mg));
+		DAO.instance.ofy().put(new Reader.VotesIndex(jy));
+		DAO.instance.ofy().put(new Reader.VotesIndex(so));
 
 		final Periodical p = new Periodical("Journalism");
 		Objectify ofy = DAO.instance.fact().beginTransaction();

@@ -12,6 +12,7 @@ import org.junit.Test;
 
 import rapidnews.server.DAO;
 import rapidnews.server.MakeDataServlet;
+import rapidnews.shared.Link;
 import rapidnews.shared.Reader;
 
 import com.google.appengine.api.datastore.EntityNotFoundException;
@@ -56,4 +57,24 @@ public class DAOTest extends TestCase {
 		}
 	}
 
+	
+	@Test
+	public void testVote() {
+		try {
+			Reader mg = DAO.instance.findReaderByUsername("megangarber", true);
+			Link l = DAO.instance.findOrCreateLinkByURL("http://example.com");
+			Link l3 = DAO.instance.findOrCreateLinkByURL("http://example2.com");
+			DAO.instance.voteFor(mg, l);
+			assertTrue(DAO.instance.hasVoted(mg, l));
+			DAO.instance.voteFor(mg, l3);
+			assertTrue(DAO.instance.hasVoted(mg, l3));
+			assertTrue(DAO.instance.hasVoted(mg, l));
+			Link l2 = DAO.instance.findOrCreateLinkByURL("http://bad.com");
+			assertFalse(DAO.instance.hasVoted(mg, l2));
+		} catch (EntityNotFoundException e) {
+			fail("error in filling ref");
+		}
+	}
+
+	
 }
