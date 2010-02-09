@@ -23,12 +23,17 @@ RNAService {
 
 	public Edition sendEdition() {		
 		final Reader r;
-		
+
+		// look up reader
 		try {
 			r = DAO.instance.findReaderByUsername("megangarber", true);
+			if (r == null) {
+				log.warning("No reader found");
+				return null;
+			}
 		} catch (EntityNotFoundException e1) {
-	        log.warning("No reader found");
-	        return null;
+			log.warning("Error filling reader votes");
+			return null;
 		}
 
 		final Edition e = DAO.instance.getCurrentEdition("Journalism");
