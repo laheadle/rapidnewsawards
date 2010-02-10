@@ -75,12 +75,12 @@ public class MakeDataServlet extends HttpServlet {
 
 		EditionsIndex index = new EditionsIndex(p, editions);
 		for(Edition e : editions) {
-			index.editions.add(e.getOKey());
+			index.editions.add(e.getKey());
 		}
 		
 		txn.put(index);
 		
-		p.setcurrentEditionKey(editions.get(0).getOKey());
+		p.setcurrentEditionKey(editions.get(0).getKey());
 		txn.put(p);
 		txn.getTxn().commit();
 		return (i[0] - 1);

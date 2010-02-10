@@ -13,8 +13,8 @@ import rapidnews.shared.Reader.JudgesIndex;
 import rapidnews.shared.Reader.VotesIndex;
 
 import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.googlecode.objectify.OKey;
-import com.googlecode.objectify.OQuery;
+import com.googlecode.objectify.Key;
+import com.googlecode.objectify.Query;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.helper.DAOBase;
@@ -36,7 +36,7 @@ public class DAO extends DAOBase
     public static DAO instance = new DAO();
 	private static final Logger log = Logger.getLogger(DAO.class.getName());
     
-    public <T> T get(OKey<T> key) throws EntityNotFoundException {
+    public <T> T get(Key<T> key) throws EntityNotFoundException {
     	return ofy().get(key);
     }
     
@@ -55,8 +55,8 @@ public class DAO extends DAOBase
     
 	public LinkedList<Link> findVotesByReader(Reader r, boolean fillRefs) throws EntityNotFoundException {
 		Objectify o = ofy();
-		OQuery<VotesIndex> q = fact().createQuery(VotesIndex.class).ancestor(r);
-		VotesIndex i = o.prepare(q).asSingle();
+		Query<VotesIndex> q = ofy().query(VotesIndex.class).ancestor(r);
+		VotesIndex i = q.get();
 		if (i.votes == null)
 			return new LinkedList<Link>();
 		if (i.votes.size() > 0)
@@ -68,9 +68,9 @@ public class DAO extends DAOBase
 		if (isFollowing(from, to)) {
 			throw new IllegalArgumentException("Already Following");
 		}
-		OQuery<JudgesIndex> q = fact().createQuery(JudgesIndex.class).ancestor(from);
+		Query<JudgesIndex> q = ofy().query(JudgesIndex.class).ancestor(from);
 		Objectify o = fact().beginTransaction();
-		JudgesIndex i = o.prepare(q).asSingle();
+		JudgesIndex i = q.get();
 		i.follow(to);
 		o.put(i);
 		o.getTxn().commit();		
@@ -78,8 +78,8 @@ public class DAO extends DAOBase
     
 
 	public boolean isFollowing(Reader from, Reader to) {
-		OQuery<JudgesIndex> q = fact().createQuery(JudgesIndex.class).ancestor(from).filter("judges =", to.getOKey());
-		int count = ofy().prepareKeysOnly(q).count();
+		Query<JudgesIndex> q = ofy().query(JudgesIndex.class).ancestor(from).filter("judges =", to.getKey());
+		int count = q.countAll();
 		assert(count <= 1);
 		return count == 1;
 	}
@@ -96,35 +96,35 @@ public class DAO extends DAOBase
 		if (hasVoted(r, l)) {
 			throw new IllegalArgumentException("Already Voted");
 		}
-		OQuery<VotesIndex> q = fact().createQuery(VotesIndex.class).ancestor(r);
+		Query<VotesIndex> q = ofy().query(VotesIndex.class).ancestor(r);
 		Objectify o = fact().beginTransaction();
-		VotesIndex i = o.prepare(q).asSingle();
+		VotesIndex i = q.get();
 		i.voteFor(l);
 		o.put(i);
 		o.getTxn().commit();
 	}
 	
-/*	public <T> OKey<T> getOKey(Class<T> clazz, T) {
-		return new OKey<T>(clazz, id);
+/*	public <T> Key<T> getKey(Class<T> clazz, T) {
+		return new Key<T>(clazz, id);
 	}
 */
 
     public boolean hasVoted(Reader r, Link l) {
-		OQuery<VotesIndex> q = fact().createQuery(VotesIndex.class).ancestor(r).filter("votes =", l.getOKey());
-		int count = ofy().prepareKeysOnly(q).count();
+		Query<VotesIndex> q = ofy().query(VotesIndex.class).ancestor(r).filter("votes =", l.getKey());
+		int count = q.countAll();
 		assert(count <= 1);
 		return count == 1;
 	}
 
 	// clients should call convenience methods above
     private <T> T findByFieldName(Class<T> clazz, String fieldName, Object value) {
-    	OQuery<T> q = fact().createQuery(clazz).filter(fieldName, value);
-    	return ofy().prepare(q).asSingle();
+    	Query<T> q = ofy().query(clazz).filter(fieldName, value);
+    	return q.get();
     }
 
     private <T> T findBy2FieldNames(Class<T> clazz, String fieldName, Object value, String fieldName2, Object value2) {
-    	OQuery<T> q = fact().createQuery(clazz).filter(fieldName, value).filter(fieldName2, value2);
-    	return ofy().prepare(q).asSingle();    	
+    	Query<T> q = ofy().query(clazz).filter(fieldName, value).filter(fieldName2, value2);
+    	return q.get();    	
     }
 
 	public Link findOrCreateLinkByURL(String url) {
@@ -154,7 +154,7 @@ public class DAO extends DAOBase
 		
 		// initialize current edition
 		Edition current = get(p.getCurrentEditionKey());
-		p.setcurrentEditionKey(current.getOKey());
+		p.setcurrentEditionKey(current.getKey());
 		p.setCurrentEdition(current);
 
 		try { 
@@ -162,7 +162,7 @@ public class DAO extends DAOBase
 				// set current to the next edition after current
 				int i = editions.indexOf(current);
 				current = editions.get(i + 1);
-				p.setcurrentEditionKey(current.getOKey());
+				p.setcurrentEditionKey(current.getKey());
 				p.setCurrentEdition(current);
 				ofy().put(p);
 				assert(get(p.getCurrentEditionKey()).equals(current));    	
@@ -181,8 +181,8 @@ public class DAO extends DAOBase
 
 	private ArrayList<Edition> findEditionsByPeriodical(Periodical p, boolean fillRefs) {
 		ArrayList<Edition> editions = new ArrayList<Edition>();
-		OQuery<EditionsIndex> q = fact().createQuery(EditionsIndex.class).ancestor(p);
-		EditionsIndex i = ofy().prepare(q).asSingle();
+		Query<EditionsIndex> q = ofy().query(EditionsIndex.class).ancestor(p);
+		EditionsIndex i = q.get();
 		if (i.editions == null)
 			return editions;
 		if (i.editions.size() > 0)

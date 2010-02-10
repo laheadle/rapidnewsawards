@@ -4,7 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
-import com.googlecode.objectify.OKey;
+import com.googlecode.objectify.Key;
 
 
 @Entity
@@ -19,8 +19,8 @@ public class Link implements IsSerializable {
 		return url;
 	}
 
-	public OKey<Link> getOKey() {
-		return new OKey<Link>(Link.class, id);
+	public Key<Link> getKey() {
+		return new Key<Link>(Link.class, id);
 	}
 
 	public Link(String url) {

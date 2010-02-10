@@ -7,7 +7,7 @@ import javax.persistence.Id;
 import javax.persistence.Transient;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
-import com.googlecode.objectify.OKey;
+import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Parent;
 
 @Entity
@@ -26,23 +26,23 @@ public class Reader implements IsSerializable {
 	
 	public static class JudgesIndex {
 	    @Id Long id; 
-	    @Parent OKey<Reader> parent; 
-	    public LinkedList<OKey<Reader>> judges;
+	    @Parent Key<Reader> parent; 
+	    public LinkedList<Key<Reader>> judges;
 
 	    public JudgesIndex() {}
 
 		public JudgesIndex(Reader parent) {
-	    	this.parent = parent.getOKey();
+	    	this.parent = parent.getKey();
 		}
 
 	    public void follow(Reader j) {
 	    	ensureState();
-	    	judges.add(j.getOKey());
+	    	judges.add(j.getKey());
 	    }
 
 	    public void ensureState() {
 	    	if (judges == null)
-	    		judges = new LinkedList<OKey<Reader>>();	    	
+	    		judges = new LinkedList<Key<Reader>>();	    	
 	    }
 	    
 	}
@@ -50,16 +50,16 @@ public class Reader implements IsSerializable {
 	
 	public static class VotesIndex {
 	    @Id Long id; 
-	    @Parent OKey<Reader> parent; 
-	    public LinkedList<OKey<Link>> votes;
+	    @Parent Key<Reader> parent; 
+	    public LinkedList<Key<Link>> votes;
 	    
 	    public void voteFor(Link l) {
 	    	ensureState();
-	    	votes.add(l.getOKey());
+	    	votes.add(l.getKey());
 	    }
 	    
-	    public VotesIndex(Reader parent, LinkedList<OKey<Link>> votes) {
-	    	this.parent = parent.getOKey();
+	    public VotesIndex(Reader parent, LinkedList<Key<Link>> votes) {
+	    	this.parent = parent.getKey();
 	    	this.votes = votes;
 	    }
 
@@ -69,7 +69,7 @@ public class Reader implements IsSerializable {
 
 	    public void ensureState() {
 	    	if (votes == null)
-	    		votes = new LinkedList<OKey<Link>>();	    	
+	    		votes = new LinkedList<Key<Link>>();	    	
 	    }
 	    
 	    public VotesIndex() {}
@@ -106,8 +106,8 @@ public class Reader implements IsSerializable {
 		this.username = username;
 	}
 
-	public OKey<Reader> getOKey() {
-		return new OKey<Reader>(Reader.class, id);
+	public Key<Reader> getKey() {
+		return new Key<Reader>(Reader.class, id);
 	}
 
 	public LinkedList<Link> getVotes() {

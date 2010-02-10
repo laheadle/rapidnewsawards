@@ -7,12 +7,12 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 
-import com.googlecode.objectify.OKey;
+import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Parent;
 
 @Entity
 public class Periodical {
-	private OKey<Edition> currentEditionKey;
+	private Key<Edition> currentEditionKey;
 	
 	private String name;
 
@@ -27,17 +27,17 @@ public class Periodical {
 
 	public static class EditionsIndex {
 	    @Id Long id; 
-	    @Parent OKey<Periodical> parent; 
-	    public ArrayList<OKey<Edition>> editions;
+	    @Parent Key<Periodical> parent; 
+	    public ArrayList<Key<Edition>> editions;
 
 	    public EditionsIndex() {}
 
 		public EditionsIndex(Periodical parent, ArrayList<Edition> editions) {
-			ArrayList<OKey<Edition>> eKeys = new ArrayList<OKey<Edition>>();
+			ArrayList<Key<Edition>> eKeys = new ArrayList<Key<Edition>>();
 			for(Edition e : editions) {
-				eKeys.add(e.getOKey());
+				eKeys.add(e.getKey());
 			}
-	    	this.parent = parent.getOKey();
+	    	this.parent = parent.getKey();
 	    	this.editions = eKeys;
 		}
 
@@ -61,15 +61,15 @@ public class Periodical {
 		this.name = name;
 	}
 
-	public OKey<Periodical> getOKey() {
-		return new OKey<Periodical>(Periodical.class, id);
+	public Key<Periodical> getKey() {
+		return new Key<Periodical>(Periodical.class, id);
 	}
 
-	public void setcurrentEditionKey(OKey<Edition> oKey) {
-		this.currentEditionKey = oKey;
+	public void setcurrentEditionKey(Key<Edition> Key) {
+		this.currentEditionKey = Key;
 	}
 
-	public OKey<Edition> getCurrentEditionKey() {
+	public Key<Edition> getCurrentEditionKey() {
 		return this.currentEditionKey;
 	}
 
@@ -89,7 +89,7 @@ public class Periodical {
 		if (this.currentEdition == null && this.currentEditionKey == null)
 			return; // finalized
 		if (this.currentEdition != null && this.currentEditionKey != null && 
-				this.currentEditionKey.equals(this.currentEdition.getOKey()) &&
+				this.currentEditionKey.equals(this.currentEdition.getKey()) &&
 				!this.currentEdition.isExpired())
 			return; // ongoing
 		// inconsistent

@@ -7,7 +7,7 @@ import javax.persistence.Id;
 import javax.persistence.Transient;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
-import com.googlecode.objectify.OKey;
+import com.googlecode.objectify.Key;
 
 @Entity
 public class Edition implements IsSerializable {
@@ -52,8 +52,8 @@ public class Edition implements IsSerializable {
 		return end;	
 	}
 
-	public OKey<Edition> getOKey() {
-		return new OKey<Edition>(Edition.class, id);
+	public Key<Edition> getKey() {
+		return new Key<Edition>(Edition.class, id);
 	}
 
 	public boolean isExpired() {
