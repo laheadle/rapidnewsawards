@@ -24,13 +24,12 @@ public class VoteServlet extends HttpServlet {
 
 		try {
 			r = DAO.instance.findReaderByUsername(request.getParameter("username"), false);
+			if (r == null) {
+				out.println("No such voter");
+				return;
+			}			
 		} catch (EntityNotFoundException e1) {
 			assert(false); // only thrown when fillrefs = true
-		}
-		
-		if (r == null) {
-			out.println("No such voter");
-			return;
 		}
 		
 		String url = request.getParameter("href");

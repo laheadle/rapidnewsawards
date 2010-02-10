@@ -92,9 +92,4 @@ public class Reader implements IsSerializable {
 		this.votes = votes; 
 	}
 
-	public void voteFor(Link l) {
-		// TODO Auto-generated method stub
-		
-	}
-
 }

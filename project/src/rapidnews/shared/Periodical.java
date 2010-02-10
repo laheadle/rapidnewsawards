@@ -30,11 +30,6 @@ public class Periodical {
 	    @Parent OKey<Periodical> parent; 
 	    public ArrayList<OKey<Edition>> editions;
 
-	    public void ensureState() {
-	    	if (editions == null)
-	    		editions = new ArrayList<OKey<Edition>>();	    	
-	    }
-	    
 	    public EditionsIndex() {}
 
 		public EditionsIndex(Periodical parent, ArrayList<Edition> editions) {

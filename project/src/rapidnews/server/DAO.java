@@ -40,6 +40,10 @@ public class DAO extends DAOBase
     
     public Reader findReaderByUsername(String username, boolean fillRefs) throws EntityNotFoundException {
     	Reader r = findByFieldName(Reader.class, "username", username);
+
+    	if (r == null)
+    		return null;
+    	
     	if (fillRefs) {
     		LinkedList<Link> votes = findVotesByReader(r, true);
     		r.setVotes(votes);
@@ -153,9 +157,9 @@ public class DAO extends DAOBase
 
 
 	private ArrayList<Edition> findEditionsByPeriodical(Periodical p, boolean fillRefs) {
+		ArrayList<Edition> editions = new ArrayList<Edition>();
 		OQuery<EditionsIndex> q = fact().createQuery(EditionsIndex.class).ancestor(p);
 		EditionsIndex i = ofy().prepare(q).asSingle();
-		ArrayList<Edition> editions = new ArrayList<Edition>();
 		if (i.editions == null)
 			return editions;
 		if (i.editions.size() > 0)
