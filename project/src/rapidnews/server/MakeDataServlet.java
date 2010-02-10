@@ -34,15 +34,18 @@ public class MakeDataServlet extends HttpServlet {
 		return makeData(10, FIVE_MINUTES);
 	}
 	
+	public static void makeReader(String name, String username) {
+		Reader r = new Reader(name, username);
+		DAO.instance.ofy().put(r);
+		DAO.instance.ofy().put(new Reader.VotesIndex(r));		
+		DAO.instance.ofy().put(new Reader.JudgesIndex(r));
+	}
+	
 	public static int makeData(int editionCount, long periodSize) {
-		Reader mg = new Reader("Megan Garber", "megangarber");
-		Reader jy = new Reader("Josh Young", "jny2");
-		Reader so = new Reader("Steve Outing", "steveouting");
-		DAO.instance.ofy().put(Arrays.asList(mg, jy, so));
-		DAO.instance.ofy().put(new Reader.VotesIndex(mg));
-		DAO.instance.ofy().put(new Reader.VotesIndex(jy));
-		DAO.instance.ofy().put(new Reader.VotesIndex(so));
-
+		makeReader("Megan Garber", "megangarber");
+		makeReader("Josh Young", "jny2");
+		makeReader("Steve Outing", "steveouting");
+	
 		final Periodical p = new Periodical("Journalism");
 		Objectify txn = DAO.instance.fact().beginTransaction();
 		txn.put(p);

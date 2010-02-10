@@ -1,4 +1,5 @@
 package rapidnews.shared;
+import java.util.ArrayList;
 import java.util.LinkedList;
 
 import javax.persistence.Entity;
@@ -21,6 +22,31 @@ public class Reader implements IsSerializable {
 
 	@Transient
 	public LinkedList<Link> votes;
+	
+	
+	public static class JudgesIndex {
+	    @Id Long id; 
+	    @Parent OKey<Reader> parent; 
+	    public LinkedList<OKey<Reader>> judges;
+
+	    public JudgesIndex() {}
+
+		public JudgesIndex(Reader parent) {
+	    	this.parent = parent.getOKey();
+		}
+
+	    public void follow(Reader j) {
+	    	ensureState();
+	    	judges.add(j.getOKey());
+	    }
+
+	    public void ensureState() {
+	    	if (judges == null)
+	    		judges = new LinkedList<OKey<Reader>>();	    	
+	    }
+	    
+	}
+	
 	
 	public static class VotesIndex {
 	    @Id Long id; 

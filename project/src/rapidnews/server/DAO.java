@@ -9,6 +9,7 @@ import rapidnews.shared.Link;
 import rapidnews.shared.Periodical;
 import rapidnews.shared.Reader;
 import rapidnews.shared.Periodical.EditionsIndex;
+import rapidnews.shared.Reader.JudgesIndex;
 import rapidnews.shared.Reader.VotesIndex;
 
 import com.google.appengine.api.datastore.EntityNotFoundException;
@@ -25,6 +26,7 @@ public class DAO extends DAOBase
         ObjectifyService.factory().register(Reader.class);
         ObjectifyService.factory().register(VotesIndex.class);
         ObjectifyService.factory().register(EditionsIndex.class);
+        ObjectifyService.factory().register(JudgesIndex.class);
         ObjectifyService.factory().register(Link.class);
         ObjectifyService.factory().register(Periodical.class);
         ObjectifyService.factory().register(Edition.class);
@@ -61,6 +63,27 @@ public class DAO extends DAOBase
 			return new LinkedList<Link>(o.get(i.votes).values());
 		throw new AssertionError(); // not reached
 	}
+
+	public void follow(Reader from, Reader to) {
+		if (isFollowing(from, to)) {
+			throw new IllegalArgumentException("Already Following");
+		}
+		OQuery<JudgesIndex> q = fact().createQuery(JudgesIndex.class).ancestor(from);
+		Objectify o = fact().beginTransaction();
+		JudgesIndex i = o.prepare(q).asSingle();
+		i.follow(to);
+		o.put(i);
+		o.getTxn().commit();		
+	}
+    
+
+	public boolean isFollowing(Reader from, Reader to) {
+		OQuery<JudgesIndex> q = fact().createQuery(JudgesIndex.class).ancestor(from).filter("judges =", to.getOKey());
+		int count = ofy().prepareKeysOnly(q).count();
+		assert(count <= 1);
+		return count == 1;
+	}
+	
 
 	/**
 	 * Store a new vote in the DB by a reader for a link
@@ -183,6 +206,6 @@ public class DAO extends DAOBase
 		}
 		return p.getCurrentEdition();
 	}
-    
+
 
 }

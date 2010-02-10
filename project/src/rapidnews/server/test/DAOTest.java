@@ -86,4 +86,16 @@ public class DAOTest extends TestCase {
 	}
 
 	
+	public void testFollow() {
+		try {
+			Reader mg = DAO.instance.findReaderByUsername("megangarber", true);
+			Reader jny2 = DAO.instance.findReaderByUsername("jny2", true);
+			DAO.instance.follow(mg, jny2);
+			assertTrue(DAO.instance.isFollowing(mg, jny2));
+		} catch (EntityNotFoundException e) {
+			fail("error in filling ref");
+		}
+	}
+
+	
 }
