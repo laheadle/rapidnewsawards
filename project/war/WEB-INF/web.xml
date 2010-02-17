@@ -7,22 +7,22 @@
 
 	<servlet>
 		<servlet-name>rnaServlet</servlet-name>
-		<servlet-class>rapidnews.server.RNAServiceImpl</servlet-class>
+		<servlet-class>org.rapidnewsawards.server.RNAServiceImpl</servlet-class>
 	</servlet>
 
 	<servlet>
 		<servlet-name>apiServlet</servlet-name>
-		<servlet-class>rapidnews.server.APIServlet</servlet-class>
+		<servlet-class>org.rapidnewsawards.server.APIServlet</servlet-class>
 	</servlet>
 
 	<servlet>
 		<servlet-name>voteServlet</servlet-name>
-		<servlet-class>rapidnews.server.VoteServlet</servlet-class>
+		<servlet-class>org.rapidnewsawards.server.VoteServlet</servlet-class>
 	</servlet>
 
 	<servlet>
 		<servlet-name>makeDataServlet</servlet-name>
-		<servlet-class>rapidnews.server.MakeDataServlet</servlet-class>
+		<servlet-class>org.rapidnewsawards.server.MakeDataServlet</servlet-class>
 	</servlet>
 
 	<servlet-mapping>

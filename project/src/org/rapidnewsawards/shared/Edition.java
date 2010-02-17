@@ -1,4 +1,4 @@
-package rapidnews.shared;
+package org.rapidnewsawards.shared;
 
 import java.util.*;
 
@@ -34,6 +34,10 @@ public class Edition implements IsSerializable {
 
 	public LinkedList<Reader> getReaders() {
 		return readers;
+	}
+	
+	public void setReaders(LinkedList<Reader> readers) {
+		this.readers = readers;
 	}
 	
 	@Override

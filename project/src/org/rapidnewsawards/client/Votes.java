@@ -1,8 +1,8 @@
-package rapidnews.client;
+package org.rapidnewsawards.client;
 
-import rapidnews.shared.Edition;
-import rapidnews.shared.Link;
-import rapidnews.shared.Reader;
+import org.rapidnewsawards.shared.Edition;
+import org.rapidnewsawards.shared.Link;
+import org.rapidnewsawards.shared.Reader;
 
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;

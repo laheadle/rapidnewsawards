@@ -1,8 +1,9 @@
-package rapidnews.client;
+package org.rapidnewsawards.client;
 
 import java.util.Date;
 
-import rapidnews.shared.Edition;
+import org.rapidnewsawards.shared.Edition;
+
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;

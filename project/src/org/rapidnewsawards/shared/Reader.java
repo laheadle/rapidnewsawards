@@ -1,4 +1,4 @@
-package rapidnews.shared;
+package org.rapidnewsawards.shared;
 import java.util.ArrayList;
 import java.util.LinkedList;
 
@@ -13,7 +13,10 @@ import com.googlecode.objectify.annotation.Parent;
 @Entity
 public class Reader implements IsSerializable {
 
-	public String name;
+    @Parent 
+    public Key<Edition> parent; 
+
+    public String name;
 		
 	@Id 	
 	public Long id;
@@ -23,7 +26,7 @@ public class Reader implements IsSerializable {
 	@Transient
 	public LinkedList<Link> votes;
 	
-	
+	@Entity
 	public static class JudgesIndex {
 	    @Id Long id; 
 	    @Parent Key<Reader> parent; 
@@ -47,7 +50,7 @@ public class Reader implements IsSerializable {
 	    
 	}
 	
-	
+	@Entity
 	public static class VotesIndex {
 	    @Id Long id; 
 	    @Parent Key<Reader> parent; 
@@ -80,14 +83,15 @@ public class Reader implements IsSerializable {
 		this.votes = new LinkedList<Link>();
 	}
 	
-	public Reader(String name, String username, LinkedList<Link> votes) {
+	public Reader(Edition e, String name, String username, LinkedList<Link> votes) {
+		this.parent = e.getKey();
 		this.name = name;
 		this.username = username;
 		this.votes = votes;
 	}
 
-	public Reader(String name, String username) {
-		this(name, username, new LinkedList<Link>());
+	public Reader(Edition e, String name, String username) {
+		this(e, name, username, new LinkedList<Link>());
 	}	
 
 	public String getName() {

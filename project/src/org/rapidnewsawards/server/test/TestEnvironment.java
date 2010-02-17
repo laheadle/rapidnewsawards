@@ -1,4 +1,4 @@
-package rapidnews.server.test;
+package org.rapidnewsawards.server.test;
 
 import java.util.Map;
 

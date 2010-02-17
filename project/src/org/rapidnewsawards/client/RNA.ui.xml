@@ -1,5 +1,5 @@
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
-	xmlns:g='urn:import:com.google.gwt.user.client.ui' xmlns:rna='urn:import:rapidnews.client'>
+	xmlns:g='urn:import:com.google.gwt.user.client.ui' xmlns:rna='urn:import:org.rapidnewsawards.client'>
 
 	<ui:style>
 		.outerframe {

@@ -1,7 +1,8 @@
-package rapidnews.client;
+package org.rapidnewsawards.client;
+
+import org.rapidnewsawards.shared.*;
 
 import com.google.gwt.user.client.rpc.AsyncCallback;
-import rapidnews.shared.*;
 
 /**
  * The async counterpart of <code>GreetingService</code>.

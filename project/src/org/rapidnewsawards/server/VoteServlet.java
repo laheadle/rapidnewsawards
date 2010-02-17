@@ -1,4 +1,4 @@
-package rapidnews.server;
+package org.rapidnewsawards.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
@@ -9,10 +9,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.rapidnewsawards.shared.Link;
+import org.rapidnewsawards.shared.Reader;
+
 import com.google.appengine.api.datastore.EntityNotFoundException;
 
-import rapidnews.shared.Link;
-import rapidnews.shared.Reader;
 
 public class VoteServlet extends HttpServlet {
 	private static final Logger log = Logger.getLogger(VoteServlet.class.getName());
@@ -23,7 +24,7 @@ public class VoteServlet extends HttpServlet {
 		Reader r = null;
 
 		try {
-			r = DAO.instance.findReaderByUsername(request.getParameter("username"), false);
+			r = DAO.instance.findReaderByUsername(request.getParameter("username"));
 			if (r == null) {
 				out.println("No such voter");
 				return;

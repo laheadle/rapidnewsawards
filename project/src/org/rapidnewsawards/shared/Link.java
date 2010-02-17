@@ -1,4 +1,4 @@
-package rapidnews.shared;
+package org.rapidnewsawards.shared;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;

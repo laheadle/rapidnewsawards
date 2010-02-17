@@ -1,4 +1,4 @@
-package rapidnews.client;
+package org.rapidnewsawards.client;
 
 import com.google.gwt.core.client.GWT;
 import com.google.gwt.dom.client.DivElement;

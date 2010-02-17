@@ -1,4 +1,4 @@
-package rapidnews.server;
+package org.rapidnewsawards.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;

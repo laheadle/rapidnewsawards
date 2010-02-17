@@ -7,17 +7,18 @@
   <!-- the theme of your GWT application by uncommenting          -->
 <!--   any one of the following lines.                            -->
   <inherits name='com.google.gwt.user.theme.standard.Standard'/> 
-  <inherits name='com.googlecode.Objectify'/> 
+  <inherits name='com.googlecode.objectify.Objectify'/> 
 <!--   <inherits name='com.google.gwt.user.theme.chrome.Chrome'/> -->
   <!-- <inherits name='com.google.gwt.user.theme.dark.Dark'/>     -->
 
   <!-- Other module inherits                                      -->
 
   <!-- Specify the app entry point class.                         -->
-  <entry-point class='rapidnews.client.RNA'/>
+  <entry-point class='org.rapidnewsawards.client.RNA'/>
 
   <!-- Specify the paths for translatable code                    -->
   <source path='client'/>
   <source path='shared'/>
+  <super-source path="objectify" />
 
 </module>

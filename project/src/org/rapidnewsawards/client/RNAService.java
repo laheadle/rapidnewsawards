@@ -1,8 +1,9 @@
-package rapidnews.client;
+package org.rapidnewsawards.client;
+
+import org.rapidnewsawards.shared.*;
 
 import com.google.gwt.user.client.rpc.RemoteService;
 import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
-import rapidnews.shared.*;
 
 /**
  * The client side stub for the RPC service.

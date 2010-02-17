@@ -1,4 +1,4 @@
-package rapidnews.server.test;
+package org.rapidnewsawards.server.test;
 
 import static org.junit.Assert.*;
 
@@ -9,56 +9,41 @@ import junit.framework.TestCase;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
+import org.rapidnewsawards.server.DAO;
+import org.rapidnewsawards.server.MakeDataServlet;
+import org.rapidnewsawards.shared.Edition;
+import org.rapidnewsawards.shared.Link;
+import org.rapidnewsawards.shared.Reader;
 
-import rapidnews.server.DAO;
-import rapidnews.server.MakeDataServlet;
-import rapidnews.shared.Edition;
-import rapidnews.shared.Link;
-import rapidnews.shared.Reader;
 
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.dev.LocalDatastoreService;
 import com.google.appengine.tools.development.ApiProxyLocalImpl;
 import com.google.apphosting.api.ApiProxy;
 
-public class DAOTest extends TestCase {
+public class DAOTest extends RNATest {
 
 	@Before
 	public void setUp() throws Exception {
         super.setUp();
-        ApiProxy.setEnvironmentForCurrentThread(new TestEnvironment());
-        ApiProxy.setDelegate(new ApiProxyLocalImpl(new File(".")){});
-
-        ApiProxyLocalImpl proxy = (ApiProxyLocalImpl) ApiProxy.getDelegate();
-        proxy.setProperty(LocalDatastoreService.NO_STORAGE_PROPERTY, Boolean.TRUE.toString());
-        
         MakeDataServlet.makeData(2, MakeDataServlet.ONE_SECOND);
 	}
-
-	@After
-	public void tearDown() throws Exception {
-        ApiProxyLocalImpl proxy = (ApiProxyLocalImpl) ApiProxy.getDelegate();
-        LocalDatastoreService datastoreService = (LocalDatastoreService) proxy.getService(LocalDatastoreService.PACKAGE);
-        datastoreService.clearProfiles();
-        
-		ApiProxy.setDelegate(null);
-        ApiProxy.setEnvironmentForCurrentThread(null);
-
-        super.tearDown();
-	}
-
 
 	@Test
 	public void testEditions() {
 		Edition e = DAO.instance.getCurrentEdition("Journalism");
 		assertNotNull(e);
+		assertNotNull(e.getReaders());
+		assertEquals(true, e.getReaders().size() > 0);
 	}
+	
+	// TODO disallow voting in expired editions
 	
 
 	@Test
 	public void testFindReaderByUsername () {
 		try {
-			Reader mg = DAO.instance.findReaderByUsername("megangarber", true);
+			Reader mg = DAO.instance.findReaderByUsername("megangarber");
 			assertNotNull(mg);
 			assertEquals(mg.getUsername(), "megangarber");
 		} catch (EntityNotFoundException e) {
@@ -70,7 +55,7 @@ public class DAOTest extends TestCase {
 	@Test
 	public void testVote() {
 		try {
-			Reader mg = DAO.instance.findReaderByUsername("megangarber", true);
+			Reader mg = DAO.instance.findReaderByUsername("megangarber");
 			Link l = DAO.instance.findOrCreateLinkByURL("http://example.com");
 			Link l3 = DAO.instance.findOrCreateLinkByURL("http://example2.com");
 			DAO.instance.voteFor(mg, l);
@@ -85,11 +70,11 @@ public class DAOTest extends TestCase {
 		}
 	}
 
-	
+	@Test
 	public void testFollow() {
 		try {
-			Reader mg = DAO.instance.findReaderByUsername("megangarber", true);
-			Reader jny2 = DAO.instance.findReaderByUsername("jny2", true);
+			Reader mg = DAO.instance.findReaderByUsername("megangarber");
+			Reader jny2 = DAO.instance.findReaderByUsername("jny2");
 			DAO.instance.follow(mg, jny2);
 			assertTrue(DAO.instance.isFollowing(mg, jny2));
 		} catch (EntityNotFoundException e) {

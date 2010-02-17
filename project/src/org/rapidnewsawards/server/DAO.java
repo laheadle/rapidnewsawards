@@ -1,16 +1,17 @@
-package rapidnews.server;
+package org.rapidnewsawards.server;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
-import rapidnews.shared.Edition;
-import rapidnews.shared.Link;
-import rapidnews.shared.Periodical;
-import rapidnews.shared.Reader;
-import rapidnews.shared.Periodical.EditionsIndex;
-import rapidnews.shared.Reader.JudgesIndex;
-import rapidnews.shared.Reader.VotesIndex;
+import org.rapidnewsawards.shared.Edition;
+import org.rapidnewsawards.shared.Link;
+import org.rapidnewsawards.shared.Periodical;
+import org.rapidnewsawards.shared.Reader;
+import org.rapidnewsawards.shared.Periodical.EditionsIndex;
+import org.rapidnewsawards.shared.Reader.JudgesIndex;
+import org.rapidnewsawards.shared.Reader.VotesIndex;
+
 
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.googlecode.objectify.Key;
@@ -40,23 +41,24 @@ public class DAO extends DAOBase
     	return ofy().get(key);
     }
     
-    public Reader findReaderByUsername(String username, boolean fillRefs) throws EntityNotFoundException {
+    public Reader findReaderByUsername(String username) throws EntityNotFoundException {
     	Reader r = findByFieldName(Reader.class, "username", username);
 
     	if (r == null)
     		return null;
     	
-    	if (fillRefs) {
-    		LinkedList<Link> votes = findVotesByReader(r, true);
-    		r.setVotes(votes);
-    	}
+    	fillRefs(r);
     	return r;
 	}
     
-	public LinkedList<Link> findVotesByReader(Reader r, boolean fillRefs) throws EntityNotFoundException {
+	private void fillRefs(Reader r) {
+		LinkedList<Link> votes = findVotesByReader(r);
+		r.setVotes(votes);		
+	}
+
+	public LinkedList<Link> findVotesByReader(Reader r) {
 		Objectify o = ofy();
-		Query<VotesIndex> q = ofy().query(VotesIndex.class).ancestor(r);
-		VotesIndex i = q.get();
+		VotesIndex i = ofy().query(VotesIndex.class).ancestor(r).get();
 		if (i.votes == null)
 			return new LinkedList<Link>();
 		if (i.votes.size() > 0)
@@ -68,9 +70,8 @@ public class DAO extends DAOBase
 		if (isFollowing(from, to)) {
 			throw new IllegalArgumentException("Already Following");
 		}
-		Query<JudgesIndex> q = ofy().query(JudgesIndex.class).ancestor(from);
 		Objectify o = fact().beginTransaction();
-		JudgesIndex i = q.get();
+		JudgesIndex i = o.query(JudgesIndex.class).ancestor(from).get();
 		i.follow(to);
 		o.put(i);
 		o.getTxn().commit();		
@@ -138,17 +139,14 @@ public class DAO extends DAOBase
     	}
 	}
 
-	public Periodical findPeriodicalByName(String name, boolean fillRefs) throws EntityNotFoundException {
+	public Periodical findPeriodicalByName(String name) throws EntityNotFoundException {
 		final Periodical p = findByFieldName(Periodical.class, "name", name);
 
 		if (p == null)
 			return  null;
 
-		if (!fillRefs) 
-			return p;
-
 		// initialize editions array
-		final ArrayList<Edition> editions = findEditionsByPeriodical(p, true);
+		final ArrayList<Edition> editions = findEditionsByPeriodical(p);
 		assert(editions != null && editions.size() > 0);
 		p.setEditions(editions);
 		
@@ -179,27 +177,39 @@ public class DAO extends DAOBase
 	}
 
 
-	private ArrayList<Edition> findEditionsByPeriodical(Periodical p, boolean fillRefs) {
+	private ArrayList<Edition> findEditionsByPeriodical(Periodical p) {
 		ArrayList<Edition> editions = new ArrayList<Edition>();
 		Query<EditionsIndex> q = ofy().query(EditionsIndex.class).ancestor(p);
 		EditionsIndex i = q.get();
-		if (i.editions == null)
+		if (i.editions == null) {
+			log.warning("PERIODICAL: No editions");
 			return editions;
+		}
 		if (i.editions.size() > 0)
 			editions = new ArrayList<Edition>(ofy().get(i.editions).values());
 		else
 			throw new AssertionError(); // not reached
 		
 		for (Edition e : editions) {
-			// TODO xxx fill in readers
+			LinkedList<Reader> readers = findReadersByEdition(e);
+			e.setReaders(readers);
 		}
+		
 		return editions;
+	}
+
+	public LinkedList<Reader> findReadersByEdition(Edition e) {
+		LinkedList<Reader> readers = new LinkedList<Reader>();
+		for (Reader r : ofy().query(Reader.class).ancestor(e.getKey())) {
+			readers.add(r);
+		}
+		return readers;
 	}
 
 	public Edition getCurrentEdition(String periodicalName) {
 		final Periodical p;
 		try {
-			p = DAO.instance.findPeriodicalByName(periodicalName, true);
+			p = DAO.instance.findPeriodicalByName(periodicalName);
 		} catch (EntityNotFoundException e2) {
 	        log.warning("No Periodical found");
 	        return null;

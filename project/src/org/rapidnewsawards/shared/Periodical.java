@@ -1,4 +1,4 @@
-package rapidnews.shared;
+package org.rapidnewsawards.shared;
 
 import java.util.ArrayList;
 import java.util.LinkedList;
