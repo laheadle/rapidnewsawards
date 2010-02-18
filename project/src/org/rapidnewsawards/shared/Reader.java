@@ -111,7 +111,7 @@ public class Reader implements IsSerializable {
 	}
 
 	public Key<Reader> getKey() {
-		return new Key<Reader>(Reader.class, id);
+		return new Key<Reader>(this.parent, Reader.class, id);
 	}
 
 	public LinkedList<Link> getVotes() {

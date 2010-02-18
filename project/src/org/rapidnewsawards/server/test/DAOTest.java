@@ -3,6 +3,7 @@ package org.rapidnewsawards.server.test;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.util.LinkedList;
 
 import junit.framework.TestCase;
 
@@ -26,15 +27,18 @@ public class DAOTest extends RNATest {
 	@Before
 	public void setUp() throws Exception {
         super.setUp();
-        MakeDataServlet.makeData(2, MakeDataServlet.ONE_SECOND);
+        MakeDataServlet.makeData(2, 30 * 60 * MakeDataServlet.ONE_SECOND);
 	}
 
 	@Test
 	public void testEditions() {
 		Edition e = DAO.instance.getCurrentEdition("Journalism");
 		assertNotNull(e);
+		LinkedList<Reader> readers = DAO.instance.findReadersByEdition(e);
+		assertEquals(readers.size(), 3);
 		assertNotNull(e.getReaders());
 		assertEquals(true, e.getReaders().size() > 0);
+		assertEquals(true, e.getReaders().size() == readers.size());
 	}
 	
 	// TODO disallow voting in expired editions
@@ -76,7 +80,7 @@ public class DAOTest extends RNATest {
 			Reader mg = DAO.instance.findReaderByUsername("megangarber");
 			Reader jny2 = DAO.instance.findReaderByUsername("jny2");
 			DAO.instance.follow(mg, jny2);
-			assertTrue(DAO.instance.isFollowing(mg, jny2));
+			assertTrue(DAO.instance.isFollowing(mg, jny2, null));
 		} catch (EntityNotFoundException e) {
 			fail("error in filling ref");
 		}

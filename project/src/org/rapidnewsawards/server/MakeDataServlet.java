@@ -15,6 +15,7 @@ import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Periodical;
 import org.rapidnewsawards.shared.Reader;
 import org.rapidnewsawards.shared.Periodical.EditionsIndex;
+import org.rapidnewsawards.shared.Reader.JudgesIndex;
 
 
 import com.googlecode.objectify.Objectify;
@@ -42,24 +43,21 @@ public class MakeDataServlet extends HttpServlet {
 		Edition first = editions.get(0);
 		Reader mg = makeEditor(first, "Megan Garber", "megangarber");
 		Reader jy = makeEditor(first, "Josh Young", "jny2");
-		Reader so = makeEditor(first, "Steve Outing", "steveouting");
-		
+		Reader so = makeEditor(first, "Steve Outing", "steveouting");	
 	}
 
-	public static Reader makeReader(Edition e, String name, String username) {
-		Reader r = new Reader(e, name, username);
-		DAO.instance.ofy().put(r);
-		Reader.VotesIndex vi = new Reader.VotesIndex(r);
-		DAO.instance.ofy().put(vi);
-		Reader.JudgesIndex ji = new Reader.JudgesIndex(r);
-		DAO.instance.ofy().put(ji);
-		return r;
-	}
 
-	// TODO think about transactions here
 	public static Reader makeEditor(Edition e, String name, String username) {
-		Reader r = makeReader(e, name, username);
-		DAO.instance.follow(r, r);
+		Objectify txn = DAO.instance.fact().beginTransaction();
+		Reader r = new Reader(e, name, username);
+		txn.put(r);
+		Reader.VotesIndex vi = new Reader.VotesIndex(r);
+		txn.put(vi);
+		Reader.JudgesIndex ji = new Reader.JudgesIndex(r);
+		// editors follow themselves
+		ji.follow(r);
+		txn.put(ji);
+		txn.getTxn().commit();
 		return r;
 	}
 

@@ -67,19 +67,25 @@ public class DAO extends DAOBase
 	}
 
 	public void follow(Reader from, Reader to) {
-		if (isFollowing(from, to)) {
+		Objectify o = instance.fact().beginTransaction();
+
+		if (isFollowing(from, to, o)) {
 			throw new IllegalArgumentException("Already Following");
 		}
-		Objectify o = fact().beginTransaction();
+		
 		JudgesIndex i = o.query(JudgesIndex.class).ancestor(from).get();
 		i.follow(to);
 		o.put(i);
-		o.getTxn().commit();		
+		
+		o.getTxn().commit();
 	}
     
 
-	public boolean isFollowing(Reader from, Reader to) {
-		Query<JudgesIndex> q = ofy().query(JudgesIndex.class).ancestor(from).filter("judges =", to.getKey());
+	public boolean isFollowing(Reader from, Reader to, Objectify o) {
+		if (o == null)
+			o = instance.ofy();		
+
+		Query<JudgesIndex> q = o.query(JudgesIndex.class).ancestor(from).filter("judges =", to.getKey());
 		int count = q.countAll();
 		assert(count <= 1);
 		return count == 1;
@@ -151,7 +157,7 @@ public class DAO extends DAOBase
 		p.setEditions(editions);
 		
 		// initialize current edition
-		Edition current = get(p.getCurrentEditionKey());
+		Edition current = getEdition(p.getCurrentEditionKey());
 		p.setcurrentEditionKey(current.getKey());
 		p.setCurrentEdition(current);
 
@@ -177,6 +183,18 @@ public class DAO extends DAOBase
 	}
 
 
+	private Edition getEdition(Key<Edition> key) {
+		Edition e = ofy().find(key);
+		fillRefs(e);
+		return e;
+	}
+
+	void fillRefs(Edition e) {
+		LinkedList<Reader> readers = findReadersByEdition(e);
+		e.setReaders(readers);
+	}
+	
+	
 	private ArrayList<Edition> findEditionsByPeriodical(Periodical p) {
 		ArrayList<Edition> editions = new ArrayList<Edition>();
 		Query<EditionsIndex> q = ofy().query(EditionsIndex.class).ancestor(p);
@@ -191,8 +209,7 @@ public class DAO extends DAOBase
 			throw new AssertionError(); // not reached
 		
 		for (Edition e : editions) {
-			LinkedList<Reader> readers = findReadersByEdition(e);
-			e.setReaders(readers);
+			fillRefs(e);
 		}
 		
 		return editions;
