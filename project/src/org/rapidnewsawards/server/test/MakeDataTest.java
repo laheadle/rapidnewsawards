@@ -7,7 +7,7 @@ import org.junit.Test;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
 import org.rapidnewsawards.shared.Edition;
-import org.rapidnewsawards.shared.Reader;
+import org.rapidnewsawards.shared.User;
 
 public class MakeDataTest extends RNATest {
 
@@ -21,7 +21,7 @@ public class MakeDataTest extends RNATest {
 		assertEquals(first.getKey(), editions.get(0).getKey());
 
 		// make reader
-		Reader r = new Reader(first, "Megan Garber", "megangarber");
+		User r = new User(first, "Megan Garber", "megangarber");
 		assertNotNull(r.parent);
 		assertEquals(r.parent, first.getKey());
 		assertNull(r.id);
@@ -29,17 +29,14 @@ public class MakeDataTest extends RNATest {
 		assertNotNull(r.getKey());
 		assertNotNull(r.getKey().getParent());
 
-		Reader.VotesIndex vi = new Reader.VotesIndex(r);
+		User.VotesIndex vi = new User.VotesIndex(r);
 		DAO.instance.ofy().put(vi);
-		Reader.JudgesIndex ji = new Reader.JudgesIndex(r);
+		User.JudgesIndex ji = new User.JudgesIndex(r);
 		DAO.instance.ofy().put(ji);
 
-		//Reader r2 = MakeDataServlet.makeReader(first, "Megan Garber", "megangarber");
-		//assertNotNull(r2.getKey().getParent());
-
-		LinkedList<Reader> readers = DAO.instance.findReadersByEdition(first);
-		assertEquals(readers.size(), 1);
-		assertEquals("megangarber", readers.get(0).getUsername());
+		LinkedList<User> users = DAO.instance.findUsersByEdition(first);
+		assertEquals(users.size(), 1);
+		assertEquals("megangarber", users.get(0).getUsername());
 	}
 
 

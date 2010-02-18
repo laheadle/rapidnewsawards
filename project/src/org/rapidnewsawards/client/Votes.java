@@ -2,7 +2,7 @@ package org.rapidnewsawards.client;
 
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Link;
-import org.rapidnewsawards.shared.Reader;
+import org.rapidnewsawards.shared.User;
 
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.HasVerticalAlignment;
@@ -35,7 +35,7 @@ public class Votes extends Composite {
 		assert(e != null);
 		vPanel.clear();
 		
-		for (Reader r : e.getReaders()) {
+		for (User r : e.getUsers()) {
 			for (Link v : r.getVotes()) {
 				Record rec = new Record(new VoteRecord(r.getName(), v.getUrl()));
 				vPanel.add(rec);

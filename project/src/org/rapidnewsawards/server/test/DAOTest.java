@@ -14,7 +14,7 @@ import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Link;
-import org.rapidnewsawards.shared.Reader;
+import org.rapidnewsawards.shared.User;
 
 
 import com.google.appengine.api.datastore.EntityNotFoundException;
@@ -34,20 +34,20 @@ public class DAOTest extends RNATest {
 	public void testEditions() {
 		Edition e = DAO.instance.getCurrentEdition("Journalism");
 		assertNotNull(e);
-		LinkedList<Reader> readers = DAO.instance.findReadersByEdition(e);
-		assertEquals(readers.size(), 3);
-		assertNotNull(e.getReaders());
-		assertEquals(true, e.getReaders().size() > 0);
-		assertEquals(true, e.getReaders().size() == readers.size());
+		LinkedList<User> users = DAO.instance.findUsersByEdition(e);
+		assertEquals(users.size(), 3);
+		assertNotNull(e.getUsers());
+		assertEquals(true, e.getUsers().size() > 0);
+		assertEquals(true, e.getUsers().size() == users.size());
 	}
 	
 	// TODO disallow voting in expired editions
 	
 
 	@Test
-	public void testFindReaderByUsername () {
+	public void testFindUserByUsername () {
 		try {
-			Reader mg = DAO.instance.findReaderByUsername("megangarber");
+			User mg = DAO.instance.findUserByUsername("megangarber");
 			assertNotNull(mg);
 			assertEquals(mg.getUsername(), "megangarber");
 		} catch (EntityNotFoundException e) {
@@ -59,7 +59,7 @@ public class DAOTest extends RNATest {
 	@Test
 	public void testVote() {
 		try {
-			Reader mg = DAO.instance.findReaderByUsername("megangarber");
+			User mg = DAO.instance.findUserByUsername("megangarber");
 			Link l = DAO.instance.findOrCreateLinkByURL("http://example.com");
 			Link l3 = DAO.instance.findOrCreateLinkByURL("http://example2.com");
 			DAO.instance.voteFor(mg, l);
@@ -77,8 +77,8 @@ public class DAOTest extends RNATest {
 	@Test
 	public void testFollow() {
 		try {
-			Reader mg = DAO.instance.findReaderByUsername("megangarber");
-			Reader jny2 = DAO.instance.findReaderByUsername("jny2");
+			User mg = DAO.instance.findUserByUsername("megangarber");
+			User jny2 = DAO.instance.findUserByUsername("jny2");
 			DAO.instance.follow(mg, jny2);
 			assertTrue(DAO.instance.isFollowing(mg, jny2, null));
 		} catch (EntityNotFoundException e) {

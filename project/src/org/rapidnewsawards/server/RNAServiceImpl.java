@@ -8,7 +8,7 @@ import java.util.logging.Logger;
 import org.rapidnewsawards.client.RNAService;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Periodical;
-import org.rapidnewsawards.shared.Reader;
+import org.rapidnewsawards.shared.User;
 
 /**
  * The server side implementation of the RPC service.

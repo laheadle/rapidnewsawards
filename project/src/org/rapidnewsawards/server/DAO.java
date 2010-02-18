@@ -7,10 +7,10 @@ import java.util.logging.Logger;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.Periodical;
-import org.rapidnewsawards.shared.Reader;
+import org.rapidnewsawards.shared.User;
 import org.rapidnewsawards.shared.Periodical.EditionsIndex;
-import org.rapidnewsawards.shared.Reader.JudgesIndex;
-import org.rapidnewsawards.shared.Reader.VotesIndex;
+import org.rapidnewsawards.shared.User.JudgesIndex;
+import org.rapidnewsawards.shared.User.VotesIndex;
 
 
 import com.google.appengine.api.datastore.EntityNotFoundException;
@@ -24,7 +24,7 @@ import com.googlecode.objectify.helper.DAOBase;
 public class DAO extends DAOBase
 {
     static {
-        ObjectifyService.factory().register(Reader.class);
+        ObjectifyService.factory().register(User.class);
         ObjectifyService.factory().register(VotesIndex.class);
         ObjectifyService.factory().register(EditionsIndex.class);
         ObjectifyService.factory().register(JudgesIndex.class);
@@ -41,8 +41,8 @@ public class DAO extends DAOBase
     	return ofy().get(key);
     }
     
-    public Reader findReaderByUsername(String username) throws EntityNotFoundException {
-    	Reader r = findByFieldName(Reader.class, "username", username);
+    public User findUserByUsername(String username) throws EntityNotFoundException {
+    	User r = findByFieldName(User.class, "username", username);
 
     	if (r == null)
     		return null;
@@ -51,12 +51,12 @@ public class DAO extends DAOBase
     	return r;
 	}
     
-	private void fillRefs(Reader r) {
-		LinkedList<Link> votes = findVotesByReader(r);
+	private void fillRefs(User r) {
+		LinkedList<Link> votes = findVotesByUser(r);
 		r.setVotes(votes);		
 	}
 
-	public LinkedList<Link> findVotesByReader(Reader r) {
+	public LinkedList<Link> findVotesByUser(User r) {
 		Objectify o = ofy();
 		VotesIndex i = ofy().query(VotesIndex.class).ancestor(r).get();
 		if (i.votes == null)
@@ -66,7 +66,7 @@ public class DAO extends DAOBase
 		throw new AssertionError(); // not reached
 	}
 
-	public void follow(Reader from, Reader to) {
+	public void follow(User from, User to) {
 		Objectify o = instance.fact().beginTransaction();
 
 		if (isFollowing(from, to, o)) {
@@ -81,7 +81,7 @@ public class DAO extends DAOBase
 	}
     
 
-	public boolean isFollowing(Reader from, Reader to, Objectify o) {
+	public boolean isFollowing(User from, User to, Objectify o) {
 		if (o == null)
 			o = instance.ofy();		
 
@@ -93,13 +93,13 @@ public class DAO extends DAOBase
 	
 
 	/**
-	 * Store a new vote in the DB by a reader for a link
+	 * Store a new vote in the DB by a user for a link
 	 * 
-	 * @param r the reader voting
+	 * @param r the user voting
 	 * @param l the link voted for
 	 * @throws IllegalArgumentException
 	 */
-	public void voteFor(Reader r, Link l) throws IllegalArgumentException {
+	public void voteFor(User r, Link l) throws IllegalArgumentException {
 		if (hasVoted(r, l)) {
 			throw new IllegalArgumentException("Already Voted");
 		}
@@ -116,7 +116,7 @@ public class DAO extends DAOBase
 	}
 */
 
-    public boolean hasVoted(Reader r, Link l) {
+    public boolean hasVoted(User r, Link l) {
 		Query<VotesIndex> q = ofy().query(VotesIndex.class).ancestor(r).filter("votes =", l.getKey());
 		int count = q.countAll();
 		assert(count <= 1);
@@ -190,8 +190,8 @@ public class DAO extends DAOBase
 	}
 
 	void fillRefs(Edition e) {
-		LinkedList<Reader> readers = findReadersByEdition(e);
-		e.setReaders(readers);
+		LinkedList<User> users = findUsersByEdition(e);
+		e.setUsers(users);
 	}
 	
 	
@@ -215,12 +215,12 @@ public class DAO extends DAOBase
 		return editions;
 	}
 
-	public LinkedList<Reader> findReadersByEdition(Edition e) {
-		LinkedList<Reader> readers = new LinkedList<Reader>();
-		for (Reader r : ofy().query(Reader.class).ancestor(e.getKey())) {
-			readers.add(r);
+	public LinkedList<User> findUsersByEdition(Edition e) {
+		LinkedList<User> users = new LinkedList<User>();
+		for (User r : ofy().query(User.class).ancestor(e.getKey())) {
+			users.add(r);
 		}
-		return readers;
+		return users;
 	}
 
 	public Edition getCurrentEdition(String periodicalName) {

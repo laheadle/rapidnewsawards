@@ -13,9 +13,9 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Periodical;
-import org.rapidnewsawards.shared.Reader;
+import org.rapidnewsawards.shared.User;
 import org.rapidnewsawards.shared.Periodical.EditionsIndex;
-import org.rapidnewsawards.shared.Reader.JudgesIndex;
+import org.rapidnewsawards.shared.User.JudgesIndex;
 
 
 import com.googlecode.objectify.Objectify;
@@ -25,7 +25,7 @@ public class MakeDataServlet extends HttpServlet {
 	throws ServletException, IOException {
 		PrintWriter out = response.getWriter();
 		makeData(10, FIVE_MINUTES);
-		out.println("created 3 readers");
+		out.println("created 3 users");
 		out.println("created 10 editions");
 	}
 
@@ -41,19 +41,19 @@ public class MakeDataServlet extends HttpServlet {
 		ArrayList<Edition> editions = makeEditions(editionCount, periodSize);
 
 		Edition first = editions.get(0);
-		Reader mg = makeEditor(first, "Megan Garber", "megangarber");
-		Reader jy = makeEditor(first, "Josh Young", "jny2");
-		Reader so = makeEditor(first, "Steve Outing", "steveouting");	
+		User mg = makeEditor(first, "Megan Garber", "megangarber");
+		User jy = makeEditor(first, "Josh Young", "jny2");
+		User so = makeEditor(first, "Steve Outing", "steveouting");	
 	}
 
 
-	public static Reader makeEditor(Edition e, String name, String username) {
+	public static User makeEditor(Edition e, String name, String username) {
 		Objectify txn = DAO.instance.fact().beginTransaction();
-		Reader r = new Reader(e, name, username);
+		User r = new User(e, name, username);
 		txn.put(r);
-		Reader.VotesIndex vi = new Reader.VotesIndex(r);
+		User.VotesIndex vi = new User.VotesIndex(r);
 		txn.put(vi);
-		Reader.JudgesIndex ji = new Reader.JudgesIndex(r);
+		User.JudgesIndex ji = new User.JudgesIndex(r);
 		// editors follow themselves
 		ji.follow(r);
 		txn.put(ji);

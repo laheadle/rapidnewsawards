@@ -10,7 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.shared.Link;
-import org.rapidnewsawards.shared.Reader;
+import org.rapidnewsawards.shared.User;
 
 import com.google.appengine.api.datastore.EntityNotFoundException;
 
@@ -21,10 +21,10 @@ public class VoteServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
 		PrintWriter out = response.getWriter();
-		Reader r = null;
+		User r = null;
 
 		try {
-			r = DAO.instance.findReaderByUsername(request.getParameter("username"));
+			r = DAO.instance.findUserByUsername(request.getParameter("username"));
 			if (r == null) {
 				out.println("No such voter");
 				return;

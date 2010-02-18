@@ -13,7 +13,7 @@ import com.googlecode.objectify.Key;
 public class Edition implements IsSerializable {
 
 	@Transient
-	private LinkedList<Reader> readers;
+	private LinkedList<User> users;
 	
 	@Id
 	Long id;
@@ -30,12 +30,12 @@ public class Edition implements IsSerializable {
 		this.number = number;
 	}
 
-	public LinkedList<Reader> getReaders() {
-		return readers;
+	public LinkedList<User> getUsers() {
+		return users;
 	}
 	
-	public void setReaders(LinkedList<Reader> readers) {
-		this.readers = readers;
+	public void setUsers(LinkedList<User> users) {
+		this.users = users;
 	}
 	
 	@Override
@@ -46,8 +46,8 @@ public class Edition implements IsSerializable {
 		return id.equals(((Edition) e).id);
 	}
 	
-	public void addReader(Reader r) {
-		readers.add(r);
+	public void addUser(User r) {
+		users.add(r);
 	}
 
 	public Date getEnd() {

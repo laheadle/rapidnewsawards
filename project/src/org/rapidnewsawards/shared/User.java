@@ -11,7 +11,7 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Parent;
 
 @Entity
-public class Reader implements IsSerializable {
+public class User implements IsSerializable {
 
     @Parent 
     public Key<Edition> parent; 
@@ -29,23 +29,23 @@ public class Reader implements IsSerializable {
 	@Entity
 	public static class JudgesIndex {
 	    @Id Long id; 
-	    @Parent Key<Reader> parent; 
-	    public LinkedList<Key<Reader>> judges;
+	    @Parent Key<User> parent; 
+	    public LinkedList<Key<User>> judges;
 
 	    public JudgesIndex() {}
 
-		public JudgesIndex(Reader parent) {
+		public JudgesIndex(User parent) {
 	    	this.parent = parent.getKey();
 		}
 
-	    public void follow(Reader j) {
+	    public void follow(User j) {
 	    	ensureState();
 	    	judges.add(j.getKey());
 	    }
 
 	    public void ensureState() {
 	    	if (judges == null)
-	    		judges = new LinkedList<Key<Reader>>();	    	
+	    		judges = new LinkedList<Key<User>>();	    	
 	    }
 	    
 	}
@@ -53,7 +53,7 @@ public class Reader implements IsSerializable {
 	@Entity
 	public static class VotesIndex {
 	    @Id Long id; 
-	    @Parent Key<Reader> parent; 
+	    @Parent Key<User> parent; 
 	    public LinkedList<Key<Link>> votes;
 	    
 	    public void voteFor(Link l) {
@@ -61,12 +61,12 @@ public class Reader implements IsSerializable {
 	    	votes.add(l.getKey());
 	    }
 	    
-	    public VotesIndex(Reader parent, LinkedList<Key<Link>> votes) {
+	    public VotesIndex(User parent, LinkedList<Key<Link>> votes) {
 	    	this.parent = parent.getKey();
 	    	this.votes = votes;
 	    }
 
-	    public VotesIndex(Reader parent) {
+	    public VotesIndex(User parent) {
 	    	this(parent, null);
 	    }
 
@@ -79,16 +79,16 @@ public class Reader implements IsSerializable {
 
 	}
 
-	public Reader() {}
+	public User() {}
 	
-	public Reader(Edition e, String name, String username, LinkedList<Link> votes) {
+	public User(Edition e, String name, String username, LinkedList<Link> votes) {
 		this.parent = e.getKey();
 		this.name = name;
 		this.username = username;
 		this.votes = votes;
 	}
 
-	public Reader(Edition e, String name, String username) {
+	public User(Edition e, String name, String username) {
 		this(e, name, username, new LinkedList<Link>());
 	}	
 
@@ -108,8 +108,8 @@ public class Reader implements IsSerializable {
 		this.username = username;
 	}
 
-	public Key<Reader> getKey() {
-		return new Key<Reader>(this.parent, Reader.class, id);
+	public Key<User> getKey() {
+		return new Key<User>(this.parent, User.class, id);
 	}
 
 	public LinkedList<Link> getVotes() {
