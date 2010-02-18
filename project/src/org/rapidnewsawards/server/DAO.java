@@ -192,6 +192,7 @@ public class DAO extends DAOBase
 	void fillRefs(Edition e) {
 		LinkedList<User> users = findUsersByEdition(e);
 		e.setUsers(users);
+		e.ensureState();
 	}
 	
 	

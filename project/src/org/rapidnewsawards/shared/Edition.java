@@ -22,14 +22,26 @@ public class Edition implements IsSerializable {
 
 	private int number;
 
-	public Edition() {}
+	@Transient
+	private Perishable expiry;
+
+	public Edition() {
+	}
 
 	public Edition(Date end, int number) {
 		this();
 		this.end = end;
+		expiry = new Calendar(end);
 		this.number = number;
 	}
 
+	public void ensureState() {
+		if (this.end == null)
+			return;
+		if (this.expiry == null)
+			expiry = new Calendar(end);
+	}
+	
 	public LinkedList<User> getUsers() {
 		return users;
 	}
@@ -59,7 +71,7 @@ public class Edition implements IsSerializable {
 	}
 
 	public boolean isExpired() {
-		return this.end.before(new Date());
+		return this.expiry.isExpired();
 	}
 
 	public int getNumber() {
