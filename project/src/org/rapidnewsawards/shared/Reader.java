@@ -79,9 +79,7 @@ public class Reader implements IsSerializable {
 
 	}
 
-	public Reader() {
-		this.votes = new LinkedList<Link>();
-	}
+	public Reader() {}
 	
 	public Reader(Edition e, String name, String username, LinkedList<Link> votes) {
 		this.parent = e.getKey();

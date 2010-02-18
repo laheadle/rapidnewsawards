@@ -48,9 +48,7 @@ public class Periodical {
 		this.name = name;
 	}
 	
-	public Periodical() {
-		editions = new ArrayList<Edition>();
-	}	
+	public Periodical() {}	
 	
 
 	public String getName() {

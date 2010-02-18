@@ -22,9 +22,7 @@ public class Edition implements IsSerializable {
 
 	private int number;
 
-	public Edition() {
-		readers = new LinkedList<Reader>();
-	}
+	public Edition() {}
 
 	public Edition(Date end, int number) {
 		this();

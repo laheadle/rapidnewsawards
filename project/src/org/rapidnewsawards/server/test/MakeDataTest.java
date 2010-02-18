@@ -12,7 +12,7 @@ import org.rapidnewsawards.shared.Reader;
 public class MakeDataTest extends RNATest {
 
 	@Test
-	public void testMakeData() {
+	public void testMakeEditions() {
 		// make editions
 		ArrayList<Edition> editions = MakeDataServlet.makeEditions(2, 60 * 60 * MakeDataServlet.ONE_SECOND);
 		assertEquals(editions.size(), 2);
