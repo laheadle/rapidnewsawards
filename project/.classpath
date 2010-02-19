@@ -12,5 +12,18 @@
 			<attribute name="javadoc_location" value="file:/C:/Users/Administrator/Desktop/code/objectify-2.0rc1/javadoc/"/>
 		</attributes>
 	</classpathentry>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/guice-2.0.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/C:/Users/Administrator/Desktop/code/guice-2.0/javadoc/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/aopalliance.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/guice-servlet-2.0.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/guice-jndi-2.0.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/C:/Users/Administrator/Desktop/code/guice-2.0/javadoc/"/>
+		</attributes>
+	</classpathentry>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/guice-assistedinject-2.0.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

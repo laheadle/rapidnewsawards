@@ -36,11 +36,7 @@ public class DAO extends DAOBase
 
     public static DAO instance = new DAO();
 	private static final Logger log = Logger.getLogger(DAO.class.getName());
-    
-    public <T> T get(Key<T> key) throws EntityNotFoundException {
-    	return ofy().get(key);
-    }
-    
+        
     public User findUserByUsername(String username) throws EntityNotFoundException {
     	User r = findByFieldName(User.class, "username", username);
 
@@ -173,7 +169,7 @@ public class DAO extends DAOBase
 				p.setcurrentEditionKey(current.getKey());
 				p.setCurrentEdition(current);
 				o.put(p);
-				assert(get(p.getCurrentEditionKey()).equals(current));    	
+				assert(ofy().get(p.getCurrentEditionKey()).equals(current));    	
 			}
 		}
 		catch (IndexOutOfBoundsException e) {

@@ -2,11 +2,15 @@ package org.rapidnewsawards.shared;
 
 import java.util.Date;
 
+import com.google.inject.Inject;
+import com.google.inject.assistedinject.Assisted;
+
 public class Calendar implements Perishable {
 	
-	private Date end;
+	private final Date end;
 
-	public Calendar(Date end) {
+	@Inject
+	public Calendar(@Assisted Date end) {
 		this.end = end;
 	}
 	

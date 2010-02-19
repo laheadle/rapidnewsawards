@@ -3,6 +3,8 @@
  */
 package org.rapidnewsawards.shared;
 
+import java.util.Date;
+
 /**
  * @author Lyn Headley
  *

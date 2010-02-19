@@ -25,13 +25,12 @@ public class Edition implements IsSerializable {
 	@Transient
 	private Perishable expiry;
 	
-	public Edition() {
-	}
+	public Edition() {}
 
 	public Edition(Date end, int number) {
 		this();
 		this.end = end;
-		expiry = new Calendar(end);
+		expiry = Config.injector.getInstance(PerishableFactory.class).create(end);
 		this.number = number;
 	}
 
@@ -39,7 +38,7 @@ public class Edition implements IsSerializable {
 		if (this.end == null)
 			return;
 		if (this.expiry == null)
-			expiry = new Calendar(end);
+			expiry = Config.injector.getInstance(PerishableFactory.class).create(end);
 	}
 	
 	public LinkedList<User> getUsers() {
