@@ -58,7 +58,7 @@ public class DAO extends DAOBase
 
 	public LinkedList<Link> findVotesByUser(User r) {
 		Objectify o = ofy();
-		VotesIndex i = ofy().query(VotesIndex.class).ancestor(r).get();
+		VotesIndex i = o.query(VotesIndex.class).ancestor(r).get();
 		if (i.votes == null)
 			return new LinkedList<Link>();
 		if (i.votes.size() > 0)
@@ -100,15 +100,16 @@ public class DAO extends DAOBase
 	 * @throws IllegalArgumentException
 	 */
 	public void voteFor(User r, Link l) throws IllegalArgumentException {
+
 		if (hasVoted(r, l)) {
 			throw new IllegalArgumentException("Already Voted");
 		}
-		Query<VotesIndex> q = ofy().query(VotesIndex.class).ancestor(r);
-		Objectify o = fact().beginTransaction();
-		VotesIndex i = q.get();
+
+		Objectify oTxn = fact().beginTransaction();
+		VotesIndex i = oTxn.query(VotesIndex.class).ancestor(r).get();
 		i.voteFor(l);
-		o.put(i);
-		o.getTxn().commit();
+		oTxn.put(i);
+		oTxn.getTxn().commit();
 	}
 	
 /*	public <T> Key<T> getKey(Class<T> clazz, T) {
@@ -117,35 +118,38 @@ public class DAO extends DAOBase
 */
 
     public boolean hasVoted(User r, Link l) {
-		Query<VotesIndex> q = ofy().query(VotesIndex.class).ancestor(r).filter("votes =", l.getKey());
-		int count = q.countAll();
-		assert(count <= 1);
+    	Objectify o = ofy();
+    	int count =  o.query(VotesIndex.class).ancestor(r).filter("votes =", l).countAll();
+    	assert(count <= 1);
 		return count == 1;
 	}
 
 	// clients should call convenience methods above
     private <T> T findByFieldName(Class<T> clazz, String fieldName, Object value) {
-    	Query<T> q = ofy().query(clazz).filter(fieldName, value);
-    	return q.get();
+    	return ofy().query(clazz).filter(fieldName, value).get();
     }
 
     private <T> T findBy2FieldNames(Class<T> clazz, String fieldName, Object value, String fieldName2, Object value2) {
-    	Query<T> q = ofy().query(clazz).filter(fieldName, value).filter(fieldName2, value2);
-    	return q.get();    	
+    	return ofy().query(clazz).filter(fieldName, value).filter(fieldName2, value2).get();    	
     }
 
+    // TODO this is not transactional - could result in duplicates; need parent
 	public Link findOrCreateLinkByURL(String url) {
+		Objectify o = ofy();
+		
     	Link l = findByFieldName(Link.class, "url", url);
     	if (l != null)
     		return l;		
     	else {
     		l = new Link(url);
-    		ofy().put(l);
+    		o.put(l);
     		return l;
     	}
 	}
 
+	// TODO convert this to use transactions
 	public Periodical findPeriodicalByName(String name) throws EntityNotFoundException {
+		Objectify o = ofy();
 		final Periodical p = findByFieldName(Periodical.class, "name", name);
 
 		if (p == null)
@@ -168,7 +172,7 @@ public class DAO extends DAOBase
 				current = editions.get(i + 1);
 				p.setcurrentEditionKey(current.getKey());
 				p.setCurrentEdition(current);
-				ofy().put(p);
+				o.put(p);
 				assert(get(p.getCurrentEditionKey()).equals(current));    	
 			}
 		}
@@ -184,7 +188,14 @@ public class DAO extends DAOBase
 
 
 	private Edition getEdition(Key<Edition> key) {
-		Edition e = ofy().find(key);
+		Objectify o = ofy();
+		Edition e = o.find(key);
+
+		if (e == null) {
+			log.warning("GetEdition: No edition");
+			return null;
+		}
+
 		fillRefs(e);
 		return e;
 	}
@@ -198,14 +209,22 @@ public class DAO extends DAOBase
 	
 	private ArrayList<Edition> findEditionsByPeriodical(Periodical p) {
 		ArrayList<Edition> editions = new ArrayList<Edition>();
-		Query<EditionsIndex> q = ofy().query(EditionsIndex.class).ancestor(p);
-		EditionsIndex i = q.get();
+		Objectify o = ofy();
+		
+		EditionsIndex i = o.query(EditionsIndex.class).ancestor(p).get();
+
+		if (i == null) {
+			log.warning("PERIODICAL: No editions index");
+			return editions;
+		}
+		
 		if (i.editions == null) {
 			log.warning("PERIODICAL: No editions");
 			return editions;
 		}
+
 		if (i.editions.size() > 0)
-			editions = new ArrayList<Edition>(ofy().get(i.editions).values());
+			editions = new ArrayList<Edition>(o.get(i.editions).values());
 		else
 			throw new AssertionError(); // not reached
 		
@@ -218,9 +237,15 @@ public class DAO extends DAOBase
 
 	public LinkedList<User> findUsersByEdition(Edition e) {
 		LinkedList<User> users = new LinkedList<User>();
-		for (User r : ofy().query(User.class).ancestor(e.getKey())) {
+		Objectify o = ofy();
+		
+		for (User r : o.query(User.class).ancestor(e.getKey())) {
 			users.add(r);
 		}
+
+		if (users.size() == 0)
+			log.warning(e + ": No users");
+		
 		return users;
 	}
 

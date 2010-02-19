@@ -24,7 +24,7 @@ public class Edition implements IsSerializable {
 
 	@Transient
 	private Perishable expiry;
-
+	
 	public Edition() {
 	}
 
@@ -58,6 +58,11 @@ public class Edition implements IsSerializable {
 		return id.equals(((Edition) e).id);
 	}
 	
+	@Override
+	public String toString() {
+		return "Edition #" + number + "(" + end.toString() + ")";
+	}
+
 	public void addUser(User r) {
 		users.add(r);
 	}
