@@ -40,8 +40,10 @@ public class CalendarTest extends RNATest {
 				public Perishable create(Date end) {
 					Perishable mockP = createMock(Perishable.class);
 					// Only test those editions created by Objectify
+					// not the ones created by makeData
 					if (currentEdition > totalEditions) {
 						if (currentEdition < totalEditions * 2)
+							// called by findPeriodicalByName
 							expect(mockP.isExpired()).andReturn(true);
 						else {
 							// this is the last edition, and it is current
