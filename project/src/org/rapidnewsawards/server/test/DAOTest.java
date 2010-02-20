@@ -1,13 +1,7 @@
 package org.rapidnewsawards.server.test;
 
-import static org.junit.Assert.*;
-
-import java.io.File;
 import java.util.LinkedList;
 
-import junit.framework.TestCase;
-
-import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 import org.rapidnewsawards.server.DAO;
@@ -16,11 +10,8 @@ import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.User;
 
-
 import com.google.appengine.api.datastore.EntityNotFoundException;
-import com.google.appengine.api.datastore.dev.LocalDatastoreService;
-import com.google.appengine.tools.development.ApiProxyLocalImpl;
-import com.google.apphosting.api.ApiProxy;
+import com.google.inject.Guice;
 
 public class DAOTest extends RNATest {
 

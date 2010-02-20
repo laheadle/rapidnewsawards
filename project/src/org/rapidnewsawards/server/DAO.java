@@ -157,10 +157,21 @@ public class DAO extends DAOBase
 		p.setEditions(editions);
 		
 		// initialize current edition
-		Edition current = getEdition(p.getCurrentEditionKey());
-		p.setcurrentEditionKey(current.getKey());
-		p.setCurrentEdition(current);
+		Edition current = null;
+		for (Edition e : editions) {
+			if (e.getKey().equals(p.getCurrentEditionKey())) {
+				current = e;
+				p.setcurrentEditionKey(current.getKey());
+				p.setCurrentEdition(current);
+				break;
+			}
+		}
 
+		if (current == null) {
+			log.severe("no edition matching" + p.getCurrentEditionKey());
+			return null;			
+		}
+		
 		try { 
 			while (current.isExpired()) {
 				// set current to the next edition after current
@@ -174,6 +185,7 @@ public class DAO extends DAOBase
 		}
 		catch (IndexOutOfBoundsException e) {
 			// periodical has ended
+			// TODO should this put a periodical with no current edition?
 			p.setcurrentEditionKey(null);
 			p.setCurrentEdition(null);
 		}
