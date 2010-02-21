@@ -37,6 +37,7 @@ public class DAO extends DAOBase
     public static DAO instance = new DAO();
 	private static final Logger log = Logger.getLogger(DAO.class.getName());
         
+	// TODO needs to be parameterized by edition
     public User findUserByUsername(String username) throws EntityNotFoundException {
     	User r = findByFieldName(User.class, "username", username);
 
@@ -143,6 +144,34 @@ public class DAO extends DAOBase
     	}
 	}
 
+	public  Iterable<JudgesIndex> findJudgesIndicesByUser(User u, Objectify o) {
+		return o.query(JudgesIndex.class).ancestor(u).fetch();
+	}
+
+
+	private class TransitionEdition {
+		private Edition from;
+
+		public TransitionEdition(Edition from) {
+			this.from = from;
+		}
+		
+		public void to (Edition to, Objectify o) {
+			final LinkedList<User> users = from.getUsers();
+			to.setUsers(users);
+			for(User u : users) {
+				final Iterable<JudgesIndex> judgesIndices = findJudgesIndicesByUser(u, o);
+				u.parent = to.getKey();
+				o.put(u);
+				for (User.JudgesIndex ji : judgesIndices) {
+					ji.parent = u.getKey();
+					o.put(ji);
+				}
+				o.put(new User.VotesIndex(u));
+			}
+		}
+	}
+	
 	// TODO convert this to use transactions
 	public Periodical findPeriodicalByName(String name) throws EntityNotFoundException {
 		Objectify o = ofy();
@@ -163,6 +192,7 @@ public class DAO extends DAOBase
 				current = e;
 				p.setcurrentEditionKey(current.getKey());
 				p.setCurrentEdition(current);
+				fillRefs(current);
 				break;
 			}
 		}
@@ -176,7 +206,9 @@ public class DAO extends DAOBase
 			while (current.isExpired()) {
 				// set current to the next edition after current
 				int i = editions.indexOf(current);
-				current = editions.get(i + 1);
+				Edition next = editions.get(i + 1);
+				new TransitionEdition(current).to(next, o);
+				current = next;
 				p.setcurrentEditionKey(current.getKey());
 				p.setCurrentEdition(current);
 				o.put(p);
@@ -185,7 +217,7 @@ public class DAO extends DAOBase
 		}
 		catch (IndexOutOfBoundsException e) {
 			// periodical has ended
-			// TODO should this put a periodical with no current edition?
+			// TODO should this put a periodical with null current edition?
 			p.setcurrentEditionKey(null);
 			p.setCurrentEdition(null);
 		}
@@ -194,27 +226,12 @@ public class DAO extends DAOBase
 		return p;
 	}
 
-
-	private Edition getEdition(Key<Edition> key) {
-		Objectify o = ofy();
-		Edition e = o.find(key);
-
-		if (e == null) {
-			log.warning("GetEdition: No edition");
-			return null;
-		}
-
-		fillRefs(e);
-		return e;
-	}
-
 	void fillRefs(Edition e) {
 		LinkedList<User> users = findUsersByEdition(e);
 		e.setUsers(users);
-		e.ensureState();
-	}
-	
-	
+	}	
+
+	// does not fill in refs for editions found!
 	private ArrayList<Edition> findEditionsByPeriodical(Periodical p) {
 		ArrayList<Edition> editions = new ArrayList<Edition>();
 		Objectify o = ofy();
@@ -235,10 +252,9 @@ public class DAO extends DAOBase
 			editions = new ArrayList<Edition>(o.get(i.editions).values());
 		else
 			throw new AssertionError(); // not reached
-		
-		for (Edition e : editions) {
-			fillRefs(e);
-		}
+				
+		for (Edition e : editions)
+			e.ensureState();
 		
 		return editions;
 	}

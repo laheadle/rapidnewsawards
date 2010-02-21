@@ -26,8 +26,12 @@ public class CalendarTest extends RNATest {
 
 	public static ArrayList<Perishable> mockPs = new ArrayList<Perishable>();
 	static int currentEdition = 1;
-	static int totalEditions = 2;
-
+	static int numEditions = 2;
+	
+	// the first half are created by makeData
+	// the second half are created by objectify queries
+	static int numEditionsInstantiated = numEditions * 2;
+	
 	public static class RNAModule extends AbstractModule {
 		@Override 
 		protected void configure() {}
@@ -41,8 +45,8 @@ public class CalendarTest extends RNATest {
 					Perishable mockP = createMock(Perishable.class);
 					// Only test those editions created by Objectify
 					// not the ones created by makeData
-					if (currentEdition > totalEditions) {
-						if (currentEdition < totalEditions * 2)
+					if (currentEdition > numEditions) {
+						if (currentEdition < numEditionsInstantiated)
 							// called by findPeriodicalByName
 							expect(mockP.isExpired()).andReturn(true);
 						else {
@@ -67,7 +71,7 @@ public class CalendarTest extends RNATest {
 	public void setUp() throws Exception {
 		super.setUp();
 		org.rapidnewsawards.shared.Config.injector = Guice.createInjector(new RNAModule());
-		MakeDataServlet.makeData(totalEditions, 60 * MakeDataServlet.ONE_SECOND);
+		MakeDataServlet.makeData(numEditions, 60 * MakeDataServlet.ONE_SECOND);
 	}
 
 	@Test
@@ -77,9 +81,9 @@ public class CalendarTest extends RNATest {
 			verify(p);
 		assertNotNull(e);
 		LinkedList<User> users = DAO.instance.findUsersByEdition(e);
-		assertEquals(users.size(), 0);
+		assertEquals(users.size(), 3);
 		assertNotNull(e.getUsers());
-		assertEquals(true, e.getUsers().size() == 0);
+		assertEquals(true, e.getUsers().size() == 3);
 		assertEquals(true, e.getUsers().size() == users.size());
 	}
 

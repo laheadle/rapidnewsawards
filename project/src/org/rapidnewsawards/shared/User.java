@@ -29,7 +29,8 @@ public class User implements IsSerializable {
 	@Entity
 	public static class JudgesIndex {
 	    @Id Long id; 
-	    @Parent Key<User> parent; 
+	    @Parent
+		public Key<User> parent; 
 	    public LinkedList<Key<User>> judges;
 
 	    public JudgesIndex() {}
