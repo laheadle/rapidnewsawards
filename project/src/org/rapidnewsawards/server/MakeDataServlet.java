@@ -41,9 +41,9 @@ public class MakeDataServlet extends HttpServlet {
 		ArrayList<Edition> editions = makeEditions(editionCount, periodSize);
 
 		Edition first = editions.get(0);
-		User mg = makeEditor(first, "Megan Garber", "megangarber");
-		User jy = makeEditor(first, "Josh Young", "jny2");
-		User so = makeEditor(first, "Steve Outing", "steveouting");	
+		makeEditor(first, "Megan Garber", "megangarber");
+		makeEditor(first, "Josh Young", "jny2");
+		makeEditor(first, "Steve Outing", "steveouting");	
 	}
 
 
@@ -68,7 +68,7 @@ public class MakeDataServlet extends HttpServlet {
 
 		// create editions using a local function class
 		// using arrays lets us mutate their contents from the local class method
-		final int[] i = { 1 };
+		final int[] number = { 1 };
 		final Date[] current = { new Date() };
 		final class makeEd {
 			final long duration;
@@ -76,7 +76,7 @@ public class MakeDataServlet extends HttpServlet {
 			// this is called repeatedly to generate new editions
 			public Edition make() { 
 				current[0] = new Date(current[0].getTime() + duration); 
-				return new Edition(current[0], i[0]++); 
+				return new Edition(current[0], number[0]++); 
 			}
 		}
 
