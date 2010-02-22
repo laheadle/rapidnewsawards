@@ -39,4 +39,7 @@ public class RNATest extends TestCase {
 
         super.tearDown();
 	}
+	
+	@Test public void testNothing() {} // junit demands this
+	
 }

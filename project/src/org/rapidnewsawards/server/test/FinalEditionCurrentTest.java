@@ -22,11 +22,12 @@ import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Provides;
 
-public class CalendarTest extends RNATest {
+// Here we are testing the case of a periodical whose final edition is current.
+public class FinalEditionCurrentTest extends RNATest {
 
 	public static ArrayList<Perishable> mockPs = new ArrayList<Perishable>();
 	static int currentEdition = 1;
-	static int numEditions = 2;
+	static int numEditions = 3;
 	
 	// the first half are created by makeData
 	// the second half are created by objectify queries
@@ -36,7 +37,6 @@ public class CalendarTest extends RNATest {
 		@Override 
 		protected void configure() {}
 
-		// Here we are testing the case of a periodical whose final edition is current.
 		@Provides
 		PerishableFactory fact() {
 			abstract class PF implements PerishableFactory {}
@@ -57,7 +57,7 @@ public class CalendarTest extends RNATest {
 							expect(mockP.isExpired()).andReturn(false);
 						}
 						replay(mockP);
-						CalendarTest.mockPs.add(mockP);
+						FinalEditionCurrentTest.mockPs.add(mockP);
 					}
 					currentEdition++;
 					return mockP;
@@ -80,6 +80,7 @@ public class CalendarTest extends RNATest {
 		for(Perishable p : mockPs)
 			verify(p);
 		assertNotNull(e);
+		// This tests that the number of users copied over to the final edition is the same as in the first edition
 		LinkedList<User> users = DAO.instance.findUsersByEdition(e);
 		assertEquals(users.size(), 3);
 		assertNotNull(e.getUsers());

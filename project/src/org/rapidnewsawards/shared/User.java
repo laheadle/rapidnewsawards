@@ -40,7 +40,6 @@ public class User implements IsSerializable {
 		}
 
 	    public void follow(User j) {
-	    	ensureState();
 	    	judges.add(j.getKey());
 	    }
 
@@ -58,7 +57,8 @@ public class User implements IsSerializable {
 	    public LinkedList<Key<Link>> votes;
 	    
 	    public void voteFor(Link l) {
-	    	ensureState();
+	    	if (votes == null)
+	    		throw new AssertionError();
 	    	votes.add(l.getKey());
 	    }
 	    

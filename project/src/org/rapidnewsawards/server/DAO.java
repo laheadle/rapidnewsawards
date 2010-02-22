@@ -71,6 +71,7 @@ public class DAO extends DAOBase
 		}
 		
 		JudgesIndex i = o.query(JudgesIndex.class).ancestor(from).get();
+		i.ensureState();
 		i.follow(to);
 		o.put(i);
 		
@@ -104,6 +105,7 @@ public class DAO extends DAOBase
 
 		Objectify oTxn = fact().beginTransaction();
 		VotesIndex i = oTxn.query(VotesIndex.class).ancestor(r).get();
+		i.ensureState();
 		i.voteFor(l);
 		oTxn.put(i);
 		oTxn.getTxn().commit();
@@ -163,6 +165,8 @@ public class DAO extends DAOBase
 				final Iterable<JudgesIndex> judgesIndices = findJudgesIndicesByUser(u, o);
 				u.parent = to.getKey();
 				o.put(u);
+				
+				// todo need to make the judges point to the right users
 				for (User.JudgesIndex ji : judgesIndices) {
 					ji.parent = u.getKey();
 					o.put(ji);
