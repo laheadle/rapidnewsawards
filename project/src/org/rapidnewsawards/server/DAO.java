@@ -12,8 +12,7 @@ import org.rapidnewsawards.shared.Periodical;
 import org.rapidnewsawards.shared.User;
 import org.rapidnewsawards.shared.Config.Name;
 import org.rapidnewsawards.shared.Periodical.EditionsIndex;
-import org.rapidnewsawards.shared.User.JudgesIndex;
-import org.rapidnewsawards.shared.User.VotesIndex;
+import org.rapidnewsawards.shared.VotesIndex;
 
 
 import com.google.appengine.api.datastore.EntityNotFoundException;
@@ -22,7 +21,7 @@ import com.googlecode.objectify.Query;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.helper.DAOBase;
-
+import org.rapidnewsawards.shared.JudgesIndex;
 
 public class DAO extends DAOBase
 {
@@ -151,7 +150,7 @@ public class DAO extends DAOBase
     	}
 	}
 
-	public  JudgesIndex findJudgesIndexByUser(User u, Objectify o) {
+	public JudgesIndex findJudgesIndexByUser(User u, Objectify o) {
 		if (o == null)
 			o = ofy();
 		return o.query(JudgesIndex.class).ancestor(u).get();
@@ -197,7 +196,7 @@ public class DAO extends DAOBase
 				}
 				ji.judges = toKeys;
 				o.put(ji);
-				o.put(new User.VotesIndex(getForwardingKey(u.getKey())));
+				o.put(new VotesIndex(getForwardingKey(u.getKey())));
 			}
 
 			for(User u : users) {

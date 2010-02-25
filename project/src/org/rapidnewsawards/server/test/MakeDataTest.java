@@ -8,7 +8,9 @@ import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
 import org.rapidnewsawards.shared.Config;
 import org.rapidnewsawards.shared.Edition;
+import org.rapidnewsawards.shared.JudgesIndex;
 import org.rapidnewsawards.shared.User;
+import org.rapidnewsawards.shared.VotesIndex;
 
 public class MakeDataTest extends RNATest {
 
@@ -30,9 +32,9 @@ public class MakeDataTest extends RNATest {
 		assertNotNull(r.getKey());
 		assertNotNull(r.getKey().getParent());
 
-		User.VotesIndex vi = new User.VotesIndex(r);
+		VotesIndex vi = new VotesIndex(r);
 		DAO.instance.ofy().put(vi);
-		User.JudgesIndex ji = new User.JudgesIndex(r);
+		JudgesIndex ji = new JudgesIndex(r);
 		DAO.instance.ofy().put(ji);
 
 		LinkedList<User> users = DAO.instance.findUsersByEdition(first);

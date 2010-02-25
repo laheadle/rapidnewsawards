@@ -24,71 +24,8 @@ public class User implements IsSerializable {
 	public String username;
 
 	@Transient
-	public LinkedList<Link> votes;
+	public LinkedList<Link> votes;	
 	
-	@Entity
-	public static class JudgesIndex {
-	    @Id Long id; 
-	    @Parent
-		public Key<User> parent; 
-	    public LinkedList<Key<User>> judges;
-
-	    public JudgesIndex() {}
-
-		public JudgesIndex(User parent) {
-	    	this.parent = parent.getKey();
-		}
-
-	    public void follow(User j) {
-	    	judges.add(j.getKey());
-	    }
-
-	    public void ensureState() {
-	    	if (judges == null)
-	    		judges = new LinkedList<Key<User>>();	    	
-	    }
-	    
-	}
-	
-	@Entity
-	public static class VotesIndex {
-	    @Id Long id; 
-	    @Parent Key<User> parent; 
-	    public LinkedList<Key<Link>> votes;
-	    
-	    public void voteFor(Link l) {
-	    	if (votes == null)
-	    		throw new AssertionError();
-	    	votes.add(l.getKey());
-	    }
-
-	    public VotesIndex(Key<User> parent, LinkedList<Key<Link>> votes) {
-	    	this.parent = parent;
-	    	this.votes = votes;
-	    }
-
-	    public VotesIndex(Key<User> parent) {
-	    	this(parent, new LinkedList<Key<Link>>());
-	    }
-
-	    public VotesIndex(User parent, LinkedList<Key<Link>> votes) {
-	    	this.parent = parent.getKey();
-	    	this.votes = votes;
-	    }
-
-	    public VotesIndex(User parent) {
-	    	this(parent, new LinkedList<Key<Link>>());
-	    }
-
-	    public void ensureState() {
-	    	if (votes == null)
-	    		votes = new LinkedList<Key<Link>>();	    	
-	    }
-	    
-	    public VotesIndex() {}
-
-	}
-
 	public User() {}
 	
 	public User(Edition e, String name, String username, LinkedList<Link> votes) {

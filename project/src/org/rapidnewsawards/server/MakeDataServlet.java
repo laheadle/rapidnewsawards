@@ -16,7 +16,8 @@ import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Periodical;
 import org.rapidnewsawards.shared.User;
 import org.rapidnewsawards.shared.Periodical.EditionsIndex;
-import org.rapidnewsawards.shared.User.JudgesIndex;
+import org.rapidnewsawards.shared.JudgesIndex;
+import org.rapidnewsawards.shared.VotesIndex;
 
 
 import com.googlecode.objectify.Objectify;
@@ -52,9 +53,9 @@ public class MakeDataServlet extends HttpServlet {
 		Objectify txn = DAO.instance.fact().beginTransaction();
 		User r = new User(e, name, username);
 		txn.put(r);
-		User.VotesIndex vi = new User.VotesIndex(r);
+		VotesIndex vi = new VotesIndex(r);
 		txn.put(vi);
-		User.JudgesIndex ji = new User.JudgesIndex(r);
+		JudgesIndex ji = new JudgesIndex(r);
 		// editors follow themselves
 		ji.ensureState();
 		ji.follow(r);

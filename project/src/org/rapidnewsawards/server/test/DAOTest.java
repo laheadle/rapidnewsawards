@@ -8,8 +8,10 @@ import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
 import org.rapidnewsawards.shared.Config;
 import org.rapidnewsawards.shared.Edition;
+import org.rapidnewsawards.shared.JudgesIndex;
 import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.User;
+import org.rapidnewsawards.shared.VotesIndex;
 
 public class DAOTest extends RNATest {
 
@@ -42,11 +44,11 @@ public class DAOTest extends RNATest {
 		User mg = getUser(null);
 		assertNotNull(mg);
 		assertEquals(mg.getUsername(), "megangarber");
-		User.JudgesIndex ji = DAO.instance.findJudgesIndexByUser(mg, null);
+		JudgesIndex ji = DAO.instance.findJudgesIndexByUser(mg, null);
 		assertNotNull(ji);
 		assertTrue(ji.judges.size() == 1);
 		assertTrue("Self Following", ji.judges.get(0).equals(mg.getKey()));
-		User.VotesIndex vi = DAO.instance.findVotesIndexByUser(mg, null);
+		VotesIndex vi = DAO.instance.findVotesIndexByUser(mg, null);
 		assertNotNull(vi);
 		vi.ensureState();
 		assertNotNull(vi.votes);
