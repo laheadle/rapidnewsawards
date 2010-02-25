@@ -26,8 +26,8 @@ public class VoteServlet extends HttpServlet {
 
 		Edition e = DAO.instance.getCurrentEdition(Config.Name.JOURNALISM);
 		
-		User r = DAO.instance.findUserByEditionAndUsername(e, request.getParameter("username"));
-		if (r == null) {
+		User u = DAO.instance.findUserByEditionAndUsername(e, request.getParameter("username"));
+		if (u == null) {
 			out.println("No such voter");
 			return;
 		}
@@ -38,16 +38,16 @@ public class VoteServlet extends HttpServlet {
 		Link l = DAO.instance.findOrCreateLinkByURL(url);
 		
 		try	{
-			DAO.instance.voteFor(r, l);
+			DAO.instance.voteFor(u, l);
 		}
 		// TODO handle malformed urls
 		catch (IllegalArgumentException ex) {
-			log.warning("BAD VOTE: " + r.getUsername() + ", " + url);
+			log.warning("BAD VOTE: " + u.getUsername() + ", " + url);
 			out.println("vote already counted");	
 			return;
 		}
 
-		log.info("VOTE: " + r.getUsername() + ", " + url);
+		log.info("VOTE: " + u.getUsername() + ", " + url);
 		out.println("vote counted");
 		
 	}

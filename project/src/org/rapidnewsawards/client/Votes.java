@@ -35,9 +35,9 @@ public class Votes extends Composite {
 		assert(e != null);
 		vPanel.clear();
 		
-		for (User r : e.getUsers()) {
-			for (Link v : r.getVotes()) {
-				Record rec = new Record(new VoteRecord(r.getName(), v.getUrl()));
+		for (User u : e.getUsers()) {
+			for (Link v : u.getVotes()) {
+				Record rec = new Record(new VoteRecord(u.getName(), v.getUrl()));
 				vPanel.add(rec);
 				vPanel.setCellWidth(rec, "100%");
 

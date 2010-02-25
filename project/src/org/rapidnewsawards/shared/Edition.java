@@ -66,8 +66,8 @@ public class Edition implements IsSerializable, Comparable<Edition> {
 		return "Edition #" + number + "(" + end.toString() + ")";
 	}
 
-	public void addUser(User r) {
-		users.add(r);
+	public void addUser(User u) {
+		users.add(u);
 	}
 
 	public Date getEnd() {

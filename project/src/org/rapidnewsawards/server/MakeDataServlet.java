@@ -51,17 +51,17 @@ public class MakeDataServlet extends HttpServlet {
 
 	public static User makeEditor(Edition e, String name, String username) {
 		Objectify txn = DAO.instance.fact().beginTransaction();
-		User r = new User(e, name, username);
-		txn.put(r);
-		VotesIndex vi = new VotesIndex(r);
+		User u = new User(e, name, username);
+		txn.put(u);
+		VotesIndex vi = new VotesIndex(u);
 		txn.put(vi);
-		JudgesIndex ji = new JudgesIndex(r);
+		JudgesIndex ji = new JudgesIndex(u);
 		// editors follow themselves
 		ji.ensureState();
-		ji.follow(r);
+		ji.follow(u);
 		txn.put(ji);
 		txn.getTxn().commit();
-		return r;
+		return u;
 	}
 
 	public static ArrayList<Edition> makeEditions(int editionCount, long periodSize) {

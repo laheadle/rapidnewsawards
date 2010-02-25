@@ -24,17 +24,17 @@ public class MakeDataTest extends RNATest {
 		assertEquals(first.getKey(), editions.get(0).getKey());
 
 		// make user
-		User r = new User(first, "Megan Garber", "megangarber");
-		assertNotNull(r.parent);
-		assertEquals(r.parent, first.getKey());
-		assertNull(r.id);
-		DAO.instance.ofy().put(r);
-		assertNotNull(r.getKey());
-		assertNotNull(r.getKey().getParent());
+		User u = new User(first, "Megan Garber", "megangarber");
+		assertNotNull(u.parent);
+		assertEquals(u.parent, first.getKey());
+		assertNull(u.id);
+		DAO.instance.ofy().put(u);
+		assertNotNull(u.getKey());
+		assertNotNull(u.getKey().getParent());
 
-		VotesIndex vi = new VotesIndex(r);
+		VotesIndex vi = new VotesIndex(u);
 		DAO.instance.ofy().put(vi);
-		JudgesIndex ji = new JudgesIndex(r);
+		JudgesIndex ji = new JudgesIndex(u);
 		DAO.instance.ofy().put(ji);
 
 		LinkedList<User> users = DAO.instance.findUsersByEdition(first);
