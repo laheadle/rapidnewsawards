@@ -15,7 +15,29 @@ public class Config {
 		}
 	}	
 
+	public static enum Name {
 
-	public static Injector injector = Guice.createInjector(new RNAModule());
+		JOURNALISM("Journalism"),
+		USERNAME("username"), 
+		URL("url"), 
+		NAME("name");
+		
+		public String name;
+		
+		Name(String name) {
+			this.name = name;
+		}
+		
+	};
+	
+	public static Injector injector;
+
+	public static void init() {
+		injector = Guice.createInjector(new RNAModule());	
+	}
+
+	static {
+		init();
+	}
 
 }

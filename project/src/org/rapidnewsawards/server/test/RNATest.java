@@ -4,20 +4,24 @@ import java.io.File;
 
 import junit.framework.TestCase;
 
-import org.junit.After;
-import org.junit.Before;
-import org.junit.Test;
 import org.rapidnewsawards.server.DAO;
-import org.rapidnewsawards.server.MakeDataServlet;
-import org.rapidnewsawards.shared.Edition;
+import org.rapidnewsawards.shared.Config;
+import org.rapidnewsawards.shared.User;
 
 import com.google.appengine.api.datastore.dev.LocalDatastoreService;
 import com.google.appengine.tools.development.ApiProxyLocalImpl;
 import com.google.apphosting.api.ApiProxy;
 
-public class RNATest extends TestCase {
+public abstract class RNATest extends TestCase {
 
-	@Before
+	protected User getUser(String username) {
+		if (username == null)
+			username = "megangarber";
+
+		return DAO.instance.findUserByEditionAndUsername(DAO.instance.getCurrentEdition(Config.Name.JOURNALISM), username);
+	}
+
+	@Override
 	public void setUp() throws Exception {
         super.setUp();
         ApiProxy.setEnvironmentForCurrentThread(new TestEnvironment());
@@ -28,7 +32,7 @@ public class RNATest extends TestCase {
         
 	}
 
-	@After
+	@Override
 	public void tearDown() throws Exception {
         ApiProxyLocalImpl proxy = (ApiProxyLocalImpl) ApiProxy.getDelegate();
         LocalDatastoreService datastoreService = (LocalDatastoreService) proxy.getService(LocalDatastoreService.PACKAGE);
@@ -40,6 +44,5 @@ public class RNATest extends TestCase {
         super.tearDown();
 	}
 	
-	@Test public void testNothing() {} // junit demands this
 	
 }

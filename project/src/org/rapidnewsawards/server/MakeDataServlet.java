@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.rapidnewsawards.shared.Config;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Periodical;
 import org.rapidnewsawards.shared.User;
@@ -63,7 +64,7 @@ public class MakeDataServlet extends HttpServlet {
 	}
 
 	public static ArrayList<Edition> makeEditions(int editionCount, long periodSize) {
-		final Periodical p = new Periodical("Journalism");
+		final Periodical p = new Periodical(Config.Name.JOURNALISM);
 		Objectify txn = DAO.instance.fact().beginTransaction();
 		txn.put(p);
 

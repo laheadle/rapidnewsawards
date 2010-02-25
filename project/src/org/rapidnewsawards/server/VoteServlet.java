@@ -9,6 +9,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.rapidnewsawards.shared.Config;
+import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.User;
 
@@ -21,16 +23,13 @@ public class VoteServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
 		PrintWriter out = response.getWriter();
-		User r = null;
 
-		try {
-			r = DAO.instance.findUserByUsername(request.getParameter("username"));
-			if (r == null) {
-				out.println("No such voter");
-				return;
-			}			
-		} catch (EntityNotFoundException e1) {
-			assert(false); // only thrown when fillrefs = true
+		Edition e = DAO.instance.getCurrentEdition(Config.Name.JOURNALISM);
+		
+		User r = DAO.instance.findUserByEditionAndUsername(e, request.getParameter("username"));
+		if (r == null) {
+			out.println("No such voter");
+			return;
 		}
 		
 		String url = request.getParameter("href");
@@ -42,7 +41,7 @@ public class VoteServlet extends HttpServlet {
 			DAO.instance.voteFor(r, l);
 		}
 		// TODO handle malformed urls
-		catch (IllegalArgumentException e) {
+		catch (IllegalArgumentException ex) {
 			log.warning("BAD VOTE: " + r.getUsername() + ", " + url);
 			out.println("vote already counted");	
 			return;

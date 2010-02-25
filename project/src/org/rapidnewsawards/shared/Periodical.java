@@ -7,6 +7,8 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 
+import org.rapidnewsawards.shared.Config.Name;
+
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Parent;
 
@@ -43,9 +45,9 @@ public class Periodical {
 
 	}
 
-	public Periodical(String name) {
+	public Periodical(Name name) {
 		this();
-		this.name = name;
+		this.name = name.name;
 	}
 	
 	public Periodical() {}	
@@ -82,17 +84,5 @@ public class Periodical {
 	public void setCurrentEdition(Edition edition) {
 		this.currentEdition = edition;
 	}
-
-	public void verifyState() {
-		if (this.currentEdition == null && this.currentEditionKey == null)
-			return; // finalized
-		if (this.currentEdition != null && this.currentEditionKey != null && 
-				this.currentEditionKey.equals(this.currentEdition.getKey()) &&
-				!this.currentEdition.isExpired())
-			return; // ongoing
-		// inconsistent
-		throw new IllegalStateException();
-	}
-
 	
 }

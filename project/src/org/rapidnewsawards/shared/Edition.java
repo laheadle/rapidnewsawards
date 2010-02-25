@@ -10,7 +10,7 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 import com.googlecode.objectify.Key;
 
 @Entity
-public class Edition implements IsSerializable {
+public class Edition implements IsSerializable, Comparable<Edition> {
 
 	@Transient
 	private LinkedList<User> users;
@@ -30,8 +30,8 @@ public class Edition implements IsSerializable {
 	public Edition(Date end, int number) {
 		this();
 		this.end = end;
-		expiry = Config.injector.getInstance(PerishableFactory.class).create(end);
 		this.number = number;
+		expiry = Config.injector.getInstance(PerishableFactory.class).create(end);
 	}
 
 	public void ensureState() {
@@ -55,6 +55,10 @@ public class Edition implements IsSerializable {
 			return false;
 		}
 		return id.equals(((Edition) e).id);
+	}
+	
+	public int compareTo(Edition e) {
+		return new Integer(number).compareTo(new Integer(e.number));
 	}
 	
 	@Override

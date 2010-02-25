@@ -61,14 +61,23 @@ public class User implements IsSerializable {
 	    		throw new AssertionError();
 	    	votes.add(l.getKey());
 	    }
-	    
+
+	    public VotesIndex(Key<User> parent, LinkedList<Key<Link>> votes) {
+	    	this.parent = parent;
+	    	this.votes = votes;
+	    }
+
+	    public VotesIndex(Key<User> parent) {
+	    	this(parent, new LinkedList<Key<Link>>());
+	    }
+
 	    public VotesIndex(User parent, LinkedList<Key<Link>> votes) {
 	    	this.parent = parent.getKey();
 	    	this.votes = votes;
 	    }
 
 	    public VotesIndex(User parent) {
-	    	this(parent, null);
+	    	this(parent, new LinkedList<Key<Link>>());
 	    }
 
 	    public void ensureState() {

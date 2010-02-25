@@ -1,6 +1,8 @@
 package org.rapidnewsawards.server;
 
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
@@ -8,6 +10,7 @@ import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.Periodical;
 import org.rapidnewsawards.shared.User;
+import org.rapidnewsawards.shared.Config.Name;
 import org.rapidnewsawards.shared.Periodical.EditionsIndex;
 import org.rapidnewsawards.shared.User.JudgesIndex;
 import org.rapidnewsawards.shared.User.VotesIndex;
@@ -37,25 +40,27 @@ public class DAO extends DAOBase
     public static DAO instance = new DAO();
 	private static final Logger log = Logger.getLogger(DAO.class.getName());
         
-	// TODO needs to be parameterized by edition
-    public User findUserByUsername(String username) throws EntityNotFoundException {
-    	User r = findByFieldName(User.class, "username", username);
+    public User findUserByEditionAndUsername(Edition e, String username) {
+    	Objectify o = ofy();
+    	
+    	User u = o.query(User.class).ancestor(e).filter("username", username).get();
 
-    	if (r == null)
+    	if (u == null)
     		return null;
     	
-    	fillRefs(r);
-    	return r;
+    	fillRefs(u);
+    	
+    	return u;
 	}
     
-	private void fillRefs(User r) {
-		LinkedList<Link> votes = findVotesByUser(r);
-		r.setVotes(votes);		
+	private void fillRefs(User u) {
+		LinkedList<Link> votes = findVotesByUser(u);
+		u.setVotes(votes);		
 	}
 
-	public LinkedList<Link> findVotesByUser(User r) {
+	public LinkedList<Link> findVotesByUser(User u) {
 		Objectify o = ofy();
-		VotesIndex i = o.query(VotesIndex.class).ancestor(r).get();
+		VotesIndex i = o.query(VotesIndex.class).ancestor(u).get();
 		if (i.votes == null)
 			return new LinkedList<Link>();
 		if (i.votes.size() > 0)
@@ -97,14 +102,14 @@ public class DAO extends DAOBase
 	 * @param l the link voted for
 	 * @throws IllegalArgumentException
 	 */
-	public void voteFor(User r, Link l) throws IllegalArgumentException {
+	public void voteFor(User u, Link l) throws IllegalArgumentException {
 
-		if (hasVoted(r, l)) {
+		if (hasVoted(u, l)) {
 			throw new IllegalArgumentException("Already Voted");
 		}
 
 		Objectify oTxn = fact().beginTransaction();
-		VotesIndex i = oTxn.query(VotesIndex.class).ancestor(r).get();
+		VotesIndex i = oTxn.query(VotesIndex.class).ancestor(u).get();
 		i.ensureState();
 		i.voteFor(l);
 		oTxn.put(i);
@@ -116,27 +121,27 @@ public class DAO extends DAOBase
 	}
 */
 
-    public boolean hasVoted(User r, Link l) {
+    public boolean hasVoted(User u, Link l) {
     	Objectify o = ofy();
-    	int count =  o.query(VotesIndex.class).ancestor(r).filter("votes =", l).countAll();
+    	int count =  o.query(VotesIndex.class).ancestor(u).filter("votes =", l).countAll();
     	assert(count <= 1);
 		return count == 1;
 	}
 
 	// clients should call convenience methods above
-    private <T> T findByFieldName(Class<T> clazz, String fieldName, Object value) {
-    	return ofy().query(clazz).filter(fieldName, value).get();
+    private <T> T findByFieldName(Class<T> clazz, Name fieldName, Object value) {
+    	return ofy().query(clazz).filter(fieldName.name, value).get();
     }
 
-    private <T> T findBy2FieldNames(Class<T> clazz, String fieldName, Object value, String fieldName2, Object value2) {
-    	return ofy().query(clazz).filter(fieldName, value).filter(fieldName2, value2).get();    	
+    private <T> T findBy2FieldNames(Class<T> clazz, Name fieldName, Object value, Name fieldName2, Object value2) {
+    	return ofy().query(clazz).filter(fieldName.name, value).filter(fieldName2.name, value2).get();    	
     }
 
     // TODO this is not transactional - could result in duplicates; need parent
 	public Link findOrCreateLinkByURL(String url) {
 		Objectify o = ofy();
 		
-    	Link l = findByFieldName(Link.class, "url", url);
+    	Link l = findByFieldName(Link.class, Name.URL, url);
     	if (l != null)
     		return l;		
     	else {
@@ -146,40 +151,68 @@ public class DAO extends DAOBase
     	}
 	}
 
-	public  Iterable<JudgesIndex> findJudgesIndicesByUser(User u, Objectify o) {
-		return o.query(JudgesIndex.class).ancestor(u).fetch();
+	public  JudgesIndex findJudgesIndexByUser(User u, Objectify o) {
+		if (o == null)
+			o = ofy();
+		return o.query(JudgesIndex.class).ancestor(u).get();
 	}
 
 
 	private class TransitionEdition {
 		private Edition from;
 
+		HashMap<Key<User>, Key<User>> userKeyTransitions;
+		
 		public TransitionEdition(Edition from) {
 			this.from = from;
+			userKeyTransitions = new HashMap<Key<User>, Key<User>>();
 		}
 		
+		private void forward(Key<User> fromKey, Key<User> toKey) {
+			userKeyTransitions.put(fromKey, toKey);
+		}
+		
+		private Key<User> getForwardingKey(Key<User> k) {
+			return userKeyTransitions.get(k);
+		}
+
 		public void to (Edition to, Objectify o) {
 			final LinkedList<User> users = from.getUsers();
 			to.setUsers(users);
+
 			for(User u : users) {
-				final Iterable<JudgesIndex> judgesIndices = findJudgesIndicesByUser(u, o);
+				Key<User> fromUserKey = u.getKey();
+				// generate new Key
+				u.parent = to.getKey(); 
+				forward(fromUserKey, u.getKey());
+				u.parent = from.getKey();
+			}
+
+			for(User u : users) {			
+				final JudgesIndex ji = findJudgesIndexByUser(u, o);
+				ji.parent = getForwardingKey(u.getKey());
+				LinkedList<Key<User>> toKeys = new LinkedList<Key<User>>();
+				for (Key<User> k : ji.judges) {
+					toKeys.add(getForwardingKey(k));
+				}
+				ji.judges = toKeys;
+				o.put(ji);
+				o.put(new User.VotesIndex(getForwardingKey(u.getKey())));
+			}
+
+			for(User u : users) {
 				u.parent = to.getKey();
 				o.put(u);
-				
-				// todo need to make the judges point to the right users
-				for (User.JudgesIndex ji : judgesIndices) {
-					ji.parent = u.getKey();
-					o.put(ji);
-				}
-				o.put(new User.VotesIndex(u));
 			}
+			
+
 		}
 	}
 	
 	// TODO convert this to use transactions
-	public Periodical findPeriodicalByName(String name) throws EntityNotFoundException {
+	public Periodical findPeriodicalByName(Name periodicalName) {
 		Objectify o = ofy();
-		final Periodical p = findByFieldName(Periodical.class, "name", name);
+		final Periodical p = findByFieldName(Periodical.class, Name.NAME, periodicalName.name);
 
 		if (p == null)
 			return  null;
@@ -216,7 +249,6 @@ public class DAO extends DAOBase
 				p.setcurrentEditionKey(current.getKey());
 				p.setCurrentEdition(current);
 				o.put(p);
-				assert(ofy().get(p.getCurrentEditionKey()).equals(current));    	
 			}
 		}
 		catch (IndexOutOfBoundsException e) {
@@ -226,7 +258,6 @@ public class DAO extends DAOBase
 			p.setCurrentEdition(null);
 		}
 
-		p.verifyState();
 		return p;
 	}
 
@@ -257,6 +288,7 @@ public class DAO extends DAOBase
 		else
 			throw new AssertionError(); // not reached
 				
+		Collections.sort(editions);	
 		for (Edition e : editions)
 			e.ensureState();
 		
@@ -267,8 +299,8 @@ public class DAO extends DAOBase
 		LinkedList<User> users = new LinkedList<User>();
 		Objectify o = ofy();
 		
-		for (User r : o.query(User.class).ancestor(e.getKey())) {
-			users.add(r);
+		for (User u : o.query(User.class).ancestor(e.getKey())) {
+			users.add(u);
 		}
 
 		if (users.size() == 0)
@@ -277,15 +309,21 @@ public class DAO extends DAOBase
 		return users;
 	}
 
-	public Edition getCurrentEdition(String periodicalName) {
-		final Periodical p;
-		try {
-			p = DAO.instance.findPeriodicalByName(periodicalName);
-		} catch (EntityNotFoundException e2) {
-	        log.warning("No Periodical found");
+	public Edition getCurrentEdition(Name periodicalName) {
+		final Periodical p = DAO.instance.findPeriodicalByName(periodicalName);
+
+		if (p == null) {
+	        log.severe("No Periodical found (null)");
 	        return null;
 		}
+
 		return p.getCurrentEdition();
+	}
+
+	public VotesIndex findVotesIndexByUser(User mg, Objectify o) {
+		if (o == null)
+			o = ofy();
+		return o.query(VotesIndex.class).ancestor(mg).get();
 	}
 
 

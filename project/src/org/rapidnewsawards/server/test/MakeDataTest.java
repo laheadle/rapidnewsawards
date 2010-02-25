@@ -6,6 +6,7 @@ import java.util.LinkedList;
 import org.junit.Test;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
+import org.rapidnewsawards.shared.Config;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.User;
 
@@ -16,7 +17,7 @@ public class MakeDataTest extends RNATest {
 		// make editions
 		ArrayList<Edition> editions = MakeDataServlet.makeEditions(2, 60 * 60 * MakeDataServlet.ONE_SECOND);
 		assertEquals(editions.size(), 2);
-		Edition first = DAO.instance.getCurrentEdition("Journalism");
+		Edition first = DAO.instance.getCurrentEdition(Config.Name.JOURNALISM);
 		assertNotNull(first.getKey());
 		assertEquals(first.getKey(), editions.get(0).getKey());
 

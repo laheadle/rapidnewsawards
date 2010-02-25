@@ -13,6 +13,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
+import org.rapidnewsawards.shared.Config;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Perishable;
 import org.rapidnewsawards.shared.PerishableFactory;
@@ -53,8 +54,6 @@ public class FinalEditionCurrentTest extends RNATest {
 							// this is the last edition, and it is current
 							// called by findPeriodicalByName
 							expect(mockP.isExpired()).andReturn(false);
-							// called by verifyState
-							expect(mockP.isExpired()).andReturn(false);
 						}
 						replay(mockP);
 						FinalEditionCurrentTest.mockPs.add(mockP);
@@ -76,7 +75,7 @@ public class FinalEditionCurrentTest extends RNATest {
 
 	@Test
 	public void testEditions() {
-		Edition e = DAO.instance.getCurrentEdition("Journalism");
+		Edition e = DAO.instance.getCurrentEdition(Config.Name.JOURNALISM);
 		for(Perishable p : mockPs)
 			verify(p);
 		assertNotNull(e);
