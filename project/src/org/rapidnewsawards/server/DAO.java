@@ -6,11 +6,11 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
+import org.rapidnewsawards.server.Config.Name;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.Periodical;
 import org.rapidnewsawards.shared.User;
-import org.rapidnewsawards.shared.Config.Name;
 import org.rapidnewsawards.shared.Periodical.EditionsIndex;
 import org.rapidnewsawards.shared.VotesIndex;
 
@@ -239,7 +239,7 @@ public class DAO extends DAOBase
 		}
 		
 		try { 
-			while (current.isExpired()) {
+			while (isExpired(current)) {
 				// set current to the next edition after current
 				int i = editions.indexOf(current);
 				Edition next = editions.get(i + 1);
@@ -258,6 +258,11 @@ public class DAO extends DAOBase
 		}
 
 		return p;
+	}
+
+	public boolean isExpired(Edition e) {
+		Perishable expiry = Config.injector.getInstance(PerishableFactory.class).create(e.end);
+		return expiry.isExpired();
 	}
 
 	void fillRefs(Edition e) {
@@ -287,9 +292,7 @@ public class DAO extends DAOBase
 		else
 			throw new AssertionError(); // not reached
 				
-		Collections.sort(editions);	
-		for (Edition e : editions)
-			e.ensureState();
+		Collections.sort(editions);
 		
 		return editions;
 	}

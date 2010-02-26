@@ -4,8 +4,8 @@ import java.io.File;
 
 import junit.framework.TestCase;
 
+import org.rapidnewsawards.server.Config;
 import org.rapidnewsawards.server.DAO;
-import org.rapidnewsawards.shared.Config;
 import org.rapidnewsawards.shared.User;
 
 import com.google.appengine.api.datastore.dev.LocalDatastoreService;

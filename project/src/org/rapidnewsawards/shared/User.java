@@ -39,6 +39,21 @@ public class User implements IsSerializable {
 		this(e, name, username, new LinkedList<Link>());
 	}	
 
+	@Override
+	public boolean equals(Object u) {
+		if(!(u instanceof User)) {
+			return false;
+		}
+		User u0 = (User) u;
+		if(!id.equals(u0.id)) {
+			return false;
+		}
+		if (!parent.equals(u0.parent)) {
+			return false;
+		}
+		return true;
+	}
+
 	public String getName() {
 		return name;
 	}

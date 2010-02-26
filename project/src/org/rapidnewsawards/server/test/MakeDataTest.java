@@ -4,9 +4,9 @@ import java.util.ArrayList;
 import java.util.LinkedList;
 
 import org.junit.Test;
+import org.rapidnewsawards.server.Config;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
-import org.rapidnewsawards.shared.Config;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.JudgesIndex;
 import org.rapidnewsawards.shared.User;

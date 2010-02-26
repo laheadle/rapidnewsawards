@@ -1,7 +1,7 @@
 /**
  * 
  */
-package org.rapidnewsawards.shared;
+package org.rapidnewsawards.server;
 
 import java.util.Date;
 

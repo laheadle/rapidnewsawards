@@ -1,4 +1,5 @@
-package org.rapidnewsawards.shared;
+package org.rapidnewsawards.server;
+
 
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;

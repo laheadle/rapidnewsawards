@@ -3,11 +3,11 @@ package org.rapidnewsawards.server.test;
 import static org.easymock.EasyMock.verify;
 
 import org.junit.Test;
+import org.rapidnewsawards.server.Config;
 import org.rapidnewsawards.server.DAO;
-import org.rapidnewsawards.shared.Config;
+import org.rapidnewsawards.server.Perishable;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Link;
-import org.rapidnewsawards.shared.Perishable;
 import org.rapidnewsawards.shared.User;
 
 public class VoteTransitionTest extends EditionTransitionTest {

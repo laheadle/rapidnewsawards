@@ -6,7 +6,6 @@ import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import java.util.logging.Logger;
 
 import org.rapidnewsawards.client.RNAService;
-import org.rapidnewsawards.shared.Config;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Periodical;
 import org.rapidnewsawards.shared.User;

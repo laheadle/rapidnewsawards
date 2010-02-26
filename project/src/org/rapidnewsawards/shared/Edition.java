@@ -18,12 +18,9 @@ public class Edition implements IsSerializable, Comparable<Edition> {
 	@Id
 	Long id;
 	
-	private Date end;
+	public Date end;
 
-	private int number;
-
-	@Transient
-	private Perishable expiry;
+	public int number;
 	
 	public Edition() {}
 
@@ -31,14 +28,6 @@ public class Edition implements IsSerializable, Comparable<Edition> {
 		this();
 		this.end = end;
 		this.number = number;
-		expiry = Config.injector.getInstance(PerishableFactory.class).create(end);
-	}
-
-	public void ensureState() {
-		if (this.end == null)
-			return;
-		if (this.expiry == null)
-			expiry = Config.injector.getInstance(PerishableFactory.class).create(end);
 	}
 	
 	public LinkedList<User> getUsers() {
@@ -76,10 +65,6 @@ public class Edition implements IsSerializable, Comparable<Edition> {
 
 	public Key<Edition> getKey() {
 		return new Key<Edition>(Edition.class, id);
-	}
-
-	public boolean isExpired() {
-		return this.expiry.isExpired();
 	}
 
 	public int getNumber() {

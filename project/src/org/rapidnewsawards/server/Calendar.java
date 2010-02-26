@@ -1,6 +1,7 @@
-package org.rapidnewsawards.shared;
+package org.rapidnewsawards.server;
 
 import java.util.Date;
+
 
 import com.google.inject.Inject;
 import com.google.inject.assistedinject.Assisted;
