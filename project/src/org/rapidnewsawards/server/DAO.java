@@ -302,6 +302,7 @@ public class DAO extends DAOBase
 		Objectify o = ofy();
 		
 		for (User u : o.query(User.class).ancestor(e.getKey())) {
+			fillRefs(u);
 			users.add(u);
 		}
 

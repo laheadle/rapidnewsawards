@@ -56,7 +56,13 @@ public class DAOTest extends RNATest {
 		assertTrue(vi.votes.size() == 0);
 	}
 
-
+	@Test
+	public void testfindUsers() {
+		LinkedList<User> users = DAO.instance.findUsersByEdition(DAO.instance.getCurrentEdition(Name.JOURNALISM));
+		assertTrue(users.size() > 1);
+		assertNotNull(users.get(0).getVotes());
+	}
+	
 	@Test
 	public void testVote() {
 		User mg = getUser(null);
