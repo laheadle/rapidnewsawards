@@ -11,7 +11,6 @@ import java.util.LinkedList;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.rapidnewsawards.server.Config;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
 import org.rapidnewsawards.server.Perishable;
@@ -22,6 +21,7 @@ import org.rapidnewsawards.shared.User;
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Provides;
+import org.rapidnewsawards.shared.Name;
 
 // Here we are testing the case of a periodical whose final edition is current.
 public class FinalEditionCurrentTest extends RNATest {
@@ -67,7 +67,7 @@ public class FinalEditionCurrentTest extends RNATest {
 
 	@Test
 	public void testEditions() {
-		Edition e = DAO.instance.getCurrentEdition(Config.Name.JOURNALISM);
+		Edition e = DAO.instance.getCurrentEdition(Name.JOURNALISM);
 		for(Perishable p : mockPs)
 			verify(p);
 		assertNotNull(e);

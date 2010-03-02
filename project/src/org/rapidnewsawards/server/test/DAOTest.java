@@ -10,6 +10,7 @@ import org.rapidnewsawards.server.MakeDataServlet;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.JudgesIndex;
 import org.rapidnewsawards.shared.Link;
+import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.User;
 import org.rapidnewsawards.shared.VotesIndex;
 
@@ -22,7 +23,7 @@ public class DAOTest extends RNATest {
 	}
 
 	void verifyEdition() {
-		Edition e = DAO.instance.getCurrentEdition(Config.Name.JOURNALISM);
+		Edition e = DAO.instance.getCurrentEdition(Name.JOURNALISM);
 		assertNotNull(e);
 		LinkedList<User> users = DAO.instance.findUsersByEdition(e);
 		assertEquals(users.size(), 3);

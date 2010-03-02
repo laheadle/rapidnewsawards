@@ -7,6 +7,7 @@ import java.util.logging.Logger;
 
 import org.rapidnewsawards.client.RNAService;
 import org.rapidnewsawards.shared.Edition;
+import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.Periodical;
 import org.rapidnewsawards.shared.User;
 
@@ -23,6 +24,6 @@ RNAService {
 	private static final Logger log = Logger.getLogger(RNAServiceImpl.class.getName());
 
 	public Edition sendEdition() {		
-		return DAO.instance.getCurrentEdition(Config.Name.JOURNALISM);
+		return DAO.instance.getCurrentEdition(Name.JOURNALISM);
 	}
 }

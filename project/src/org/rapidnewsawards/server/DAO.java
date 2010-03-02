@@ -6,7 +6,7 @@ import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
-import org.rapidnewsawards.server.Config.Name;
+import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.Periodical;

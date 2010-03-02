@@ -9,6 +9,7 @@ import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.JudgesIndex;
+import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.User;
 import org.rapidnewsawards.shared.VotesIndex;
 
@@ -19,7 +20,7 @@ public class MakeDataTest extends RNATest {
 		// make editions
 		ArrayList<Edition> editions = MakeDataServlet.makeEditions(2, 60 * 60 * MakeDataServlet.ONE_SECOND);
 		assertEquals(editions.size(), 2);
-		Edition first = DAO.instance.getCurrentEdition(Config.Name.JOURNALISM);
+		Edition first = DAO.instance.getCurrentEdition(Name.JOURNALISM);
 		assertNotNull(first.getKey());
 		assertEquals(first.getKey(), editions.get(0).getKey());
 

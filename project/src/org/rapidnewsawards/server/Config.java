@@ -15,21 +15,6 @@ public class Config {
 					FactoryProvider.newFactory(PerishableFactory.class, Calendar.class));
 		}
 	}	
-
-	public static enum Name {
-
-		JOURNALISM("Journalism"),
-		USERNAME("username"), 
-		URL("url"), 
-		NAME("name");
-		
-		public String name;
-		
-		Name(String name) {
-			this.name = name;
-		}
-		
-	};
 	
 	public static Injector injector;
 

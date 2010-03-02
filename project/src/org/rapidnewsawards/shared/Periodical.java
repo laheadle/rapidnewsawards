@@ -7,7 +7,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Transient;
 
-import org.rapidnewsawards.server.Config.Name;
+import org.rapidnewsawards.shared.Name;
 
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Parent;

@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Link;
+import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.User;
 
 import com.google.appengine.api.datastore.EntityNotFoundException;
@@ -23,7 +24,7 @@ public class VoteServlet extends HttpServlet {
 	throws ServletException, IOException {
 		PrintWriter out = response.getWriter();
 
-		Edition e = DAO.instance.getCurrentEdition(Config.Name.JOURNALISM);
+		Edition e = DAO.instance.getCurrentEdition(Name.JOURNALISM);
 		
 		User u = DAO.instance.findUserByEditionAndUsername(e, request.getParameter("username"));
 		if (u == null) {
