@@ -19,7 +19,7 @@ public class DAOTest extends RNATest {
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
-		MakeDataServlet.makeData(2, 30 * 60 * MakeDataServlet.ONE_SECOND);
+		MakeDataServlet.makeData(2, 30 * 60 * MakeDataServlet.ONE_SECOND, null);
 	}
 
 	void verifyEdition() {

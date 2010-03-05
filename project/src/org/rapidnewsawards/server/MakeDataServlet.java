@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.rapidnewsawards.shared.Cell;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.Periodical;
@@ -26,30 +27,31 @@ public class MakeDataServlet extends HttpServlet {
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
 		PrintWriter out = response.getWriter();
-		makeData(10, FIVE_MINUTES);
-		out.println("created 3 users");
+		Cell<Integer> numUsers = new Cell<Integer>(null);
+		makeData(10, 30 * ONE_SECOND, numUsers);
+		out.println("created " + numUsers.value + " users");
 		out.println("created 10 editions");
 	}
 
 	public final static long ONE_SECOND = 1000; 
-	public final static long FIVE_MINUTES = 5 * 60 * 1000; 
+	public final static long ONE_MINUTE = 60 * 1000; 	
+	public final static long FIVE_MINUTES = 5 * ONE_MINUTE; 
 
-	public static void makeData() {
-		makeData(10, FIVE_MINUTES);
-	}
-
-	public static void makeData (int editionCount, long periodSize) {		
+	public static void makeData (int editionCount, long periodSize, Cell<Integer> numUsers) {		
 		// add users to first edition
 		ArrayList<Edition> editions = makeEditions(editionCount, periodSize);
 
 		Edition first = editions.get(0);
-		makeEditor(first, "Megan Garber", "megangarber");
-		makeEditor(first, "Josh Young", "jny2");
-		makeEditor(first, "Steve Outing", "steveouting");	
+		makeUser(first, "Megan Garber", "megangarber");
+		makeUser(first, "Josh Young", "jny2");
+		makeUser(first, "Steve Outing", "steveouting");	
+		
+		if (numUsers != null)
+			numUsers.value = new Integer(3);
 	}
 
 
-	public static User makeEditor(Edition e, String name, String username) {
+	public static User makeUser(Edition e, String name, String username) {
 		Objectify txn = DAO.instance.fact().beginTransaction();
 		User u = new User(e, name, username);
 		txn.put(u);

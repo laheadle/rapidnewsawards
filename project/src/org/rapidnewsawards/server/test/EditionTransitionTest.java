@@ -71,7 +71,7 @@ public abstract class EditionTransitionTest extends RNATest {
 		super.setUp();
 		module = new Module();
 		org.rapidnewsawards.server.Config.injector = Guice.createInjector(module);
-		MakeDataServlet.makeData(module.numEditions, 60 * MakeDataServlet.ONE_SECOND);
+		MakeDataServlet.makeData(module.numEditions, 60 * MakeDataServlet.ONE_SECOND, null);
 	}
 
 	@Override

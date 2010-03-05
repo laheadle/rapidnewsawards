@@ -177,7 +177,6 @@ public class DAO extends DAOBase
 
 		public void to (Edition to, Objectify o) {
 			final LinkedList<User> users = from.getUsers();
-			to.setUsers(users);
 
 			for(User u : users) {
 				Key<User> fromUserKey = u.getKey();
@@ -187,6 +186,9 @@ public class DAO extends DAOBase
 				u.parent = from.getKey();
 			}
 
+			// create new User
+			
+			// social graph
 			for(User u : users) {			
 				final JudgesIndex ji = findJudgesIndexByUser(u, o);
 				ji.parent = getForwardingKey(u.getKey());
@@ -199,12 +201,13 @@ public class DAO extends DAOBase
 				o.put(new VotesIndex(getForwardingKey(u.getKey())));
 			}
 
+			// parent, votes
 			for(User u : users) {
 				u.parent = to.getKey();
+				u.setVotes(new LinkedList<Link>()); 
 				o.put(u);
 			}
-			
-
+			to.setUsers(users);
 		}
 	}
 	
@@ -218,7 +221,11 @@ public class DAO extends DAOBase
 
 		// initialize editions array
 		final ArrayList<Edition> editions = findEditionsByPeriodical(p);
-		assert(editions != null && editions.size() > 0);
+		if (editions == null || editions.size() == 0) {
+			p.setEditions(null);
+			log.warning(periodicalName.name + ": no editions");
+			return p;
+		}
 		p.setEditions(editions);
 		
 		// initialize current edition
@@ -257,6 +264,7 @@ public class DAO extends DAOBase
 			p.setCurrentEdition(null);
 		}
 
+		log.info(periodicalName.name + ": current Edition:" + current);		
 		return p;
 	}
 

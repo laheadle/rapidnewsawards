@@ -62,7 +62,7 @@ public class FinalEditionCurrentTest extends RNATest {
 	public void setUp() throws Exception {
 		super.setUp();
 		org.rapidnewsawards.server.Config.injector = Guice.createInjector(new RNAModule());
-		MakeDataServlet.makeData(numEditions, 60 * MakeDataServlet.ONE_SECOND);
+		MakeDataServlet.makeData(numEditions, 60 * MakeDataServlet.ONE_SECOND, null);
 	}
 
 	@Test
