@@ -28,7 +28,7 @@ public class MakeDataServlet extends HttpServlet {
 	throws ServletException, IOException {
 		PrintWriter out = response.getWriter();
 		Cell<Integer> numUsers = new Cell<Integer>(null);
-		makeData(10, 30 * ONE_SECOND, numUsers);
+		makeData(100, ONE_MINUTE, numUsers);
 		out.println("created " + numUsers.value + " users");
 		out.println("created 10 editions");
 	}

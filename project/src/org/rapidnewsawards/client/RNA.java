@@ -20,7 +20,7 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
- * Entry point classes define <code>onModuleLoad()</code>.
+ * 
  */
 public class RNA extends Composite implements EntryPoint  {
 
@@ -30,7 +30,8 @@ public class RNA extends Composite implements EntryPoint  {
 	@UiField Label ticker; // text describing how much time left until publication
 	@UiField Label title;	
 	@UiField Votes votes;
-	@UiField Button refresh;
+	@UiField Button showStories;
+	@UiField Button showUsers;
 
 	// The ticker is updated every minute
 	private Timer tickerTimer;
@@ -106,11 +107,13 @@ public class RNA extends Composite implements EntryPoint  {
 		tickerTimer.cancel();		
 	}
 
-	@UiHandler("refresh")
+	
+	@UiHandler("showStories")
 	void handleClick(ClickEvent e) {
 		refresh();
 	}
 
+	
 	public void refresh() {
 		status.setText("getting Edition");
 		rnaService.sendEdition(new AsyncCallback<Edition>() {

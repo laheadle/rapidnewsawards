@@ -2,25 +2,44 @@
 	xmlns:g='urn:import:com.google.gwt.user.client.ui' xmlns:rna='urn:import:org.rapidnewsawards.client'>
 
 	<ui:style>
+		.navigationFrame {
+			margin-left: 100px;
+			margin-bottom: auto;
+			width: 80px;
+		}
+		
 		.outerframe {
-			margin-left: 350px;
 			width: 700px;
 		}
 		
 		.top {
 			padding: 10px;
-			height: 30px;
 			width: 100%;
 			background-color: #FFFF5E;
 		}
 		
+		.topLeft {
+			padding: 10px;
+			width: 100%;
+			background-color: #cccccc;
+		}
+		
+		.empty {
+			font-weight: bold;
+			text-align: left;
+			color: #2276BB;
+			height: 3.3em;
+		}
+		
 		.title {
 			text-align: center;
-			font-size: large;
+			font-size: 1.8em;
+			height: 1.8em;
 		}
 		
 		.previous {
 			font-weight: bold;
+			height: 1.8em;
 			text-align: left;
 			color: #2276BB;
 		}
@@ -43,33 +62,97 @@
 			text-align: left;
 		}
 		
+		.navigationBottom {
+			height: 180px;
+			width: 100%;
+			background-color: #cccccc;
+		}
+		
+		.navButton {
+			background-color: white;
+		}
+		
+		.sideButton {
+			background-color: #cccccc;
+			padding: 0px 0px;
+			border: none;
+			height: 20px;
+			color: #2276BB;
+			width: 100%;
+			text-align: left;
+		}
+		
+		.sideButton:HOVER {
+			background-color: #B0CECC;
+		}
+		
+		.sideButtonSelected {
+			background-color: #B0CECC;
+			padding: 0px 0px;
+			border: none;
+			height: 20px;
+			color: #2276BB;
+			width: 100%;
+			text-align: left;
+		}
+		
 		.votes {
 			width: 100%
 		}
 	</ui:style>
 
-	<g:VerticalPanel styleName='{style.outerframe}'>
+	<g:HorizontalPanel>
+		<g:VerticalPanel styleName='{style.navigationFrame}'>
+			<g:HorizontalPanel styleName='{style.topLeft}'>
+				<g:Label styleName='{style.empty}'>
+					Sign In
+				</g:Label>
+			</g:HorizontalPanel>
 
-		<g:HorizontalPanel styleName='{style.top}'>
-			<g:Label styleName='{style.previous}'> Previous Edition </g:Label>
-			<g:Label styleName='{style.title}' ui:field="title">Rapid News Awards </g:Label>
-			<g:Label styleName='{style.ticker}' ui:field="ticker"> Initializing... </g:Label>
-		</g:HorizontalPanel>
+			<g:VerticalPanel styleName='{style.navigationBottom}'>
+				<g:cell height="20px" horizontalAlignment='ALIGN_LEFT'
+					verticalAlignment='ALIGN_MIDDLE'>
+					<g:Button styleName='{style.sideButtonSelected}' ui:field='showStories'>
+						Stories
+           			</g:Button>
+				</g:cell>
 
-		<g:HorizontalPanel>
-			<g:cell verticalAlignment='ALIGN_MIDDLE'>
-				<g:Button styleName='{style.tools}' ui:field='refresh'>
-					Refresh
-				</g:Button>
-			</g:cell>
-			<g:cell width="520px" verticalAlignment='ALIGN_MIDDLE'>
-				<g:Label styleName='{style.status}' ui:field='status'></g:Label>
-			</g:cell>
-		</g:HorizontalPanel>
+				<g:cell height="20px" horizontalAlignment='ALIGN_LEFT'
+					verticalAlignment='ALIGN_MIDDLE'>
+					<g:Button styleName='{style.sideButton}' ui:field='showUsers'>
+						Users
+					</g:Button>
+
+				</g:cell>
+				<g:cell height="100%" verticalAlignment='ALIGN_MIDDLE'>
+					<g:Button styleName='{style.sideButton}'>
+					</g:Button>
+				</g:cell>
+
+			</g:VerticalPanel>
+
+		</g:VerticalPanel>
+
+		<g:VerticalPanel styleName='{style.outerframe}'>
+
+			<g:HorizontalPanel styleName='{style.top}'>
+				<g:Label styleName='{style.previous}'> Previous Edition </g:Label>
+				<g:Label styleName='{style.title}' ui:field="title">Rapid News
+					Awards </g:Label>
+				<g:Label styleName='{style.ticker}' ui:field="ticker">
+					Initializing... </g:Label>
+			</g:HorizontalPanel>
+
+			<g:HorizontalPanel>
+				<g:cell width="520px" verticalAlignment='ALIGN_MIDDLE'>
+					<g:Label styleName='{style.status}' ui:field='status'></g:Label>
+				</g:cell>
+			</g:HorizontalPanel>
 
 
-		<rna:Votes styleName='{style.votes}' ui:field='votes'></rna:Votes>
+			<rna:Votes styleName='{style.votes}' ui:field='votes'></rna:Votes>
 
-	</g:VerticalPanel>
+		</g:VerticalPanel>
+	</g:HorizontalPanel>
 
 </ui:UiBinder>
