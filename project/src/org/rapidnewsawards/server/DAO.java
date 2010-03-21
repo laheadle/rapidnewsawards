@@ -67,27 +67,26 @@ public class DAO extends DAOBase
 		throw new AssertionError(); // not reached
 	}
 
-	public void follow(User from, User to) {
+	
+	public void follow(User from, User to, boolean upcoming) {
 		Objectify o = instance.fact().beginTransaction();
-
-		if (isFollowing(from, to, o)) {
-			throw new IllegalArgumentException("Already Following");
+		JudgesIndex i = findJudgesIndexByUser(from, o, upcoming);
+		
+		if (i.isFollowing(to)) {
+			log.warning("Already following(" + upcoming + ")" + ": [" + from + ", " + to + "]");
 		}
 		
-		JudgesIndex i = o.query(JudgesIndex.class).ancestor(from).get();
-		i.ensureState();
 		i.follow(to);
 		o.put(i);
-		
 		o.getTxn().commit();
 	}
     
 
-	public boolean isFollowing(User from, User to, Objectify o) {
+	public boolean isFollowing(User from, User to, Objectify o, boolean upcoming) {
 		if (o == null)
 			o = instance.ofy();		
 
-		Query<JudgesIndex> q = o.query(JudgesIndex.class).ancestor(from).filter("judges =", to.getKey());
+		Query<JudgesIndex> q = o.query(JudgesIndex.class).ancestor(from).filter("upcoming", upcoming).filter("judges =", to.getKey());
 		int count = q.countAll();
 		assert(count <= 1);
 		return count == 1;
@@ -150,10 +149,13 @@ public class DAO extends DAOBase
     	}
 	}
 
-	public JudgesIndex findJudgesIndexByUser(User u, Objectify o) {
+	public JudgesIndex findJudgesIndexByUser(User u, Objectify o, boolean upcoming) {
 		if (o == null)
 			o = ofy();
-		return o.query(JudgesIndex.class).ancestor(u).get();
+		JudgesIndex ji = o.query(JudgesIndex.class).ancestor(u).filter("upcoming", upcoming).get();
+		if (ji != null)
+			ji.ensureState();
+		return ji;
 	}
 
 
@@ -188,19 +190,25 @@ public class DAO extends DAOBase
 
 			// create new User
 			
-			// social graph
+			// social graph, votes
 			for(User u : users) {			
-				final JudgesIndex ji = findJudgesIndexByUser(u, o);
-				ji.parent = getForwardingKey(u.getKey());
-				LinkedList<Key<User>> toKeys = new LinkedList<Key<User>>();
-				for (Key<User> k : ji.judges) {
-					toKeys.add(getForwardingKey(k));
-				}
-				ji.judges = toKeys;
-				o.put(ji);
+				final JudgesIndex jiNew = new JudgesIndex(u, false);
+				jiNew.ensureState();
+				jiNew.parent = getForwardingKey(u.getKey());
+				final JudgesIndex jiNow = findJudgesIndexByUser(u, o, true);
+				follow(u, jiNow, jiNew);
+				final JudgesIndex jiNext = findJudgesIndexByUser(u, o, false);
+				follow(u, jiNext, jiNew);
+				o.put(jiNew);
+				final JudgesIndex jiUpcoming = new JudgesIndex(u, true);
+				jiNew.ensureState();
+				jiUpcoming.parent = getForwardingKey(u.getKey());
+				o.put(jiUpcoming);
+				jiNew.parent = getForwardingKey(u.getKey());				
 				o.put(new VotesIndex(getForwardingKey(u.getKey())));
 			}
 
+			
 			// parent, votes
 			for(User u : users) {
 				u.parent = to.getKey();
@@ -208,6 +216,14 @@ public class DAO extends DAOBase
 				o.put(u);
 			}
 			to.setUsers(users);
+		}
+
+		private void follow(User u, final JudgesIndex from, final JudgesIndex to) {
+			LinkedList<Key<User>> toKeys = new LinkedList<Key<User>>();
+			for (Key<User> k : from.judges) {
+				toKeys.add(getForwardingKey(k));
+			}
+			to.judges.addAll(toKeys);
 		}
 	}
 	

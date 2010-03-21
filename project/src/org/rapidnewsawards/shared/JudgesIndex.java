@@ -14,11 +14,13 @@ public class JudgesIndex {
     @Parent
 	public Key<User> parent; 
     public LinkedList<Key<User>> judges;
+    public boolean upcoming;
 
     public JudgesIndex() {}
 
-	public JudgesIndex(User parent) {
+	public JudgesIndex(User parent, boolean upcoming) {
     	this.parent = parent.getKey();
+    	this.upcoming = upcoming;
 	}
 
     public void follow(User j) {
@@ -30,4 +32,8 @@ public class JudgesIndex {
     		judges = new LinkedList<Key<User>>();	    	
     }
     
+	public boolean isFollowing(User to) {
+		return judges.contains(to.getKey());
+	}
+
 }

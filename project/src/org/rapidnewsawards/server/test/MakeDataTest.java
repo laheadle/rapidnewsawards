@@ -35,8 +35,9 @@ public class MakeDataTest extends RNATest {
 
 		VotesIndex vi = new VotesIndex(u);
 		DAO.instance.ofy().put(vi);
-		JudgesIndex ji = new JudgesIndex(u);
+		JudgesIndex ji = new JudgesIndex(u, false);
 		DAO.instance.ofy().put(ji);
+		DAO.instance.ofy().put(new JudgesIndex(u, true));
 
 		LinkedList<User> users = DAO.instance.findUsersByEdition(first);
 		assertEquals(users.size(), 1);

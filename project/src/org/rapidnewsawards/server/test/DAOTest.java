@@ -45,10 +45,12 @@ public class DAOTest extends RNATest {
 		User mg = getUser(null);
 		assertNotNull(mg);
 		assertEquals(mg.getUsername(), "megangarber");
-		JudgesIndex ji = DAO.instance.findJudgesIndexByUser(mg, null);
-		assertNotNull(ji);
-		assertTrue(ji.judges.size() == 1);
-		assertTrue("Self Following", ji.judges.get(0).equals(mg.getKey()));
+		JudgesIndex jiNow = DAO.instance.findJudgesIndexByUser(mg, null, false);
+		assertNotNull(jiNow);
+		assertTrue(jiNow.judges.size() == 1);
+		assertTrue("Self Following", jiNow.judges.get(0).equals(mg.getKey()));
+		JudgesIndex jiNext = DAO.instance.findJudgesIndexByUser(mg, null, true);
+		assertNotNull(jiNext);
 		VotesIndex vi = DAO.instance.findVotesIndexByUser(mg, null);
 		assertNotNull(vi);
 		vi.ensureState();
@@ -81,8 +83,10 @@ public class DAOTest extends RNATest {
 	public void testFollow() {
 		User mg = getUser(null);
 		User jny2 = getUser("jny2");
-		DAO.instance.follow(mg, jny2);
-		assertTrue(DAO.instance.isFollowing(mg, jny2, null));
+		DAO.instance.follow(mg, jny2, false);
+		assertTrue(DAO.instance.isFollowing(mg, jny2, null, false));
+		DAO.instance.follow(mg, jny2, true);
+		assertTrue(DAO.instance.isFollowing(mg, jny2, null, true));
 	}
 
 

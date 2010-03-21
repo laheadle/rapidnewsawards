@@ -20,14 +20,17 @@ public class FollowTransitionTest extends EditionTransitionTest {
 		User mg = DAO.instance.findUserByEditionAndUsername(e1, "megangarber");
 		User jny2 = DAO.instance.findUserByEditionAndUsername(e1, "jny2");
 
-		DAO.instance.follow(mg, jny2);
+		DAO.instance.follow(mg, jny2, true);
+		DAO.instance.follow(jny2, mg, false);
 
 		Edition e2 = DAO.instance.getCurrentEdition(Name.JOURNALISM);
 		User mg2 = DAO.instance.findUserByEditionAndUsername(e2, "megangarber");
 		User jny22 = DAO.instance.findUserByEditionAndUsername(e2, "jny2");
 
-		assertEquals(DAO.instance.isFollowing(mg2, jny22, null), true);
-		assertEquals(DAO.instance.isFollowing(jny22, jny22, null), true);
+		assertFalse(DAO.instance.isFollowing(mg2, jny22, null, true));
+		assertTrue(DAO.instance.isFollowing(mg2, jny22, null, false));
+		assertTrue(DAO.instance.isFollowing(jny22, jny22, null, false));
+		assertFalse(DAO.instance.isFollowing(jny22, mg2, null, true));
 
 		for(Perishable p : module.mockPs)
 			verify(p);

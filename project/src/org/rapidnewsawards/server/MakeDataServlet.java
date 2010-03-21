@@ -57,11 +57,12 @@ public class MakeDataServlet extends HttpServlet {
 		txn.put(u);
 		VotesIndex vi = new VotesIndex(u);
 		txn.put(vi);
-		JudgesIndex ji = new JudgesIndex(u);
+		JudgesIndex ji = new JudgesIndex(u, false);
 		// editors follow themselves
 		ji.ensureState();
 		ji.follow(u);
 		txn.put(ji);
+		txn.put(new JudgesIndex(u, true));
 		txn.getTxn().commit();
 		return u;
 	}
