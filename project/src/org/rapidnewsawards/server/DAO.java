@@ -2,26 +2,25 @@ package org.rapidnewsawards.server;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.logging.Logger;
 
-import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.Edition;
+import org.rapidnewsawards.shared.Judge_Time;
 import org.rapidnewsawards.shared.Link;
+import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.Periodical;
 import org.rapidnewsawards.shared.User;
-import org.rapidnewsawards.shared.Periodical.EditionsIndex;
 import org.rapidnewsawards.shared.VotesIndex;
+import org.rapidnewsawards.shared.Periodical.EditionsIndex;
 
-
-import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.Query;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
+import com.googlecode.objectify.Query;
 import com.googlecode.objectify.helper.DAOBase;
-import org.rapidnewsawards.shared.JudgesIndex;
 
 public class DAO extends DAOBase
 {
@@ -29,7 +28,7 @@ public class DAO extends DAOBase
         ObjectifyService.factory().register(User.class);
         ObjectifyService.factory().register(VotesIndex.class);
         ObjectifyService.factory().register(EditionsIndex.class);
-        ObjectifyService.factory().register(JudgesIndex.class);
+        ObjectifyService.factory().register(Judge_Time.class);
         ObjectifyService.factory().register(Link.class);
         ObjectifyService.factory().register(Periodical.class);
         ObjectifyService.factory().register(Edition.class);
@@ -67,26 +66,31 @@ public class DAO extends DAOBase
 		throw new AssertionError(); // not reached
 	}
 
-	
-	public void follow(User from, User to, boolean upcoming) {
-		Objectify o = instance.fact().beginTransaction();
-		JudgesIndex i = findJudgesIndexByUser(from, o, upcoming);
-		
-		if (i.isFollowing(to)) {
-			log.warning("Already following(" + upcoming + ")" + ": [" + from + ", " + to + "]");
+
+	// must be called within a transaction
+	public void follow(User from, User to, Objectify o, boolean upcoming) {
+		if (o == null) {
+			o = fact().beginTransaction();
+			follow(from, to, o, upcoming);
+			o.getTxn().commit();
+			return;
 		}
 		
-		i.follow(to);
-		o.put(i);
-		o.getTxn().commit();
+		if (isFollowing(from, to, o, upcoming)) {
+			log.warning("Already following(" + upcoming + ")" + ": [" + from + ", " + to + "]");
+			return;
+		}
+		
+		Judge_Time jt = new Judge_Time(from.getKey(), to.getKey(), new Date(), upcoming);
+		o.put(jt);
 	}
-    
+
 
 	public boolean isFollowing(User from, User to, Objectify o, boolean upcoming) {
 		if (o == null)
 			o = instance.ofy();		
 
-		Query<JudgesIndex> q = o.query(JudgesIndex.class).ancestor(from).filter("upcoming", upcoming).filter("judges =", to.getKey());
+		Query<Judge_Time> q = o.query(Judge_Time.class).ancestor(from).filter("judge", to.getKey()).filter("upcoming", upcoming);
 		int count = q.countAll();
 		assert(count <= 1);
 		return count == 1;
@@ -149,16 +153,6 @@ public class DAO extends DAOBase
     	}
 	}
 
-	public JudgesIndex findJudgesIndexByUser(User u, Objectify o, boolean upcoming) {
-		if (o == null)
-			o = ofy();
-		JudgesIndex ji = o.query(JudgesIndex.class).ancestor(u).filter("upcoming", upcoming).get();
-		if (ji != null)
-			ji.ensureState();
-		return ji;
-	}
-
-
 	private class TransitionEdition {
 		private Edition from;
 
@@ -180,6 +174,7 @@ public class DAO extends DAOBase
 		public void to (Edition to, Objectify o) {
 			final LinkedList<User> users = from.getUsers();
 
+			// set up table mapping previous user keys to next user keys
 			for(User u : users) {
 				Key<User> fromUserKey = u.getKey();
 				// generate new Key
@@ -188,23 +183,15 @@ public class DAO extends DAOBase
 				u.parent = from.getKey();
 			}
 
-			// create new User
+			// create new User relations
 			
 			// social graph, votes
-			for(User u : users) {			
-				final JudgesIndex jiNew = new JudgesIndex(u, false);
-				jiNew.ensureState();
-				jiNew.parent = getForwardingKey(u.getKey());
-				final JudgesIndex jiNow = findJudgesIndexByUser(u, o, true);
-				follow(u, jiNow, jiNew);
-				final JudgesIndex jiNext = findJudgesIndexByUser(u, o, false);
-				follow(u, jiNext, jiNew);
-				o.put(jiNew);
-				final JudgesIndex jiUpcoming = new JudgesIndex(u, true);
-				jiNew.ensureState();
-				jiUpcoming.parent = getForwardingKey(u.getKey());
-				o.put(jiUpcoming);
-				jiNew.parent = getForwardingKey(u.getKey());				
+			for(User u : users) {	
+				// copy previous social graph [upcoming and now] to next social graph [now]
+				for(Judge_Time previous : o.query(Judge_Time.class).ancestor(u)) {
+					final Judge_Time jtNew = new Judge_Time(getForwardingKey(previous.parent), getForwardingKey(previous.judge), previous.time, false);
+					o.put(jtNew);
+				}
 				o.put(new VotesIndex(getForwardingKey(u.getKey())));
 			}
 
@@ -216,14 +203,6 @@ public class DAO extends DAOBase
 				o.put(u);
 			}
 			to.setUsers(users);
-		}
-
-		private void follow(User u, final JudgesIndex from, final JudgesIndex to) {
-			LinkedList<Key<User>> toKeys = new LinkedList<Key<User>>();
-			for (Key<User> k : from.judges) {
-				toKeys.add(getForwardingKey(k));
-			}
-			to.judges.addAll(toKeys);
 		}
 	}
 	

@@ -3,7 +3,6 @@ package org.rapidnewsawards.server;
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Date;
 
 import javax.servlet.ServletException;
@@ -16,10 +15,8 @@ import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.Periodical;
 import org.rapidnewsawards.shared.User;
-import org.rapidnewsawards.shared.Periodical.EditionsIndex;
-import org.rapidnewsawards.shared.JudgesIndex;
 import org.rapidnewsawards.shared.VotesIndex;
-
+import org.rapidnewsawards.shared.Periodical.EditionsIndex;
 
 import com.googlecode.objectify.Objectify;
 
@@ -56,13 +53,8 @@ public class MakeDataServlet extends HttpServlet {
 		User u = new User(e, name, username);
 		txn.put(u);
 		VotesIndex vi = new VotesIndex(u);
-		txn.put(vi);
-		JudgesIndex ji = new JudgesIndex(u, false);
-		// editors follow themselves
-		ji.ensureState();
-		ji.follow(u);
-		txn.put(ji);
-		txn.put(new JudgesIndex(u, true));
+		txn.put(vi);		
+		DAO.instance.follow(u, u, txn, false);
 		txn.getTxn().commit();
 		return u;
 	}

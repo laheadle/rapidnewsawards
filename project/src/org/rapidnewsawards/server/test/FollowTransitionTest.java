@@ -20,8 +20,8 @@ public class FollowTransitionTest extends EditionTransitionTest {
 		User mg = DAO.instance.findUserByEditionAndUsername(e1, "megangarber");
 		User jny2 = DAO.instance.findUserByEditionAndUsername(e1, "jny2");
 
-		DAO.instance.follow(mg, jny2, true);
-		DAO.instance.follow(jny2, mg, false);
+		DAO.instance.follow(mg, jny2, null, true);
+		DAO.instance.follow(jny2, mg, null, false);
 
 		Edition e2 = DAO.instance.getCurrentEdition(Name.JOURNALISM);
 		User mg2 = DAO.instance.findUserByEditionAndUsername(e2, "megangarber");

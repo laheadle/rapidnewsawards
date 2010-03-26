@@ -4,11 +4,9 @@ import java.util.LinkedList;
 
 import org.junit.Before;
 import org.junit.Test;
-import org.rapidnewsawards.server.Config;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
 import org.rapidnewsawards.shared.Edition;
-import org.rapidnewsawards.shared.JudgesIndex;
 import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.User;
@@ -45,12 +43,7 @@ public class DAOTest extends RNATest {
 		User mg = getUser(null);
 		assertNotNull(mg);
 		assertEquals(mg.getUsername(), "megangarber");
-		JudgesIndex jiNow = DAO.instance.findJudgesIndexByUser(mg, null, false);
-		assertNotNull(jiNow);
-		assertTrue(jiNow.judges.size() == 1);
-		assertTrue("Self Following", jiNow.judges.get(0).equals(mg.getKey()));
-		JudgesIndex jiNext = DAO.instance.findJudgesIndexByUser(mg, null, true);
-		assertNotNull(jiNext);
+		assertTrue("Self Follow", DAO.instance.isFollowing(mg, mg, null, false));
 		VotesIndex vi = DAO.instance.findVotesIndexByUser(mg, null);
 		assertNotNull(vi);
 		vi.ensureState();
@@ -83,9 +76,10 @@ public class DAOTest extends RNATest {
 	public void testFollow() {
 		User mg = getUser(null);
 		User jny2 = getUser("jny2");
-		DAO.instance.follow(mg, jny2, false);
+		// xxx make transaction
+		DAO.instance.follow(mg, jny2, null, false);
 		assertTrue(DAO.instance.isFollowing(mg, jny2, null, false));
-		DAO.instance.follow(mg, jny2, true);
+		DAO.instance.follow(mg, jny2, null, true);
 		assertTrue(DAO.instance.isFollowing(mg, jny2, null, true));
 	}
 
