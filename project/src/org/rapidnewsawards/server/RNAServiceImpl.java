@@ -9,6 +9,7 @@ import org.rapidnewsawards.client.RNAService;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.Periodical;
+import org.rapidnewsawards.shared.State;
 import org.rapidnewsawards.shared.User;
 
 /**
@@ -23,7 +24,7 @@ public class RNAServiceImpl extends RemoteServiceServlet implements
 RNAService {
 	private static final Logger log = Logger.getLogger(RNAServiceImpl.class.getName());
 
-	public Edition sendEdition() {		
-		return DAO.instance.getCurrentEdition(Name.JOURNALISM);
+	public State sendState(Integer edition) {		
+		return DAO.instance.getState(edition, Name.JOURNALISM);
 	}
 }

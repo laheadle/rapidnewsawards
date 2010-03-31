@@ -10,5 +10,5 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  */
 @RemoteServiceRelativePath("rna")
 public interface RNAService extends RemoteService {
-	Edition sendEdition();
+	State sendState(Integer edition);
 }

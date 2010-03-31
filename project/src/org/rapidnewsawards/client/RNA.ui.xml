@@ -109,6 +109,15 @@
 				</g:Label>
 			</g:HorizontalPanel>
 
+
+			<g:DialogBox autoHide="true" modal="true" ui:field='messageBox'>
+				<g:caption>
+					<b>Illegal Command</b>
+				</g:caption>
+					<g:Button width='100%' ui:field='okButton'>Okay</g:Button>
+			</g:DialogBox>
+
+
 			<g:VerticalPanel styleName='{style.navigationBottom}'>
 				<g:cell height="20px" horizontalAlignment='ALIGN_LEFT'
 					verticalAlignment='ALIGN_MIDDLE'>
@@ -136,7 +145,8 @@
 		<g:VerticalPanel styleName='{style.outerframe}'>
 
 			<g:HorizontalPanel styleName='{style.top}'>
-				<g:Label styleName='{style.previous}'> Previous Edition </g:Label>
+				<rna:NavBox ui:field="navbox">
+				</rna:NavBox>
 				<g:Label styleName='{style.title}' ui:field="title">Rapid News
 					Awards </g:Label>
 				<g:Label styleName='{style.ticker}' ui:field="ticker">

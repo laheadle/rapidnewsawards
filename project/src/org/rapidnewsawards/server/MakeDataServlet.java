@@ -88,9 +88,6 @@ public class MakeDataServlet extends HttpServlet {
 		DAO.instance.ofy().put(editions);
 
 		EditionsIndex index = new EditionsIndex(p, editions);
-		for(Edition e : editions) {
-			index.editions.add(e.getKey());
-		}
 
 		txn.put(index);
 

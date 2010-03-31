@@ -76,7 +76,6 @@ public class DAOTest extends RNATest {
 	public void testFollow() {
 		User mg = getUser(null);
 		User jny2 = getUser("jny2");
-		// xxx make transaction
 		DAO.instance.follow(mg, jny2, null, false);
 		assertTrue(DAO.instance.isFollowing(mg, jny2, null, false));
 		DAO.instance.follow(mg, jny2, null, true);

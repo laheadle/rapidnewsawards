@@ -76,7 +76,12 @@ public class Periodical {
 	public void setEditions(ArrayList<Edition> editions) {
 		this.editions = editions;
 	}
-
+	
+	// this method is 1-indexed because so are editions
+	public Edition getEdition(int i) {
+		return editions.get(i - 1);
+	}
+	
 	public Edition getCurrentEdition() {
 		return currentEdition;
 	}

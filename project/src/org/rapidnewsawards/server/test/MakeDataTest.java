@@ -18,6 +18,7 @@ public class MakeDataTest extends RNATest {
 		// make editions
 		ArrayList<Edition> editions = MakeDataServlet.makeEditions(2, 60 * 60 * MakeDataServlet.ONE_SECOND);
 		assertEquals(editions.size(), 2);
+		assertEquals(DAO.instance.getNumEditions(Name.JOURNALISM), 2);
 		Edition first = DAO.instance.getCurrentEdition(Name.JOURNALISM);
 		assertNotNull(first.getKey());
 		assertEquals(first.getKey(), editions.get(0).getKey());

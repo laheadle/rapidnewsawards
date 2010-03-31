@@ -12,6 +12,7 @@ import org.rapidnewsawards.shared.Judge_Time;
 import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.Periodical;
+import org.rapidnewsawards.shared.State;
 import org.rapidnewsawards.shared.User;
 import org.rapidnewsawards.shared.VotesIndex;
 import org.rapidnewsawards.shared.Periodical.EditionsIndex;
@@ -67,7 +68,6 @@ public class DAO extends DAOBase
 	}
 
 
-	// must be called within a transaction
 	public void follow(User from, User to, Objectify o, boolean upcoming) {
 		if (o == null) {
 			o = fact().beginTransaction();
@@ -315,7 +315,8 @@ public class DAO extends DAOBase
 		return users;
 	}
 
-	public Edition getCurrentEdition(Name periodicalName) {
+	// fills in the references
+	public Edition getEdition(Integer edition, Name periodicalName) {
 		final Periodical p = DAO.instance.findPeriodicalByName(periodicalName);
 
 		if (p == null) {
@@ -323,13 +324,52 @@ public class DAO extends DAOBase
 	        return null;
 		}
 
-		return p.getCurrentEdition();
+		if (edition == null)
+			return p.getCurrentEdition();
+
+		// a specific edition was requested
+		
+		if (edition > getNumEditions(periodicalName) || edition < 1) {
+	        log.severe("Requested non-existent edition #" + edition);
+			return null;
+		}
+
+		if (p.getCurrentEdition() != null && edition > p.getCurrentEdition().number) {
+	        log.warning("Requested future edition #" + edition);			
+		}
+		
+		Edition result = p.getEdition(edition);
+		fillRefs(result);
+		return result;
 	}
 
+	public Edition getCurrentEdition(Name periodicalName) {
+		return getEdition(null, periodicalName);
+	}
+	
 	public VotesIndex findVotesIndexByUser(User mg, Objectify o) {
 		if (o == null)
 			o = ofy();
 		return o.query(VotesIndex.class).ancestor(mg).get();
+	}
+
+	// TODO cache this
+	public int getNumEditions(Name periodicalName) {
+		final Periodical p = DAO.instance.findPeriodicalByName(periodicalName);
+		EditionsIndex i = ofy().query(EditionsIndex.class).ancestor(p).get();
+		if (i == null) {
+			log.severe("No Editions Index");
+			return 0;
+		}
+		return i.editions.size();
+	}
+	
+	public State getState(Integer edition, Name name) {
+		Edition e = getEdition(edition, name);
+		State s = new State();
+		s.edition = e;
+		s.numEditions = getNumEditions(name);
+		return s;
 	}
 
 
