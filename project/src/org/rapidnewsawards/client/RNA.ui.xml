@@ -145,12 +145,10 @@
 		<g:VerticalPanel styleName='{style.outerframe}'>
 
 			<g:HorizontalPanel styleName='{style.top}'>
-				<rna:NavBox ui:field="navbox">
-				</rna:NavBox>
+				<rna:NavBox ui:field="leftBox"></rna:NavBox>
 				<g:Label styleName='{style.title}' ui:field="title">Rapid News
 					Awards </g:Label>
-				<g:Label styleName='{style.ticker}' ui:field="ticker">
-					Initializing... </g:Label>
+				<rna:NavBox ui:field="rightBox"></rna:NavBox>
 			</g:HorizontalPanel>
 
 			<g:HorizontalPanel>

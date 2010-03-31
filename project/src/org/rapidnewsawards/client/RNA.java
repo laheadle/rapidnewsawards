@@ -33,12 +33,14 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 	interface UB extends UiBinder<Widget, RNA> {}
 
 	@UiField Label status;
-	@UiField Label ticker; // text describing how much time left until publication
 	@UiField Label title;	
 	@UiField Votes votes;
 	@UiField Button showStories;
 	@UiField Button showUsers;
-	@UiField NavBox navbox;
+	@UiField NavBox leftBox;
+	
+	 // text describing how much time left until publication, or link to next edition	
+	@UiField NavBox rightBox;
 	@UiField DialogBox messageBox;
 
 	// The ticker is updated every minute
@@ -46,6 +48,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 	
 	// there is always a current edition, until the periodical is terminated
 	private Edition edition;
+	protected int numEditions;
 	
 	public void setStatus(String string) {
 		status.setText(string);
@@ -90,7 +93,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
   	  long minutes = remaining / (1000 * 60);
   	  long hours = minutes / 60;
   	  minutes = minutes % 60;
-  	  ticker.setText(new Long(hours).toString() + "h" + new Long(minutes + 1).toString() + "m Remaining");
+  	  rightBox.setLabelText(new Long(hours).toString() + "h" + new Long(minutes + 1).toString() + "m Remaining");
 	}
 
 	private long getTimeRemaining() {
@@ -119,7 +122,10 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 
 	private void cancelTickerTimer() {
 		// TODO say when edition was completed
-		ticker.setText("Completed");
+		if (edition.number == numEditions)
+			rightBox.setLabelText("Completed");
+		else 
+			rightBox.setEditionLink("Next Edition", "e:" + (edition.number + 1));
 		if (tickerTimer == null)
 			return;
 		
@@ -158,12 +164,13 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 		rnaService.sendState(editionNum, new AsyncCallback<State>() {
 
 			public void onSuccess(State result) {
+				numEditions = result.numEditions;
 				if (result.edition == null) {
 					edition = null;
 					votes.noEdition();
 					status.setText("Rapid News Awards is complete");
 					title.setText("Rapid News Awards");
-					navbox.setEditionLink("Last Edition", "e:" + result.numEditions);
+					leftBox.setEditionLink("Last Edition", "e:" + result.numEditions);
 					cancelTickerTimer();
 				}
 				else {
@@ -173,7 +180,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 					status.setText("got Edition " + number);
 					title.setText("Rapid News Awards #" + number);
 					if (number > 1)
-						navbox.setEditionLink("Previous Edition", "e:" + (number - 1));
+						leftBox.setEditionLink("Previous Edition", "e:" + (number - 1));
 					scheduleTickerTimer();
 				}
 			}
