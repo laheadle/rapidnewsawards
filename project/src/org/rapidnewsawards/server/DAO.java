@@ -8,7 +8,7 @@ import java.util.LinkedList;
 import java.util.logging.Logger;
 
 import org.rapidnewsawards.shared.Edition;
-import org.rapidnewsawards.shared.Judge_Time;
+import org.rapidnewsawards.shared.Follow;
 import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.Periodical;
@@ -29,7 +29,7 @@ public class DAO extends DAOBase
         ObjectifyService.factory().register(User.class);
         ObjectifyService.factory().register(VotesIndex.class);
         ObjectifyService.factory().register(EditionsIndex.class);
-        ObjectifyService.factory().register(Judge_Time.class);
+        ObjectifyService.factory().register(Follow.class);
         ObjectifyService.factory().register(Link.class);
         ObjectifyService.factory().register(Periodical.class);
         ObjectifyService.factory().register(Edition.class);
@@ -81,7 +81,7 @@ public class DAO extends DAOBase
 			return;
 		}
 		
-		Judge_Time jt = new Judge_Time(from.getKey(), to.getKey(), new Date(), upcoming);
+		Follow jt = new Follow(from.getKey(), to.getKey(), new Date(), upcoming);
 		o.put(jt);
 	}
 
@@ -90,7 +90,7 @@ public class DAO extends DAOBase
 		if (o == null)
 			o = instance.ofy();		
 
-		Query<Judge_Time> q = o.query(Judge_Time.class).ancestor(from).filter("judge", to.getKey()).filter("upcoming", upcoming);
+		Query<Follow> q = o.query(Follow.class).ancestor(from).filter("judge", to.getKey()).filter("upcoming", upcoming);
 		int count = q.countAll();
 		assert(count <= 1);
 		return count == 1;
@@ -188,8 +188,8 @@ public class DAO extends DAOBase
 			// social graph, votes
 			for(User u : users) {	
 				// copy previous social graph [upcoming and now] to next social graph [now]
-				for(Judge_Time previous : o.query(Judge_Time.class).ancestor(u)) {
-					final Judge_Time jtNew = new Judge_Time(getForwardingKey(previous.parent), getForwardingKey(previous.judge), previous.time, false);
+				for(Follow previous : o.query(Follow.class).ancestor(u)) {
+					final Follow jtNew = new Follow(getForwardingKey(previous.parent), getForwardingKey(previous.judge), previous.time, false);
 					o.put(jtNew);
 				}
 				o.put(new VotesIndex(getForwardingKey(u.getKey())));

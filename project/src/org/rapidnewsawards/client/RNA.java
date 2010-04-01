@@ -145,8 +145,10 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 
 
 	public void onValueChange(ValueChangeEvent<String> event) {
+		// check history token for which edition we are on
 		String s = event.getValue();
 		Integer editionNum;
+
 		if (s.equals("start")) {
 			editionNum = null;
 		}
@@ -160,6 +162,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 			}
 		}
 		
+		// fetch edition from server
 		status.setText("getting Edition");
 		rnaService.sendState(editionNum, new AsyncCallback<State>() {
 

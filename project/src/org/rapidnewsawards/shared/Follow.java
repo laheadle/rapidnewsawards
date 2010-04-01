@@ -12,29 +12,29 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Parent;
 
 @Entity
-public class Judge_Time {
+public class Follow {
 	@Id
 	Long id;
 
     @Parent
-	public Key<User> parent;
+	public Key<User> editor;
 	
 	public Key<User> judge;
 	public Date time;
 
 	public boolean upcoming;
 
-	public Judge_Time() {}
+	public Follow() {}
 	
-	public Judge_Time(Key<User> from, Key<User> to, Date date, boolean upcoming) {
-		parent = from;
+	public Follow(Key<User> from, Key<User> to, Date date, boolean upcoming) {
+		editor = from;
 		judge = to;
 		this.time = date;
 		this.upcoming = upcoming;
 	}
 
-	public Key<Judge_Time> getKey() {
-		return new Key<Judge_Time>(this.parent, Judge_Time.class, id);
+	public Key<Follow> getKey() {
+		return new Key<Follow>(this.editor, Follow.class, id);
 	}
 
 }
