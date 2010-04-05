@@ -39,22 +39,36 @@ public class MakeDataServlet extends HttpServlet {
 		ArrayList<Edition> editions = makeEditions(editionCount, periodSize);
 
 		Edition first = editions.get(0);
-		makeUser(first, "Megan Garber", "megangarber");
-		makeUser(first, "Josh Young", "jny2");
-		makeUser(first, "Steve Outing", "steveouting");	
+		makeEditor(first, "Megan Garber", "megangarber");
+		makeEditor(first, "Josh Young", "jny2");
+		makeEditor(first, "Steve Outing", "steveouting");	
 		
 		if (numUsers != null)
 			numUsers.value = new Integer(3);
 	}
 
 
-	public static User makeUser(Edition e, String name, String username) {
+	public static User makeEditor(Edition e, String name, String username) {
+		if ("__rna__" == username)
+			return null;
+		
 		Objectify txn = DAO.instance.fact().beginTransaction();
-		User u = new User(e, name, username);
+		User u = new User(e, name, username, false);
 		txn.put(u);
 		VotesIndex vi = new VotesIndex(u);
 		txn.put(vi);		
 		DAO.instance.follow(u, u, txn, false);
+		txn.getTxn().commit();
+		return u;
+	}
+
+	/*
+	 * See Edition.rnaEditor
+	 */
+	public static User makeRNAEditor(Edition e) {
+		Objectify txn = DAO.instance.fact().beginTransaction();
+		User u = new User(e, "RNA", "__rna__", true);
+		txn.put(u);
 		txn.getTxn().commit();
 		return u;
 	}
@@ -86,6 +100,13 @@ public class MakeDataServlet extends HttpServlet {
 		// generate keys
 		// don't use the same transaction -- different entity groups
 		DAO.instance.ofy().put(editions);
+
+		for (Edition e : editions) {
+			User u = makeRNAEditor(e);
+			e.setRNAEditor(u);
+			DAO.instance.ofy().put(e);
+		}
+		
 
 		EditionsIndex index = new EditionsIndex(p, editions);
 

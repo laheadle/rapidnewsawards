@@ -23,20 +23,23 @@ public class User implements IsSerializable {
 
 	public String username;
 
+	public boolean isRNA;
+	
 	@Transient
 	public LinkedList<Link> votes;	
 	
 	public User() {}
 	
-	public User(Edition e, String name, String username, LinkedList<Link> votes) {
+	public User(Edition e, String name, String username, LinkedList<Link> votes, boolean isRNA) {
 		this.parent = e.getKey();
 		this.name = name;
 		this.username = username;
 		this.votes = votes;
+		this.isRNA = isRNA;
 	}
 
-	public User(Edition e, String name, String username) {
-		this(e, name, username, new LinkedList<Link>());
+	public User(Edition e, String name, String username, boolean isRNA) {
+		this(e, name, username, new LinkedList<Link>(), isRNA);
 	}	
 
 	@Override

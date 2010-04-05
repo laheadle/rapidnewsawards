@@ -22,10 +22,14 @@ public class Edition implements IsSerializable, Comparable<Edition> {
 
 	public int number;
 	
+	/*
+	 * The special editor who follows new Users without empowering them.  These follows are called Joins.
+	 */
+	public Key<User> rnaEditor;
+	
 	public Edition() {}
 
 	public Edition(Date end, int number) {
-		this();
 		this.end = end;
 		this.number = number;
 	}
@@ -69,6 +73,10 @@ public class Edition implements IsSerializable, Comparable<Edition> {
 
 	public int getNumber() {
 		return number;
+	}
+
+	public void setRNAEditor(User u) {
+		rnaEditor = u.getKey();
 	}
 
 }

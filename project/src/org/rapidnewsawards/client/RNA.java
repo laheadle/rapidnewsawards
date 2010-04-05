@@ -26,6 +26,8 @@ import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
+ * History Token format: Action:Arg1:Arg2 where 
+ * Action = 'stories' | 'social'
  * 
  */
 public class RNA extends Composite implements EntryPoint, ValueChangeHandler<String>  {
@@ -36,10 +38,12 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 	@UiField Label title;	
 	@UiField Votes votes;
 	@UiField Button showStories;
-	@UiField Button showUsers;
+	@UiField Button showSocial;
 	@UiField NavBox leftBox;
 	
-	 // text describing how much time left until publication, or link to next edition	
+	 /**
+	  *  text describing how much time left until publication, or link to next edition	
+	  */
 	@UiField NavBox rightBox;
 	@UiField DialogBox messageBox;
 
@@ -71,7 +75,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 	    // 'start' state.
 	    String initToken = History.getToken();
 	    if (initToken.length() == 0) {
-	      History.newItem("start");
+	      History.newItem("stories:current:null");
 	    }
 
 	    // Add history listener
@@ -125,7 +129,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 		if (edition.number == numEditions)
 			rightBox.setLabelText("Completed");
 		else 
-			rightBox.setEditionLink("Next Edition", "e:" + (edition.number + 1));
+			rightBox.setEditionLink("Next Edition", getStoriesLink(edition.number + 1));
 		if (tickerTimer == null)
 			return;
 		
@@ -143,27 +147,13 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 		messageBox.hide();		
 	}
 
+	private String getStoriesLink(int edition) {
+		return "stories:" + edition + ":null";		
+	}
 
-	public void onValueChange(ValueChangeEvent<String> event) {
-		// check history token for which edition we are on
-		String s = event.getValue();
-		Integer editionNum;
-
-		if (s.equals("start")) {
-			editionNum = null;
-		}
-		else {
-			if (s.matches("e:[0-9]+")) {
-				editionNum = Integer.parseInt(s.split(":")[1]);
-			}
-			else {
-				messageBox.show();
-				return;
-			}
-		}
-		
+	private void getStories(Integer editionNum) {
 		// fetch edition from server
-		status.setText("getting Edition");
+		status.setText("getting Stories");
 		rnaService.sendState(editionNum, new AsyncCallback<State>() {
 
 			public void onSuccess(State result) {
@@ -173,7 +163,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 					votes.noEdition();
 					status.setText("Rapid News Awards is complete");
 					title.setText("Rapid News Awards");
-					leftBox.setEditionLink("Last Edition", "e:" + result.numEditions);
+					leftBox.setEditionLink("Last Edition", getStoriesLink(result.numEditions));
 					cancelTickerTimer();
 				}
 				else {
@@ -183,7 +173,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 					status.setText("got Edition " + number);
 					title.setText("Rapid News Awards #" + number);
 					if (number > 1)
-						leftBox.setEditionLink("Previous Edition", "e:" + (number - 1));
+						leftBox.setEditionLink("Previous Edition", getStoriesLink(number - 1));
 					scheduleTickerTimer();
 				}
 			}
@@ -192,6 +182,59 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 				status.setText("FAILED: " + caught);
 			}
 		});
+	}
+
+	private void getSocial(Integer editionNum) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	public void onValueChange(ValueChangeEvent<String> event) {
+		// check history token for which edition we are on
+		String s = event.getValue();
+		Integer editionNum;
+
+		String[] tokens = s.split(":");
+
+		if (tokens.length != 3) {
+			badRequest();
+			return;
+		}
+
+		// figure out the edition
+		if (tokens[1].equals("current")) {
+			editionNum = null;				
+		}
+		else {
+			try {
+				editionNum = Integer.parseInt(tokens[1]);
+			}
+			catch (NumberFormatException e) {
+				status.setText("Bad edition");
+				return;
+			}
+		}
+
+		// try to parse a stories link
+		if (tokens[0].equals("stories")) {
+			getStories(editionNum);
+			return;
+		}
+
+		// try to parse a social link
+		if (tokens[0].equals("social")) {
+			getSocial(editionNum);
+			return;
+		}
+
+		// give up
+		badRequest();
+		return;
+	}
+
+
+	private void badRequest() {
+		status.setText("Unable to understand your request.  Please try again");		
 	}
 
 	/**

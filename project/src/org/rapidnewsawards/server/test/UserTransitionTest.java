@@ -19,10 +19,15 @@ public class UserTransitionTest extends EditionTransitionTest {
 		
 		User mg = DAO.instance.findUserByEditionAndUsername(e1, "megangarber");
 
+		User rna = DAO.instance.findRNAUserByEdition(e1);
+
 		Edition e2 = DAO.instance.getCurrentEdition(Name.JOURNALISM);
 		User mg2 = DAO.instance.findUserByEditionAndUsername(e2, "megangarber");
 
+		User rna2 = DAO.instance.findRNAUserByEdition(e2);
+
 		assertFalse(mg2.equals(mg));
+		assertFalse(rna2.equals(rna));
 		
 		for(Perishable p : module.mockPs)
 			verify(p);

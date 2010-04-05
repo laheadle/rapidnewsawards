@@ -128,7 +128,7 @@
 
 				<g:cell height="20px" horizontalAlignment='ALIGN_LEFT'
 					verticalAlignment='ALIGN_MIDDLE'>
-					<g:Button styleName='{style.sideButton}' ui:field='showUsers'>
+					<g:Button styleName='{style.sideButton}' ui:field='showSocial'>
 						Users
 					</g:Button>
 

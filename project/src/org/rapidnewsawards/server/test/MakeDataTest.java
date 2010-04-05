@@ -24,7 +24,7 @@ public class MakeDataTest extends RNATest {
 		assertEquals(first.getKey(), editions.get(0).getKey());
 
 		// make user
-		User u = new User(first, "Megan Garber", "megangarber");
+		User u = new User(first, "Megan Garber", "megangarber", false);
 		assertNotNull(u.parent);
 		assertEquals(u.parent, first.getKey());
 		assertNull(u.id);

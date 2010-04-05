@@ -42,7 +42,7 @@ public class DAO extends DAOBase
     public User findUserByEditionAndUsername(Edition e, String username) {
     	Objectify o = ofy();
     	
-    	User u = o.query(User.class).ancestor(e).filter("username", username).get();
+    	User u = o.query(User.class).ancestor(e).filter("username", username).filter("isRNA", false).get();
 
     	if (u == null)
     		return null;
@@ -50,6 +50,18 @@ public class DAO extends DAOBase
     	fillRefs(u);
     	
     	return u;
+	}
+    
+    public User findRNAUserByEdition(Edition e) {
+    	Objectify o = ofy();
+    	
+    	Query<User> q = o.query(User.class).ancestor(e).filter("isRNA", true);
+    	if (q.countAll() != 1) {
+    		log.severe("bad rnaEditor count: " + q.countAll());
+    		return null;
+    	}
+
+    	return q.get();
 	}
     
 	private void fillRefs(User u) {
@@ -186,10 +198,10 @@ public class DAO extends DAOBase
 			// create new User relations
 			
 			// social graph, votes
-			for(User u : users) {	
+			for(User u : users) {
 				// copy previous social graph [upcoming and now] to next social graph [now]
 				for(Follow previous : o.query(Follow.class).ancestor(u)) {
-					final Follow jtNew = new Follow(getForwardingKey(previous.parent), getForwardingKey(previous.judge), previous.time, false);
+					final Follow jtNew = new Follow(getForwardingKey(previous.editor), getForwardingKey(previous.judge), previous.time, false);
 					o.put(jtNew);
 				}
 				o.put(new VotesIndex(getForwardingKey(u.getKey())));
@@ -304,9 +316,9 @@ public class DAO extends DAOBase
 		LinkedList<User> users = new LinkedList<User>();
 		Objectify o = ofy();
 		
-		for (User u : o.query(User.class).ancestor(e.getKey())) {
-			fillRefs(u);
-			users.add(u);
+		for (User u : o.query(User.class).ancestor(e.getKey()).filter("isRNA", false)) {
+				fillRefs(u);
+				users.add(u);
 		}
 
 		if (users.size() == 0)

@@ -16,6 +16,7 @@ public class Follow {
 	@Id
 	Long id;
 
+	// if this field is the rnaEditor, then this Follow is a "Join" -- no power is granted
     @Parent
 	public Key<User> editor;
 	
