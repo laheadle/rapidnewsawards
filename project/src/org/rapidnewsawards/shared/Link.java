@@ -5,6 +5,7 @@ import javax.persistence.Id;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.Parent;
 
 
 @Entity
@@ -15,10 +16,6 @@ public class Link implements IsSerializable {
 	@Id
 	Long id;
 	 	
-	public String getUrl() {
-		return url;
-	}
-
 	public Key<Link> getKey() {
 		return new Key<Link>(Link.class, id);
 	}
@@ -27,6 +24,5 @@ public class Link implements IsSerializable {
 		this.url = url;
 	}
 
-	public Link() {
-	}
+	public Link() {}
 }

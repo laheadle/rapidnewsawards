@@ -21,19 +21,11 @@
 		
 	</ui:style>
 
-<!--
-	<div class='{style.record}'>
-			<span class='{style.name}' ui:field="name" />
-			voted for
-			<span class='{style.link}' ui:field="link" />
-	</div>
--->
-
 	<div class='{style.record}'>
 	<p>
-			<span class='{style.name}' ui:field="name" />
-			voted for
-			<span class='{style.link}' ui:field="link" />
+			<span class='{style.name}' ui:field="subject" />
+			<span ui:field="verb" />
+			<span class='{style.link}' ui:field="object" />
 </p>
 	</div>
 

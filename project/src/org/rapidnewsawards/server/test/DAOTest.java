@@ -10,7 +10,6 @@ import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.User;
-import org.rapidnewsawards.shared.VotesIndex;
 
 public class DAOTest extends RNATest {
 
@@ -25,9 +24,6 @@ public class DAOTest extends RNATest {
 		assertNotNull(e);
 		LinkedList<User> users = DAO.instance.findUsersByEdition(e);
 		assertEquals(users.size(), 3);
-		assertNotNull(e.getUsers());
-		assertEquals(true, e.getUsers().size() > 0);
-		assertEquals(true, e.getUsers().size() == users.size());	
 	}
 
 	@Test
@@ -44,18 +40,12 @@ public class DAOTest extends RNATest {
 		assertNotNull(mg);
 		assertEquals(mg.getUsername(), "megangarber");
 		assertTrue("Self Follow", DAO.instance.isFollowing(mg, mg, null, false));
-		VotesIndex vi = DAO.instance.findVotesIndexByUser(mg, null);
-		assertNotNull(vi);
-		vi.ensureState();
-		assertNotNull(vi.votes);
-		assertTrue(vi.votes.size() == 0);
 	}
 
 	@Test
 	public void testfindUsers() {
 		LinkedList<User> users = DAO.instance.findUsersByEdition(DAO.instance.getCurrentEdition(Name.JOURNALISM));
 		assertTrue(users.size() > 1);
-		assertNotNull(users.get(0).getVotes());
 	}
 	
 	@Test

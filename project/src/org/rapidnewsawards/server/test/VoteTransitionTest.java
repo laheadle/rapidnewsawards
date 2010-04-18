@@ -19,18 +19,17 @@ public class VoteTransitionTest extends EditionTransitionTest {
 		User mg = DAO.instance.findUserByEditionAndUsername(e1, "megangarber");
 
 		Link l = DAO.instance.findOrCreateLinkByURL("http://example.com");
+		assertEquals(DAO.instance.getLatestUser_Links(e1).size(), 0);
 		DAO.instance.voteFor(mg, l);
 		assertTrue(DAO.instance.hasVoted(mg, l));
-
+		assertEquals(DAO.instance.getLatestUser_Links(e1).size(), 1);
 		Edition e2 = DAO.instance.getCurrentEdition(Name.JOURNALISM);
 		
-		for(User u : e2.getUsers()) {
+		for(User u : DAO.instance.findUsersByEdition(e2)) {
 			if (u.getUsername() == "megangarber")
 				mg = u;
 		}
-		
-		assertTrue(mg.getVotes().size() == 0);
-		
+				
 		mg = DAO.instance.findUserByEditionAndUsername(e2, "megangarber");
 
 		assertFalse(DAO.instance.hasVoted(mg, l));

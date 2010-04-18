@@ -5,16 +5,20 @@ import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import org.rapidnewsawards.shared.Edition;
+import org.rapidnewsawards.shared.Editor_Judge;
 import org.rapidnewsawards.shared.Follow;
 import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.Periodical;
-import org.rapidnewsawards.shared.State;
+import org.rapidnewsawards.shared.RecentSocials;
+import org.rapidnewsawards.shared.RecentVotes;
 import org.rapidnewsawards.shared.User;
-import org.rapidnewsawards.shared.VotesIndex;
+import org.rapidnewsawards.shared.User_Link;
+import org.rapidnewsawards.shared.Vote;
 import org.rapidnewsawards.shared.Periodical.EditionsIndex;
 
 import com.googlecode.objectify.Key;
@@ -27,7 +31,7 @@ public class DAO extends DAOBase
 {
     static {
         ObjectifyService.factory().register(User.class);
-        ObjectifyService.factory().register(VotesIndex.class);
+        ObjectifyService.factory().register(Vote.class);
         ObjectifyService.factory().register(EditionsIndex.class);
         ObjectifyService.factory().register(Follow.class);
         ObjectifyService.factory().register(Link.class);
@@ -47,8 +51,6 @@ public class DAO extends DAOBase
     	if (u == null)
     		return null;
     	
-    	fillRefs(u);
-    	
     	return u;
 	}
     
@@ -64,19 +66,13 @@ public class DAO extends DAOBase
     	return q.get();
 	}
     
-	private void fillRefs(User u) {
-		LinkedList<Link> votes = findVotesByUser(u);
-		u.setVotes(votes);		
-	}
-
 	public LinkedList<Link> findVotesByUser(User u) {
 		Objectify o = ofy();
-		VotesIndex i = o.query(VotesIndex.class).ancestor(u).get();
-		if (i.votes == null)
-			return new LinkedList<Link>();
-		if (i.votes.size() > 0)
-			return new LinkedList<Link>(o.get(i.votes).values());
-		throw new AssertionError(); // not reached
+		LinkedList<Link> links = new LinkedList<Link>();
+		for(Link l : o.query(Link.class).ancestor(u)) {
+			links.add(l);
+		}
+		return links;
 	}
 
 
@@ -117,28 +113,20 @@ public class DAO extends DAOBase
 	 * @throws IllegalArgumentException
 	 */
 	public void voteFor(User u, Link l) throws IllegalArgumentException {
-
 		if (hasVoted(u, l)) {
 			throw new IllegalArgumentException("Already Voted");
 		}
-
 		Objectify oTxn = fact().beginTransaction();
-		VotesIndex i = oTxn.query(VotesIndex.class).ancestor(u).get();
-		i.ensureState();
-		i.voteFor(l);
-		oTxn.put(i);
+		oTxn.put(new Vote(u.getKey(), l.getKey(), new Date()));
 		oTxn.getTxn().commit();
 	}
 	
-/*	public <T> Key<T> getKey(Class<T> clazz, T) {
-		return new Key<T>(clazz, id);
-	}
-*/
-
     public boolean hasVoted(User u, Link l) {
     	Objectify o = ofy();
-    	int count =  o.query(VotesIndex.class).ancestor(u).filter("votes =", l).countAll();
-    	assert(count <= 1);
+    	int count =  o.query(Vote.class).ancestor(u).filter("link", l.getKey()).countAll();
+    	if(count > 1) {
+    		log.severe("too many eventPanel for user " + u);
+    	}
 		return count == 1;
 	}
 
@@ -184,7 +172,7 @@ public class DAO extends DAOBase
 		}
 
 		public void to (Edition to, Objectify o) {
-			final LinkedList<User> users = from.getUsers();
+			final LinkedList<User> users = findUsersByEdition(from);
 
 			// set up table mapping previous user keys to next user keys
 			for(User u : users) {
@@ -197,24 +185,21 @@ public class DAO extends DAOBase
 
 			// create new User relations
 			
-			// social graph, votes
+			// social graph, eventPanel
 			for(User u : users) {
 				// copy previous social graph [upcoming and now] to next social graph [now]
 				for(Follow previous : o.query(Follow.class).ancestor(u)) {
 					final Follow jtNew = new Follow(getForwardingKey(previous.editor), getForwardingKey(previous.judge), previous.time, false);
 					o.put(jtNew);
 				}
-				o.put(new VotesIndex(getForwardingKey(u.getKey())));
 			}
 
 			
-			// parent, votes
+			// parent, eventPanel
 			for(User u : users) {
 				u.parent = to.getKey();
-				u.setVotes(new LinkedList<Link>()); 
 				o.put(u);
 			}
-			to.setUsers(users);
 		}
 	}
 	
@@ -242,7 +227,6 @@ public class DAO extends DAOBase
 				current = e;
 				p.setcurrentEditionKey(current.getKey());
 				p.setCurrentEdition(current);
-				fillRefs(current);
 				break;
 			}
 		}
@@ -280,11 +264,6 @@ public class DAO extends DAOBase
 		return expiry.isExpired();
 	}
 
-	void fillRefs(Edition e) {
-		LinkedList<User> users = findUsersByEdition(e);
-		e.setUsers(users);
-	}	
-
 	// does not fill in refs for editions found!
 	private ArrayList<Edition> findEditionsByPeriodical(Periodical p) {
 		ArrayList<Edition> editions = new ArrayList<Edition>();
@@ -317,7 +296,6 @@ public class DAO extends DAOBase
 		Objectify o = ofy();
 		
 		for (User u : o.query(User.class).ancestor(e.getKey()).filter("isRNA", false)) {
-				fillRefs(u);
 				users.add(u);
 		}
 
@@ -351,7 +329,6 @@ public class DAO extends DAOBase
 		}
 		
 		Edition result = p.getEdition(edition);
-		fillRefs(result);
 		return result;
 	}
 
@@ -359,12 +336,6 @@ public class DAO extends DAOBase
 		return getEdition(null, periodicalName);
 	}
 	
-	public VotesIndex findVotesIndexByUser(User mg, Objectify o) {
-		if (o == null)
-			o = ofy();
-		return o.query(VotesIndex.class).ancestor(mg).get();
-	}
-
 	// TODO cache this
 	public int getNumEditions(Name periodicalName) {
 		final Periodical p = DAO.instance.findPeriodicalByName(periodicalName);
@@ -376,12 +347,74 @@ public class DAO extends DAOBase
 		return i.editions.size();
 	}
 	
-	public State getState(Integer edition, Name name) {
+	public RecentVotes getRecentVotes(Integer edition, Name name) {
 		Edition e = getEdition(edition, name);
-		State s = new State();
+		// TODO handle bad edition number
+		RecentVotes s = new RecentVotes();
 		s.edition = e;
 		s.numEditions = getNumEditions(name);
+		s.votes = getLatestUser_Links(e);
 		return s;
+	}
+
+	/* Runs three queries: first get keys, then use the keys to get 2 sets of entities
+	 * 
+	 */
+	public LinkedList<User_Link> getLatestUser_Links(Edition e) {
+		LinkedList<User_Link> result = new LinkedList<User_Link>();
+		
+		ArrayList<Key<User>> users = new ArrayList<Key<User>>();
+		ArrayList<Key<Link>> links = new ArrayList<Key<Link>>();
+		
+		Query<Vote> q = ofy().query(Vote.class).ancestor(e).order("-time");
+		
+		for (Vote v : q) {
+			users.add(v.voter);
+			links.add(v.link);
+		}
+		Map<Key<User>, User> umap = ofy().get(users);
+		Map<Key<Link>, Link> lmap = ofy().get(links);
+		
+		for(int i = 0;i < users.size();i++) {
+			result.add(new User_Link(umap.get(users.get(i)), lmap.get(links.get(i))));
+		}
+
+		return result;
+	}
+
+	public RecentSocials getRecentSocials(Integer edition, Name name) {
+		Edition e = getEdition(edition, name);
+		RecentSocials s = new RecentSocials();
+		s.edition = e;
+		s.numEditions = getNumEditions(name);
+		s.socials = getLatestEditor_Judges(e);
+		return s;
+	}
+
+	/* Runs three queries: first get keys, then use the keys to get 2 sets of entities
+	 * 
+	 */
+	private LinkedList<Editor_Judge> getLatestEditor_Judges(Edition e) {
+		LinkedList<Editor_Judge> result = new LinkedList<Editor_Judge>();
+		
+		ArrayList<Key<User>> editors = new ArrayList<Key<User>>();
+		ArrayList<Key<User>> judges = new ArrayList<Key<User>>();
+		
+		Query<Follow> q = ofy().query(Follow.class).ancestor(e).filter("upcoming", false).order("-time");
+		
+		for (Follow f : q) {
+			editors.add(f.editor);
+			judges.add(f.judge);
+		}
+		Map<Key<User>, User> umap = ofy().get(editors);
+		Map<Key<User>, User> lmap = ofy().get(judges);
+		
+		for(int i = 0;i < editors.size();i++) {
+			result.add(new Editor_Judge(umap.get(editors.get(i)), lmap.get(judges.get(i))));
+		}
+
+		return result;
+
 	}
 
 

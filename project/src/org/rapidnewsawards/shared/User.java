@@ -1,10 +1,6 @@
 package org.rapidnewsawards.shared;
-import java.util.ArrayList;
-import java.util.LinkedList;
-
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Transient;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.googlecode.objectify.Key;
@@ -24,23 +20,15 @@ public class User implements IsSerializable {
 	public String username;
 
 	public boolean isRNA;
-	
-	@Transient
-	public LinkedList<Link> votes;	
-	
+		
 	public User() {}
 	
-	public User(Edition e, String name, String username, LinkedList<Link> votes, boolean isRNA) {
+	public User(Edition e, String name, String username, boolean isRNA) {
 		this.parent = e.getKey();
 		this.name = name;
 		this.username = username;
-		this.votes = votes;
 		this.isRNA = isRNA;
 	}
-
-	public User(Edition e, String name, String username, boolean isRNA) {
-		this(e, name, username, new LinkedList<Link>(), isRNA);
-	}	
 
 	@Override
 	public boolean equals(Object u) {
@@ -76,13 +64,4 @@ public class User implements IsSerializable {
 	public Key<User> getKey() {
 		return new Key<User>(this.parent, User.class, id);
 	}
-
-	public LinkedList<Link> getVotes() {
-		return votes;
-	}
-
-	public void setVotes(LinkedList<Link> votes) {
-		this.votes = votes; 
-	}
-
 }

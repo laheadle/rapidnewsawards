@@ -15,7 +15,6 @@ import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.Periodical;
 import org.rapidnewsawards.shared.User;
-import org.rapidnewsawards.shared.VotesIndex;
 import org.rapidnewsawards.shared.Periodical.EditionsIndex;
 
 import com.googlecode.objectify.Objectify;
@@ -27,7 +26,7 @@ public class MakeDataServlet extends HttpServlet {
 		Cell<Integer> numUsers = new Cell<Integer>(null);
 		makeData(100, ONE_MINUTE, numUsers);
 		out.println("created " + numUsers.value + " users");
-		out.println("created 10 editions");
+		out.println("created 100 editions");
 	}
 
 	public final static long ONE_SECOND = 1000; 
@@ -55,8 +54,6 @@ public class MakeDataServlet extends HttpServlet {
 		Objectify txn = DAO.instance.fact().beginTransaction();
 		User u = new User(e, name, username, false);
 		txn.put(u);
-		VotesIndex vi = new VotesIndex(u);
-		txn.put(vi);		
 		DAO.instance.follow(u, u, txn, false);
 		txn.getTxn().commit();
 		return u;
@@ -103,7 +100,7 @@ public class MakeDataServlet extends HttpServlet {
 
 		for (Edition e : editions) {
 			User u = makeRNAEditor(e);
-			e.setRNAEditor(u);
+			e.rnaEditor = u.getKey();
 			DAO.instance.ofy().put(e);
 		}
 		

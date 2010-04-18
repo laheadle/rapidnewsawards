@@ -96,7 +96,7 @@
 			text-align: left;
 		}
 		
-		.votes {
+		.eventPanel {
 			width: 100%
 		}
 	</ui:style>
@@ -129,10 +129,10 @@
 				<g:cell height="20px" horizontalAlignment='ALIGN_LEFT'
 					verticalAlignment='ALIGN_MIDDLE'>
 					<g:Button styleName='{style.sideButton}' ui:field='showSocial'>
-						Users
+						Social
 					</g:Button>
-
 				</g:cell>
+				
 				<g:cell height="100%" verticalAlignment='ALIGN_MIDDLE'>
 					<g:Button styleName='{style.sideButton}'>
 					</g:Button>
@@ -157,8 +157,7 @@
 				</g:cell>
 			</g:HorizontalPanel>
 
-
-			<rna:Votes styleName='{style.votes}' ui:field='votes'></rna:Votes>
+			<g:SimplePanel styleName='{style.eventPanel}' ui:field='mainPanel'/>
 
 		</g:VerticalPanel>
 	</g:HorizontalPanel>

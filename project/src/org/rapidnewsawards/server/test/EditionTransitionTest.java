@@ -40,7 +40,7 @@ public abstract class EditionTransitionTest extends RNATest {
 					Perishable mockP = createMock(Perishable.class);
 					if (currentEdition == numEditions + 1) {
 						// called by findPeriodicalByName
-						// we're going to add follows and votes to this one
+						// we're going to add follows and eventPanel to this one
 						expect(mockP.isExpired()).andReturn(false);
 					}
 					// second time editions are queried
@@ -51,7 +51,7 @@ public abstract class EditionTransitionTest extends RNATest {
 					}
 					else {
 						// called by findPeriodicalByName
-						// not expired: we're going to test this one for follows and votes copied in
+						// not expired: we're going to test this one for follows and eventPanel copied in
 						expect(mockP.isExpired()).andReturn(false);
 					}
 					replay(mockP);

@@ -8,5 +8,8 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
  * The async counterpart of <code>RNAService</code>.
  */
 public interface RNAServiceAsync {
-	void sendState(Integer edition, AsyncCallback<State> callback);
+	void sendRecentVotes(Integer edition, AsyncCallback<RecentVotes> callback);
+
+	void sendRecentSocials(Integer editionNum,
+			AsyncCallback<RecentSocials> asyncCallback);
 }

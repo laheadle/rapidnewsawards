@@ -75,9 +75,6 @@ public class FinalEditionCurrentTest extends RNATest {
 		// This tests that the number of users copied over to the final edition is the same as in the first edition
 		LinkedList<User> users = DAO.instance.findUsersByEdition(e);
 		assertEquals(users.size(), 3);
-		assertNotNull(e.getUsers());
-		assertEquals(true, e.getUsers().size() == 3);
-		assertEquals(true, e.getUsers().size() == users.size());
 	}
 
 
