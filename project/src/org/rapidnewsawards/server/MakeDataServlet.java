@@ -20,11 +20,12 @@ import org.rapidnewsawards.shared.Periodical.EditionsIndex;
 import com.googlecode.objectify.Objectify;
 
 public class MakeDataServlet extends HttpServlet {
+	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
 		PrintWriter out = response.getWriter();
 		Cell<Integer> numUsers = new Cell<Integer>(null);
-		makeData(100, ONE_MINUTE, numUsers);
+		makeData(100, 2 * ONE_MINUTE, numUsers);
 		out.println("created " + numUsers.value + " users");
 		out.println("created 100 editions");
 	}
@@ -37,10 +38,10 @@ public class MakeDataServlet extends HttpServlet {
 		// add users to first edition
 		ArrayList<Edition> editions = makeEditions(editionCount, periodSize);
 
-		Edition first = editions.get(0);
-		makeEditor(first, "Megan Garber", "megangarber");
-		makeEditor(first, "Josh Young", "jny2");
-		makeEditor(first, "Steve Outing", "steveouting");	
+		Edition second = editions.get(1);
+		makeEditor(second, "Megan Garber", "megangarber");
+		makeEditor(second, "Josh Young", "jny2");
+		makeEditor(second, "Steve Outing", "steveouting");	
 		
 		if (numUsers != null)
 			numUsers.value = new Integer(3);
@@ -52,9 +53,9 @@ public class MakeDataServlet extends HttpServlet {
 			return null;
 		
 		Objectify txn = DAO.instance.fact().beginTransaction();
-		User u = new User(e, name, username, false);
+		User u = new User(name, username, false);
 		txn.put(u);
-		DAO.instance.follow(u, u, txn, false);
+		DAO.instance.doSocial(u.getKey(), u.getKey(), e, txn, true);
 		txn.getTxn().commit();
 		return u;
 	}
@@ -62,9 +63,9 @@ public class MakeDataServlet extends HttpServlet {
 	/*
 	 * See Edition.rnaEditor
 	 */
-	public static User makeRNAEditor(Edition e) {
+	public static User makeRNAEditor() {
 		Objectify txn = DAO.instance.fact().beginTransaction();
-		User u = new User(e, "RNA", "__rna__", true);
+		User u = new User("RNA", "__rna__", true);
 		txn.put(u);
 		txn.getTxn().commit();
 		return u;
@@ -72,12 +73,15 @@ public class MakeDataServlet extends HttpServlet {
 
 	public static ArrayList<Edition> makeEditions(int editionCount, long periodSize) {
 		final Periodical p = new Periodical(Name.JOURNALISM);
+		User u = makeRNAEditor();
+		p.rnaEditor = u.getKey();
 		Objectify txn = DAO.instance.fact().beginTransaction();
 		txn.put(p);
 
+
 		// create editions using a local function class
 		// using arrays lets us mutate their contents from the local class method
-		final int[] number = { 1 };
+		final int[] number = { 0 };
 		final Date[] current = { new Date() };
 		final class makeEd {
 			final long duration;
@@ -96,14 +100,7 @@ public class MakeDataServlet extends HttpServlet {
 
 		// generate keys
 		// don't use the same transaction -- different entity groups
-		DAO.instance.ofy().put(editions);
-
-		for (Edition e : editions) {
-			User u = makeRNAEditor(e);
-			e.rnaEditor = u.getKey();
-			DAO.instance.ofy().put(e);
-		}
-		
+		DAO.instance.ofy().put(editions);		
 
 		EditionsIndex index = new EditionsIndex(p, editions);
 

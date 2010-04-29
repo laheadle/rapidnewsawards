@@ -1,7 +1,5 @@
 package org.rapidnewsawards.server.test;
 
-import java.util.LinkedList;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.rapidnewsawards.server.DAO;
@@ -13,6 +11,7 @@ import org.rapidnewsawards.shared.User;
 
 public class DAOTest extends RNATest {
 
+	@Override
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
@@ -22,8 +21,6 @@ public class DAOTest extends RNATest {
 	void verifyEdition() {
 		Edition e = DAO.instance.getCurrentEdition(Name.JOURNALISM);
 		assertNotNull(e);
-		LinkedList<User> users = DAO.instance.findUsersByEdition(e);
-		assertEquals(users.size(), 3);
 	}
 
 	@Test
@@ -39,37 +36,22 @@ public class DAOTest extends RNATest {
 		User mg = getUser(null);
 		assertNotNull(mg);
 		assertEquals(mg.getUsername(), "megangarber");
-		assertTrue("Self Follow", DAO.instance.isFollowing(mg, mg, null, false));
-	}
-
-	@Test
-	public void testfindUsers() {
-		LinkedList<User> users = DAO.instance.findUsersByEdition(DAO.instance.getCurrentEdition(Name.JOURNALISM));
-		assertTrue(users.size() > 1);
 	}
 	
 	@Test
 	public void testVote() {
 		User mg = getUser(null);
+		Edition e = DAO.instance.getCurrentEdition(Name.JOURNALISM);
+		
 		Link l = DAO.instance.findOrCreateLinkByURL("http://example.com");
 		Link l3 = DAO.instance.findOrCreateLinkByURL("http://example2.com");
-		DAO.instance.voteFor(mg, l);
-		assertTrue(DAO.instance.hasVoted(mg, l));
-		DAO.instance.voteFor(mg, l3);
-		assertTrue(DAO.instance.hasVoted(mg, l3));
-		assertTrue(DAO.instance.hasVoted(mg, l));
+		DAO.instance.voteFor(mg, e, l);
+		assertTrue(DAO.instance.hasVoted(mg, e, l));
+		DAO.instance.voteFor(mg, e, l3);
+		assertTrue(DAO.instance.hasVoted(mg, e, l3));
+		assertTrue(DAO.instance.hasVoted(mg, e, l));
 		Link l2 = DAO.instance.findOrCreateLinkByURL("http://bad.com");
-		assertFalse(DAO.instance.hasVoted(mg, l2));
-	}
-
-	@Test
-	public void testFollow() {
-		User mg = getUser(null);
-		User jny2 = getUser("jny2");
-		DAO.instance.follow(mg, jny2, null, false);
-		assertTrue(DAO.instance.isFollowing(mg, jny2, null, false));
-		DAO.instance.follow(mg, jny2, null, true);
-		assertTrue(DAO.instance.isFollowing(mg, jny2, null, true));
+		assertFalse(DAO.instance.hasVoted(mg, e, l2));
 	}
 
 

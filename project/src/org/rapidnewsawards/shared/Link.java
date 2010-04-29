@@ -5,7 +5,6 @@ import javax.persistence.Id;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.annotation.Parent;
 
 
 @Entity

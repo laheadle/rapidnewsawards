@@ -3,20 +3,12 @@ package org.rapidnewsawards.server.test;
 import static org.easymock.EasyMock.createMock;
 import static org.easymock.EasyMock.expect;
 import static org.easymock.EasyMock.replay;
-import static org.easymock.EasyMock.verify;
-
 import java.util.ArrayList;
 import java.util.Date;
 
-import org.junit.Test;
-import org.rapidnewsawards.server.Config;
-import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
 import org.rapidnewsawards.server.Perishable;
 import org.rapidnewsawards.server.PerishableFactory;
-import org.rapidnewsawards.shared.Edition;
-import org.rapidnewsawards.shared.User;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Provides;

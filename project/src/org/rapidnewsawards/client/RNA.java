@@ -5,8 +5,9 @@ import java.util.Date;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.RecentSocials;
 import org.rapidnewsawards.shared.RecentVotes;
-import org.rapidnewsawards.shared.UserRecord;
-import org.rapidnewsawards.shared.VotingRecord;
+import org.rapidnewsawards.shared.RelatedUserInfo;
+import org.rapidnewsawards.shared.User;
+import org.rapidnewsawards.shared.UserInfo;
 
 
 import com.google.gwt.core.client.EntryPoint;
@@ -14,6 +15,7 @@ import com.google.gwt.core.client.GWT;
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
+import com.google.gwt.resources.client.CssResource;
 import com.google.gwt.uibinder.client.UiBinder;
 import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
@@ -23,7 +25,6 @@ import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
-import com.google.gwt.user.client.ui.Hyperlink;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
@@ -38,10 +39,19 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 
 	interface UB extends UiBinder<Widget, RNA> {}
 
+
+	interface Style extends CssResource {
+		String sideButton();
+		String sideButtonSelected();
+	}
+	
+	@UiField Style style;
+
 	@UiField Label status;
 	@UiField Label title;	
 	@UiField SimplePanel mainPanel;
 	@UiField Button showStories;
+	@UiField Button showCurrentEdition;
 	@UiField Button showSocial;
 	@UiField NavBox leftBox;
 	
@@ -59,10 +69,13 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 	// there is always a current edition, until the periodical is terminated
 	private Edition edition;
 	protected int numEditions;
+	/*
+	 * The authenticated user
+	 */
+	private User user;
 	
 	public void setStatus(String string) {
 		status.setText(string);
-
 	}
 
 	/**
@@ -70,6 +83,9 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 	 */
 	public void onModuleLoad() {
 		RootLayoutPanel root = RootLayoutPanel.get();
+		eventPanel = new EventPanel();
+		//userPanel = new UserPanel();
+		//root.add(eventPanel);
 		initWidget(uiBinder.createAndBindUi(this));
 		root.add(this);
 		setVisible(true);		
@@ -77,7 +93,6 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 		messageBox.show();
 		messageBox.hide();
 
-		eventPanel = new EventPanel();
 		
 	    // If the application starts with no history token, redirect to a new
 	    // 'start' state.
@@ -123,7 +138,8 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 		updateTicker();
 		
 	    tickerTimer = new Timer() {
-	      public void run() {
+	      @Override
+		public void run() {
 	    	  updateTicker();
 	      }
 	    };
@@ -134,28 +150,70 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 
 	private void cancelTickerTimer() {
 		// TODO say when edition was completed
-		if (edition.number == numEditions)
-			rightBox.setLabelText("Completed");
-		else 
-			rightBox.setEditionLink("Next Edition", getStoriesLink(edition.number + 1));
+		if (edition != null) {
+			if (edition.number == numEditions - 1)
+				rightBox.setLabelText("Completed");
+			else 
+				rightBox.setLink("Next Edition", getStoriesLink(edition.number + 1));
+		}
 		if (tickerTimer == null)
 			return;
-		
+
 		tickerTimer.cancel();		
 	}
 
+	void enable(Object o) {
+		if (o == showSocial) {
+			showSocial.getElement().removeClassName(style.sideButton());		
+			showSocial.getElement().addClassName(style.sideButtonSelected());			
+		}
+		else {
+			showSocial.getElement().removeClassName(style.sideButtonSelected());		
+			showSocial.getElement().addClassName(style.sideButton());
+		}
+		if (o == showCurrentEdition) {
+			showCurrentEdition.getElement().removeClassName(style.sideButton());		
+			showCurrentEdition.getElement().addClassName(style.sideButtonSelected());						
+		}
+		else {
+			showCurrentEdition.getElement().removeClassName(style.sideButtonSelected());		
+			showCurrentEdition.getElement().addClassName(style.sideButton());	
+		}
+		if (o == showStories) {
+			showStories.getElement().removeClassName(style.sideButton());		
+			showStories.getElement().addClassName(style.sideButtonSelected());
+		}
+		else {
+			showStories.getElement().removeClassName(style.sideButtonSelected());		
+			showStories.getElement().addClassName(style.sideButton());					
+		}
+	}
 	
 	@UiHandler("showStories")
 	void showStories(ClickEvent e) {
-		String[] tokens = History.getToken().split(":");
-		History.newItem("stories:" + tokens[1] + ":" + tokens[2]);
+		if (edition instanceof Edition) {
+			History.newItem("stories:"+ edition.number+":null");
+		}
+		else {
+			History.newItem("stories:current:null");
+		}
+		History.fireCurrentHistoryState();
+	}
+
+	@UiHandler("showCurrentEdition")
+	void showCurrentEdition(ClickEvent e) {
+		History.newItem("stories:current:null");
 		History.fireCurrentHistoryState();
 	}
 
 	@UiHandler("showSocial")
 	void showSocial(ClickEvent e) {
-		String[] tokens = History.getToken().split(":");
-		History.newItem("social:" + tokens[1] + ":" + tokens[2]);
+		if (edition instanceof Edition) {
+			History.newItem("social:"+ edition.number+":null");
+		}
+		else {
+			History.newItem("social:current:null");
+		}
 		History.fireCurrentHistoryState();
 	}
 
@@ -170,7 +228,8 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 
 	private void getStories(Integer editionNum) {
 		// fetch edition from server
-		status.setText("getting Stories");
+		setStatus("getting Stories");
+		enable(showStories);
 		eventPanel.clearPanel();
 		eventPanel.setVisible(true);
 		mainPanel.setWidget(eventPanel);
@@ -181,70 +240,62 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 				numEditions = result.numEditions;
 				if (result.edition == null) {
 					edition = null;
-					status.setText("Rapid News Awards is complete");
-					title.setText("Rapid News Awards");
-					leftBox.setEditionLink("Last Edition", getStoriesLink(result.numEditions));
+					setStatus("Journalism is complete");
+					title.setText("Journalism");
+					leftBox.setLink("Last Edition", getStoriesLink(result.numEditions - 1));
 					cancelTickerTimer();
 				}
 				else {
 					edition = result.edition;
 					eventPanel.showVotes(result.votes);
 					final int number = result.edition.number;
-					status.setText("Got " + result.votes.size() + " votes");
-					title.setText("Rapid News Awards #" + number);
-					if (number > 1)
-						leftBox.setEditionLink("Previous Edition", getStoriesLink(number - 1));
+					setStatus("Got " + result.votes.size() + " votes");
+					title.setText("Journalism #" + number);
+					if (number > 0)
+						leftBox.setLink("Previous Edition", getStoriesLink(number - 1));
 					scheduleTickerTimer();
 				}
 			}
 
 			public void onFailure(Throwable caught) {
-				status.setText("FAILED: " + caught);
+				setStatus("FAILED: " + caught);
 			}
 		});
 	}
+ 
 
-
-	private void getUser(Integer editionNum, long userId) {
+	private void getUser(long userId) {
 		// TODO Auto-generated method stub
-		status.setText("getting User");
-		userPanel.clearPanel();
+		setStatus("getting User");
+/*		userPanel.clearPanel();
 		userPanel.setVisible(true);
-		mainPanel.setWidget(userPanel);			
+		eventPanel.setVisible(false);			
+	*/	
+		mainPanel.setWidget(eventPanel);
 		
-		rnaService.sendUser(editionNum, userId, new AsyncCallback<VotingRecord>() {
+		final RNA rna = this;
+		
+		rnaService.sendRelatedUser(user, userId, new AsyncCallback<RelatedUserInfo>() {
 
-			public void onSuccess(VotingRecord result) {
-				numEditions = result.numEditions;
-				if (result.edition == null) {
-					edition = null;
-					status.setText("Rapid News Awards is complete");
-					title.setText("Rapid News Awards");
-					leftBox.setEditionLink("Last Edition", getStoriesLink(result.numEditions));
-					cancelTickerTimer();
-				}
-				else {
-					edition = result.edition;
-					final int number = result.edition.number;
-					status.setText("Got " + result.socials.size() + " socials");
-					title.setText("Rapid News Awards #" + number);
-					if (number > 1)
-						leftBox.setEditionLink("Previous Edition", getStoriesLink(number - 1));
-					scheduleTickerTimer();
-					eventPanel.clearPanel();
-					userPanel.showUser(result);
-				}
+			public void onSuccess(RelatedUserInfo result) {
+				title.setText(result.userInfo.user.name);
+				cancelTickerTimer();
+				leftBox.setLabelText("");
+				rightBox.setFollowCheckBox(result.following, user, result.userInfo.user, rna);
+				setStatus("Got " + result.userInfo.votes.size() + " votes");
+				eventPanel.showUser(result.userInfo);
 			}
 
 			public void onFailure(Throwable caught) {
-				status.setText("FAILED: " + caught);
+				setStatus("FAILED: " + caught);
 			}
 		});
 		
 	}
 
 	private void getSocial(Integer editionNum) {
-		status.setText("getting Socials");
+		setStatus("getting Socials");
+		enable(showSocial);
 		eventPanel.clearPanel();
 		eventPanel.setVisible(true);
 		mainPanel.setWidget(eventPanel);			
@@ -255,18 +306,18 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 				numEditions = result.numEditions;
 				if (result.edition == null) {
 					edition = null;
-					status.setText("Rapid News Awards is complete");
-					title.setText("Rapid News Awards");
-					leftBox.setEditionLink("Last Edition", getStoriesLink(result.numEditions));
+					setStatus("Journalism is complete");
+					title.setText("Journalism");
+					leftBox.setLink("Last Edition", getStoriesLink(result.numEditions - 1));
 					cancelTickerTimer();
 				}
 				else {
 					edition = result.edition;
 					final int number = result.edition.number;
-					status.setText("Got " + result.socials.size() + " socials");
-					title.setText("Rapid News Awards #" + number);
-					if (number > 1)
-						leftBox.setEditionLink("Previous Edition", getStoriesLink(number - 1));
+					setStatus("Got " + result.socials.size() + " socials");
+					title.setText("Journalism #" + number);
+					if (number > 0)
+						leftBox.setLink("Previous Edition", getStoriesLink(number - 1));
 					scheduleTickerTimer();
 					eventPanel.clearPanel();
 					eventPanel.showSocials(result.socials);
@@ -274,7 +325,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 			}
 
 			public void onFailure(Throwable caught) {
-				status.setText("FAILED: " + caught);
+				setStatus("FAILED: " + caught);
 			}
 		});
 	}
@@ -300,7 +351,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 				editionNum = Integer.parseInt(tokens[1]);
 			}
 			catch (NumberFormatException e) {
-				status.setText("Bad edition");
+				setStatus("Bad edition");
 				return;
 			}
 		}
@@ -320,8 +371,8 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 		// try to parse a user link
 		if (tokens[0].equals("user")) {
 			try {
-				Long userId = Long.parseLong(tokens[2]);
-				getUser(editionNum, userId);
+				Long userId = Long.parseLong(tokens[1]);
+				getUser(userId);
 				return;
 			}
 			catch (NumberFormatException e) {
@@ -336,13 +387,13 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 	}
 
 	private void badRequest() {
-		status.setText("Unable to understand your request.  Please try again");		
+		setStatus("Unable to understand your request.  Please try again");		
 	}
 
 	/**
 	 * Create a remote service proxy to talk to the server-side service.
 	 */
-	private final RNAServiceAsync rnaService = GWT
+	public static final RNAServiceAsync rnaService = GWT
 	.create(RNAService.class);
 
 	private static RNA instance;

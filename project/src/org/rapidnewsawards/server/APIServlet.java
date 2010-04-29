@@ -15,7 +15,8 @@ import javax.servlet.http.HttpServletResponse;
   -->
  */
 public class APIServlet extends HttpServlet {
-	  public void doGet(HttpServletRequest request, HttpServletResponse response)
+	  @Override
+	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	  						throws ServletException, IOException {
 		  PrintWriter out = response.getWriter();
 		  String s = request.getRequestURL().toString();

@@ -5,7 +5,8 @@ public enum Name {
 	JOURNALISM("Journalism"),
 	USERNAME("username"), 
 	URL("url"), 
-	NAME("name");
+	NAME("name"), 
+	NEXT("next");
 
 	public String name;
 

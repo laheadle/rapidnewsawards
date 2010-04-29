@@ -14,19 +14,23 @@ import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.User;
 
-import com.google.appengine.api.datastore.EntityNotFoundException;
-
 
 public class VoteServlet extends HttpServlet {
 	private static final Logger log = Logger.getLogger(VoteServlet.class.getName());
 	
+	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
 		PrintWriter out = response.getWriter();
 
 		Edition e = DAO.instance.getCurrentEdition(Name.JOURNALISM);
 		
-		User u = DAO.instance.findUserByEditionAndUsername(e, request.getParameter("username"));
+		if (e == null) {
+			out.println("No current edition");
+			return;			
+		}
+		
+		User u = DAO.instance.findUserByUsername(request.getParameter("username"));
 		if (u == null) {
 			out.println("No such voter");
 			return;
@@ -38,7 +42,7 @@ public class VoteServlet extends HttpServlet {
 		Link l = DAO.instance.findOrCreateLinkByURL(url);
 		
 		try	{
-			DAO.instance.voteFor(u, l);
+			DAO.instance.voteFor(u, e, l);
 		}
 		// TODO handle malformed urls
 		catch (IllegalArgumentException ex) {

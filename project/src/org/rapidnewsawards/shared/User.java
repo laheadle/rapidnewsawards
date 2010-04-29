@@ -4,17 +4,13 @@ import javax.persistence.Id;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.annotation.Parent;
 
 @Entity
 public class User implements IsSerializable {
 
-    @Parent 
-    public Key<Edition> parent; 
-
     public String name;
 		
-	@Id 	
+	@Id
 	public Long id;
 
 	public String username;
@@ -23,8 +19,7 @@ public class User implements IsSerializable {
 		
 	public User() {}
 	
-	public User(Edition e, String name, String username, boolean isRNA) {
-		this.parent = e.getKey();
+	public User(String name, String username, boolean isRNA) {
 		this.name = name;
 		this.username = username;
 		this.isRNA = isRNA;
@@ -37,9 +32,6 @@ public class User implements IsSerializable {
 		}
 		User u0 = (User) u;
 		if(!id.equals(u0.id)) {
-			return false;
-		}
-		if (!parent.equals(u0.parent)) {
 			return false;
 		}
 		return true;
@@ -62,6 +54,6 @@ public class User implements IsSerializable {
 	}
 
 	public Key<User> getKey() {
-		return new Key<User>(this.parent, User.class, id);
+		return new Key<User>(User.class, id);
 	}
 }

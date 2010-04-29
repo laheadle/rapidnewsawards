@@ -1,11 +1,11 @@
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
 	xmlns:g='urn:import:com.google.gwt.user.client.ui' xmlns:rna='urn:import:org.rapidnewsawards.client'>
 
-	<ui:style>
+	<ui:style type='org.rapidnewsawards.client.RNA.Style'>
 		.navigationFrame {
-			margin-left: 100px;
+			margin-left: 250px;
 			margin-bottom: auto;
-			width: 80px;
+			width: 140px;
 		}
 		
 		.outerframe {
@@ -63,7 +63,7 @@
 		}
 		
 		.navigationBottom {
-			height: 180px;
+			height: 580px;
 			width: 100%;
 			background-color: #cccccc;
 		}
@@ -119,10 +119,18 @@
 
 
 			<g:VerticalPanel styleName='{style.navigationBottom}'>
+			
 				<g:cell height="20px" horizontalAlignment='ALIGN_LEFT'
 					verticalAlignment='ALIGN_MIDDLE'>
-					<g:Button styleName='{style.sideButtonSelected}' ui:field='showStories'>
-						Stories
+					<g:Button styleName='{style.sideButtonSelected}' ui:field='showCurrentEdition'>
+						Current Edition
+           			</g:Button>
+				</g:cell>
+
+				<g:cell height="20px" horizontalAlignment='ALIGN_LEFT'
+					verticalAlignment='ALIGN_MIDDLE'>
+					<g:Button styleName='{style.sideButton}' ui:field='showStories'>
+						Votes
            			</g:Button>
 				</g:cell>
 
@@ -146,8 +154,7 @@
 
 			<g:HorizontalPanel styleName='{style.top}'>
 				<rna:NavBox ui:field="leftBox"></rna:NavBox>
-				<g:Label styleName='{style.title}' ui:field="title">Rapid News
-					Awards </g:Label>
+				<g:Label styleName='{style.title}' ui:field="title">Journalism</g:Label>
 				<rna:NavBox ui:field="rightBox"></rna:NavBox>
 			</g:HorizontalPanel>
 

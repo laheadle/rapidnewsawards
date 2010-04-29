@@ -7,8 +7,6 @@ import static org.easymock.EasyMock.verify;
 
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.LinkedList;
-
 import org.junit.Before;
 import org.junit.Test;
 import org.rapidnewsawards.server.DAO;
@@ -16,8 +14,6 @@ import org.rapidnewsawards.server.MakeDataServlet;
 import org.rapidnewsawards.server.Perishable;
 import org.rapidnewsawards.server.PerishableFactory;
 import org.rapidnewsawards.shared.Edition;
-import org.rapidnewsawards.shared.User;
-
 import com.google.inject.AbstractModule;
 import com.google.inject.Guice;
 import com.google.inject.Provides;
@@ -58,6 +54,7 @@ public class FinalEditionCurrentTest extends RNATest {
 		}
 	}
 
+	@Override
 	@Before
 	public void setUp() throws Exception {
 		super.setUp();
@@ -71,10 +68,7 @@ public class FinalEditionCurrentTest extends RNATest {
 		for(Perishable p : mockPs)
 			verify(p);
 		assertNotNull(e);
-		assertEquals(e.number, numEditions);
-		// This tests that the number of users copied over to the final edition is the same as in the first edition
-		LinkedList<User> users = DAO.instance.findUsersByEdition(e);
-		assertEquals(users.size(), 3);
+		assertEquals(e.number, numEditions - 1);
 	}
 
 

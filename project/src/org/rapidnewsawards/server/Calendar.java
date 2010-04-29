@@ -16,6 +16,6 @@ public class Calendar implements Perishable {
 	}
 	
 	public boolean isExpired() {
-		return end.before(new Date());
+		return !(new Date()).before(end);
 	}
 }

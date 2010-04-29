@@ -4,9 +4,7 @@ import java.io.File;
 
 import junit.framework.TestCase;
 
-import org.rapidnewsawards.server.Config;
 import org.rapidnewsawards.server.DAO;
-import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.User;
 
 import com.google.appengine.api.datastore.dev.LocalDatastoreService;
@@ -19,7 +17,7 @@ public abstract class RNATest extends TestCase {
 		if (username == null)
 			username = "megangarber";
 
-		return DAO.instance.findUserByEditionAndUsername(DAO.instance.getCurrentEdition(Name.JOURNALISM), username);
+		return DAO.instance.findUserByUsername(username);
 	}
 
 	@Override

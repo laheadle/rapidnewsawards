@@ -1,9 +1,10 @@
-<!-- Indices written at Tue, 6 Apr 2010 17:57:51 EDT -->
+<!-- Indices written at Wed, 28 Apr 2010 13:56:56 EDT -->
 
 <datastore-indexes>
 
     <!-- Used 2 times in query history -->
-    <datastore-index kind="Vote" ancestor="true" source="auto">
+    <datastore-index kind="Vote" ancestor="false" source="auto">
+        <property name="edition" direction="asc"/>
         <property name="time" direction="desc"/>
     </datastore-index>
 

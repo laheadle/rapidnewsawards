@@ -12,9 +12,10 @@ import com.googlecode.objectify.annotation.Parent;
 @Entity
 public class Vote implements IsSerializable {
 	@Parent
-	public
-	Key<User> voter;
+	public Key<User> voter;
 
+	public Key<Edition> edition;
+	
 	public Key<Link> link;
 	
 	public Date time;
@@ -23,8 +24,9 @@ public class Vote implements IsSerializable {
 	
 	public Vote() {}
 	
-	public Vote(Key<User> voter, Key<Link> link, Date time) {
+	public Vote(Key<User> voter, Key<Edition> edition, Key<Link> link, Date time) {
 		this.voter = voter;
+		this.edition = edition;
 		this.link = link;
 		this.time = time;
 	}

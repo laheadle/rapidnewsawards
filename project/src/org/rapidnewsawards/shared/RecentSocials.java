@@ -7,5 +7,5 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 public class RecentSocials implements IsSerializable {
 	public int numEditions;
 	public Edition edition;
-	public LinkedList<Editor_Judge> socials;
+	public LinkedList<SocialInfo> socials;
 }

@@ -23,7 +23,7 @@
 
 	<div class='{style.record}'>
 	<p>
-			<span class='{style.name}' ui:field="subject" />
+			<a class='{style.name}' ui:field="subject" />
 			<span ui:field="verb" />
 			<span class='{style.link}' ui:field="object" />
 </p>

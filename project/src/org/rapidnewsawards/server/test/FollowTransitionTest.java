@@ -3,11 +3,11 @@ package org.rapidnewsawards.server.test;
 import static org.easymock.EasyMock.verify;
 
 import org.junit.Test;
-import org.rapidnewsawards.server.Config;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.Perishable;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Name;
+import org.rapidnewsawards.shared.Return;
 import org.rapidnewsawards.shared.User;
 
 public class FollowTransitionTest extends EditionTransitionTest {
@@ -15,22 +15,21 @@ public class FollowTransitionTest extends EditionTransitionTest {
 		
 	@Test
 	public void testFollows() {
-		Edition e1 = DAO.instance.getCurrentEdition(Name.JOURNALISM);
+		final Edition e1 = DAO.instance.getCurrentEdition(Name.JOURNALISM);
+		Edition e2 = DAO.instance.getRawEdition(Name.JOURNALISM, 1, null);
 		
-		User mg = DAO.instance.findUserByEditionAndUsername(e1, "megangarber");
-		User jny2 = DAO.instance.findUserByEditionAndUsername(e1, "jny2");
+		User mg = DAO.instance.findUserByUsername("megangarber");
+		User jny2 = DAO.instance.findUserByUsername("jny2");
 
-		DAO.instance.follow(mg, jny2, null, true);
-		DAO.instance.follow(jny2, mg, null, false);
+		Return r = DAO.instance.doSocial(mg.getKey(), jny2.getKey(), e2, null, true);
+		assertEquals(r.s, Return.ABOUT_TO_FOLLOW.s);
+		
+		assertNull(DAO.instance.getFollow(mg.getKey(), jny2.getKey(), null));
+		assertNotNull("About To Follow", DAO.instance.getAboutToSocial(mg.getKey(), jny2.getKey(), e2, null));
 
-		Edition e2 = DAO.instance.getCurrentEdition(Name.JOURNALISM);
-		User mg2 = DAO.instance.findUserByEditionAndUsername(e2, "megangarber");
-		User jny22 = DAO.instance.findUserByEditionAndUsername(e2, "jny2");
+		e2 = DAO.instance.getCurrentEdition(Name.JOURNALISM);
 
-		assertFalse(DAO.instance.isFollowing(mg2, jny22, null, true));
-		assertTrue(DAO.instance.isFollowing(mg2, jny22, null, false));
-		assertTrue(DAO.instance.isFollowing(jny22, jny22, null, false));
-		assertFalse(DAO.instance.isFollowing(jny22, mg2, null, true));
+		assertNotNull(DAO.instance.getFollow(mg.getKey(), jny2.getKey(), null));
 
 		for(Perishable p : module.mockPs)
 			verify(p);

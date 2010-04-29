@@ -3,24 +3,29 @@ package org.rapidnewsawards.server;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import org.rapidnewsawards.shared.Edition;
-import org.rapidnewsawards.shared.Editor_Judge;
+import org.rapidnewsawards.shared.SocialInfo;
 import org.rapidnewsawards.shared.Follow;
+import org.rapidnewsawards.shared.RelatedUserInfo;
+import org.rapidnewsawards.shared.Return;
+import org.rapidnewsawards.shared.SocialEvent;
 import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.Periodical;
 import org.rapidnewsawards.shared.RecentSocials;
 import org.rapidnewsawards.shared.RecentVotes;
 import org.rapidnewsawards.shared.User;
+import org.rapidnewsawards.shared.UserInfo;
 import org.rapidnewsawards.shared.User_Link;
 import org.rapidnewsawards.shared.Vote;
+import org.rapidnewsawards.shared.Vote_Link;
 import org.rapidnewsawards.shared.Periodical.EditionsIndex;
 
+import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
@@ -33,6 +38,7 @@ public class DAO extends DAOBase
         ObjectifyService.factory().register(User.class);
         ObjectifyService.factory().register(Vote.class);
         ObjectifyService.factory().register(EditionsIndex.class);
+        ObjectifyService.factory().register(SocialEvent.class);
         ObjectifyService.factory().register(Follow.class);
         ObjectifyService.factory().register(Link.class);
         ObjectifyService.factory().register(Periodical.class);
@@ -43,10 +49,10 @@ public class DAO extends DAOBase
     public static DAO instance = new DAO();
 	private static final Logger log = Logger.getLogger(DAO.class.getName());
         
-    public User findUserByEditionAndUsername(Edition e, String username) {
+    public User findUserByUsername(String username) {
     	Objectify o = ofy();
     	
-    	User u = o.query(User.class).ancestor(e).filter("username", username).filter("isRNA", false).get();
+    	User u = o.query(User.class).filter("username", username).filter("isRNA", false).get();
 
     	if (u == null)
     		return null;
@@ -54,10 +60,10 @@ public class DAO extends DAOBase
     	return u;
 	}
     
-    public User findRNAUserByEdition(Edition e) {
+    public User findRNAUser() {
     	Objectify o = ofy();
     	
-    	Query<User> q = o.query(User.class).ancestor(e).filter("isRNA", true);
+    	Query<User> q = o.query(User.class).filter("isRNA", true);
     	if (q.countAll() != 1) {
     		log.severe("bad rnaEditor count: " + q.countAll());
     		return null;
@@ -76,35 +82,90 @@ public class DAO extends DAOBase
 	}
 
 
-	public void follow(User from, User to, Objectify o, boolean upcoming) {
+	/*
+	 * Do a follow, unfollow, or cancel pending follow
+	 * @param e this should be a future edition
+	 */
+	public Return doSocial(Key<User> from, Key<User> to, Edition e, Objectify o, boolean on) {
+		Return r = Return.SUCCESS;
 		if (o == null) {
 			o = fact().beginTransaction();
-			follow(from, to, o, upcoming);
+			r = doSocial(from, to, e, o, on);
 			o.getTxn().commit();
-			return;
+			return r;
 		}
 		
-		if (isFollowing(from, to, o, upcoming)) {
-			log.warning("Already following(" + upcoming + ")" + ": [" + from + ", " + to + "]");
-			return;
-		}
+		final Follow following = getFollow(from, to, o);
+		final SocialEvent aboutToSocial = getAboutToSocial(from, to, e, o);
 		
-		Follow jt = new Follow(from.getKey(), to.getKey(), new Date(), upcoming);
-		o.put(jt);
+		if (on) {
+			// this follow won't take effect until a transition
+			if (following != null) {
+				log.warning("Already following: [" + from + ", " + to + "]");
+				r = Return.ALREADY_FOLLOWING;
+			}
+			else if (aboutToSocial != null && aboutToSocial.on) {
+				log.warning("Already about to follow: [" + from + ", " + to + "]");
+				r = Return.ALREADY_ABOUT_TO_FOLLOW;				
+			}
+			else if (aboutToSocial != null) {
+				// cancel (delete) the pending unfollow
+				o.delete(aboutToSocial);
+				r = Return.PENDING_UNFOLLOW_CANCELLED;				
+			}			
+			else {
+				// this unfollow won't take effect until a transition
+				final SocialEvent follow = new SocialEvent(from, to, e.getKey(), new Date(), on);
+				r = Return.ABOUT_TO_FOLLOW;
+				o.put(follow);
+			}
+		}
+		else if (following != null) {
+			// this unfollow won't take effect until a transition
+			final SocialEvent unfollow = new SocialEvent(from, to, e.getKey(), new Date(), on);
+			o.put(unfollow);
+			r = Return.ABOUT_TO_UNFOLLOW;			
+		}
+		else if (aboutToSocial != null) {
+			// cancel (delete) the pending follow
+			o.delete(aboutToSocial);
+			r = Return.PENDING_FOLLOW_CANCELLED;
+		}
+		else {
+			log.warning("Can't unfollow unless following: " + from + ", " + to + ", " + e);
+			r = Return.NOT_FOLLOWING;
+		}
+		return r;
 	}
 
 
-	public boolean isFollowing(User from, User to, Objectify o, boolean upcoming) {
+	public Follow getFollow(Key<User> from, Key<User> to, Objectify o) {
 		if (o == null)
-			o = instance.ofy();		
+			o = instance.ofy();
 
-		Query<Follow> q = o.query(Follow.class).ancestor(from).filter("judge", to.getKey()).filter("upcoming", upcoming);
-		int count = q.countAll();
-		assert(count <= 1);
-		return count == 1;
+		return o.query(Follow.class).ancestor(from).filter("judge", to).get();
+	}
+
+	public SocialEvent getAboutToSocial(Key<User> from, Key<User> to, Edition e, Objectify o) {
+		if (o == null)
+			o = instance.ofy();
+
+		return o.query(SocialEvent.class).ancestor(from).filter("judge", to).filter("edition", e.getKey()).get();
 	}
 	
-
+	public boolean isFollowingOrAboutToFollow(Key<User> from, Key<User> to) {
+		Edition e = getRawEdition(Name.JOURNALISM, -2, null);
+		SocialEvent about = getAboutToSocial(from, to, e, null);
+		
+		if (about != null) {
+			return about.on;
+		}
+		else {
+			Follow f = getFollow(from, to, null);
+			return f != null;
+		}
+	}
+	
 	/**
 	 * Store a new vote in the DB by a user for a link
 	 * 
@@ -112,18 +173,18 @@ public class DAO extends DAOBase
 	 * @param l the link voted for
 	 * @throws IllegalArgumentException
 	 */
-	public void voteFor(User u, Link l) throws IllegalArgumentException {
-		if (hasVoted(u, l)) {
+	public void voteFor(User u, Edition e, Link l) throws IllegalArgumentException {
+		if (hasVoted(u, e, l)) {
 			throw new IllegalArgumentException("Already Voted");
 		}
 		Objectify oTxn = fact().beginTransaction();
-		oTxn.put(new Vote(u.getKey(), l.getKey(), new Date()));
+		oTxn.put(new Vote(u.getKey(), e.getKey(), l.getKey(), new Date()));
 		oTxn.getTxn().commit();
 	}
 	
-    public boolean hasVoted(User u, Link l) {
+    public boolean hasVoted(User u, Edition e, Link l) {
     	Objectify o = ofy();
-    	int count =  o.query(Vote.class).ancestor(u).filter("link", l.getKey()).countAll();
+    	int count =  o.query(Vote.class).ancestor(u).filter("edition", e.getKey()).filter("link", l.getKey()).countAll();
     	if(count > 1) {
     		log.severe("too many eventPanel for user " + u);
     	}
@@ -131,19 +192,17 @@ public class DAO extends DAOBase
 	}
 
 	// clients should call convenience methods above
-    private <T> T findByFieldName(Class<T> clazz, Name fieldName, Object value) {
-    	return ofy().query(clazz).filter(fieldName.name, value).get();
-    }
-
-    private <T> T findBy2FieldNames(Class<T> clazz, Name fieldName, Object value, Name fieldName2, Object value2) {
-    	return ofy().query(clazz).filter(fieldName.name, value).filter(fieldName2.name, value2).get();    	
+    private <T> T findByFieldName(Class<T> clazz, Name fieldName, Object value, Objectify o) {
+    	if (o == null)
+    		o = ofy();
+    	return o.query(clazz).filter(fieldName.name, value).get();
     }
 
     // TODO this is not transactional - could result in duplicates; need parent
 	public Link findOrCreateLinkByURL(String url) {
 		Objectify o = ofy();
 		
-    	Link l = findByFieldName(Link.class, Name.URL, url);
+    	Link l = findByFieldName(Link.class, Name.URL, url, null);
     	if (l != null)
     		return l;		
     	else {
@@ -156,49 +215,28 @@ public class DAO extends DAOBase
 	private class TransitionEdition {
 		private Edition from;
 
-		HashMap<Key<User>, Key<User>> userKeyTransitions;
-		
-		public TransitionEdition(Edition from) {
-			this.from = from;
-			userKeyTransitions = new HashMap<Key<User>, Key<User>>();
-		}
-		
-		private void forward(Key<User> fromKey, Key<User> toKey) {
-			userKeyTransitions.put(fromKey, toKey);
-		}
-		
-		private Key<User> getForwardingKey(Key<User> k) {
-			return userKeyTransitions.get(k);
+		public TransitionEdition(Edition current) {
+			from = current;
 		}
 
 		public void to (Edition to, Objectify o) {
-			final LinkedList<User> users = findUsersByEdition(from);
-
-			// set up table mapping previous user keys to next user keys
-			for(User u : users) {
-				Key<User> fromUserKey = u.getKey();
-				// generate new Key
-				u.parent = to.getKey(); 
-				forward(fromUserKey, u.getKey());
-				u.parent = from.getKey();
-			}
-
-			// create new User relations
-			
-			// social graph, eventPanel
-			for(User u : users) {
-				// copy previous social graph [upcoming and now] to next social graph [now]
-				for(Follow previous : o.query(Follow.class).ancestor(u)) {
-					final Follow jtNew = new Follow(getForwardingKey(previous.editor), getForwardingKey(previous.judge), previous.time, false);
-					o.put(jtNew);
+			log.info("Transitioning");
+			for (SocialEvent s : o.query(SocialEvent.class).filter("edition", to.getKey())) {
+				if (s.on == false) {
+					Follow old = ofy().query(Follow.class).ancestor(s.editor).filter("judge", s.judge).get();
+					if (old == null) {
+						log.severe("Permitted unfollow when not following" + s);
+					}
+					else {
+						o.delete(old);
+						log.info("Unfollowed: " + old);
+					}
 				}
-			}
-
-			
-			// parent, eventPanel
-			for(User u : users) {
-				u.parent = to.getKey();
-				o.put(u);
+				else {
+					// put new follow into effect
+					Follow f = new Follow(s.editor, s.judge, s.getKey());
+					o.put(f);
+				}
 			}
 		}
 	}
@@ -206,7 +244,7 @@ public class DAO extends DAOBase
 	// TODO convert this to use transactions
 	public Periodical findPeriodicalByName(Name periodicalName) {
 		Objectify o = ofy();
-		final Periodical p = findByFieldName(Periodical.class, Name.NAME, periodicalName.name);
+		final Periodical p = findByFieldName(Periodical.class, Name.NAME, periodicalName.name, null);
 
 		if (p == null)
 			return  null;
@@ -291,21 +329,7 @@ public class DAO extends DAOBase
 		return editions;
 	}
 
-	public LinkedList<User> findUsersByEdition(Edition e) {
-		LinkedList<User> users = new LinkedList<User>();
-		Objectify o = ofy();
-		
-		for (User u : o.query(User.class).ancestor(e.getKey()).filter("isRNA", false)) {
-				users.add(u);
-		}
 
-		if (users.size() == 0)
-			log.warning(e + ": No users");
-		
-		return users;
-	}
-
-	// fills in the references
 	public Edition getEdition(Integer edition, Name periodicalName) {
 		final Periodical p = DAO.instance.findPeriodicalByName(periodicalName);
 
@@ -319,7 +343,7 @@ public class DAO extends DAOBase
 
 		// a specific edition was requested
 		
-		if (edition > getNumEditions(periodicalName) || edition < 1) {
+		if (edition > getNumEditions(periodicalName) - 1 || edition < 0) {
 	        log.severe("Requested non-existent edition #" + edition);
 			return null;
 		}
@@ -331,6 +355,44 @@ public class DAO extends DAOBase
 		Edition result = p.getEdition(edition);
 		return result;
 	}
+	
+	/*
+	 * Just get the requested edition without invoking the transition machinery
+	 * @param number the edition number requested, or -1 for current, or -2 for next
+	 */
+	public Edition getRawEdition(Name periodicalName, int number, Objectify o) {
+		if (o == null)
+			o = ofy();
+		
+		final Periodical p = findByFieldName(Periodical.class, Name.NAME, periodicalName.name, o);
+
+		if (p == null)
+			return  null;
+
+		ArrayList<Edition> editions = findEditionsByPeriodical(p);
+
+		if (number == -1 || number == -2) {
+			boolean done = false;
+			// return current edition
+			for (Edition e : editions) {
+				if (done)
+					return e;
+				if (p.getCurrentEditionKey().equals(e.getKey())) {
+					if (number == -1)
+						return e;
+					else
+						done = true;
+				}
+			}
+			log.info("no current edition");
+			return null;			
+		}
+		if (number < -1 || number > editions.size() - 1) {
+			log.warning("bad number: " + number);
+			return null;
+		}
+		return editions.get(number);
+	}
 
 	public Edition getCurrentEdition(Name periodicalName) {
 		return getEdition(null, periodicalName);
@@ -338,7 +400,11 @@ public class DAO extends DAOBase
 	
 	// TODO cache this
 	public int getNumEditions(Name periodicalName) {
-		final Periodical p = DAO.instance.findPeriodicalByName(periodicalName);
+		final Periodical p = findByFieldName(Periodical.class, Name.NAME, periodicalName.name, null);
+
+		if (p == null)
+			return  0;
+
 		EditionsIndex i = ofy().query(EditionsIndex.class).ancestor(p).get();
 		if (i == null) {
 			log.severe("No Editions Index");
@@ -353,6 +419,8 @@ public class DAO extends DAOBase
 		RecentVotes s = new RecentVotes();
 		s.edition = e;
 		s.numEditions = getNumEditions(name);
+		if (e == null)
+			return s;
 		s.votes = getLatestUser_Links(e);
 		return s;
 	}
@@ -366,7 +434,7 @@ public class DAO extends DAOBase
 		ArrayList<Key<User>> users = new ArrayList<Key<User>>();
 		ArrayList<Key<Link>> links = new ArrayList<Key<Link>>();
 		
-		Query<Vote> q = ofy().query(Vote.class).ancestor(e).order("-time");
+		Query<Vote> q = ofy().query(Vote.class).filter("edition", e.getKey()).order("-time");
 		
 		for (Vote v : q) {
 			users.add(v.voter);
@@ -382,40 +450,79 @@ public class DAO extends DAOBase
 		return result;
 	}
 
-	public RecentSocials getRecentSocials(Integer edition, Name name) {
-		Edition e = getEdition(edition, name);
+	public RecentSocials getRecentSocials(Edition currentEdition, Edition nextEdition, Name name) {
 		RecentSocials s = new RecentSocials();
-		s.edition = e;
+		s.edition = currentEdition;
 		s.numEditions = getNumEditions(name);
-		s.socials = getLatestEditor_Judges(e);
+		s.socials = getLatestEditor_Judges(nextEdition);
 		return s;
 	}
 
 	/* Runs three queries: first get keys, then use the keys to get 2 sets of entities
 	 * 
 	 */
-	private LinkedList<Editor_Judge> getLatestEditor_Judges(Edition e) {
-		LinkedList<Editor_Judge> result = new LinkedList<Editor_Judge>();
+	private LinkedList<SocialInfo> getLatestEditor_Judges(Edition e) {
+		LinkedList<SocialInfo> result = new LinkedList<SocialInfo>();
 		
 		ArrayList<Key<User>> editors = new ArrayList<Key<User>>();
 		ArrayList<Key<User>> judges = new ArrayList<Key<User>>();
+		ArrayList<Boolean> bools = new ArrayList<Boolean>();
+		// think - does this show everything we want?
+		Query<SocialEvent> q = ofy().query(SocialEvent.class).filter("edition", e).order("-time");
 		
-		Query<Follow> q = ofy().query(Follow.class).ancestor(e).filter("upcoming", false).order("-time");
-		
-		for (Follow f : q) {
+		for (SocialEvent f : q) {
 			editors.add(f.editor);
 			judges.add(f.judge);
+			bools.add(f.on);
 		}
 		Map<Key<User>, User> umap = ofy().get(editors);
 		Map<Key<User>, User> lmap = ofy().get(judges);
 		
 		for(int i = 0;i < editors.size();i++) {
-			result.add(new Editor_Judge(umap.get(editors.get(i)), lmap.get(judges.get(i))));
+			result.add(new SocialInfo(umap.get(editors.get(i)), lmap.get(judges.get(i)), bools.get(i)));
 		}
 
 		return result;
 
 	}
 
+	public UserInfo getUserInfo(Name periodical, Key<User> user) {
+		UserInfo ui = new UserInfo();
+		try {
+			ui.user = ofy().get(user);
+			ui.votes = getLatestVote_Links(user);
+			return ui;
+		} catch (EntityNotFoundException e1) {
+			return null;
+		}
+	}
 
+	private LinkedList<Vote_Link> getLatestVote_Links(Key<User> user) {
+		LinkedList<Vote_Link> result = new LinkedList<Vote_Link>();
+		
+		ArrayList<Vote> votes = new ArrayList<Vote>();
+		ArrayList<Key<Link>> links = new ArrayList<Key<Link>>();
+		
+		Query<Vote> q = ofy().query(Vote.class).ancestor(user).order("-time");
+		
+		for (Vote v : q) {
+			votes.add(v);
+			links.add(v.link);
+		}
+		Map<Key<Link>, Link> lmap = ofy().get(links);
+		
+		for(int i = 0;i < votes.size();i++) {
+			result.add(new Vote_Link(votes.get(i), lmap.get(links.get(i))));
+		}
+
+		return result;
+	}
+
+	public RelatedUserInfo getRelatedUserInfo(Name periodical, User from, Key<User> to) {
+		UserInfo ui = getUserInfo(periodical, to);
+		RelatedUserInfo rui = new RelatedUserInfo();
+		rui.userInfo = ui;
+		rui.following = isFollowingOrAboutToFollow(from.getKey(), to);
+		return rui;
+	}
 }

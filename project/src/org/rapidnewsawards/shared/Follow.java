@@ -1,39 +1,35 @@
 package org.rapidnewsawards.shared;
 
 import java.util.Date;
-import java.util.LinkedList;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Transient;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Parent;
 
 @Entity
+
+/*
+ * An Editor is Currently Following a Judge
+ */
 public class Follow {
 	@Id
 	Long id;
 
-	// if this field is the rnaEditor, then this Follow is a "Join" -- no power is granted
     @Parent
 	public Key<User> editor;
-	
 	public Key<User> judge;
-	public Date time;
-
-	public boolean upcoming;
+	public Key<SocialEvent> event; // the event establishing the follow
 
 	public Follow() {}
 	
-	public Follow(Key<User> from, Key<User> to, Date date, boolean upcoming) {
+	public Follow(Key<User> from, Key<User> to, Key<SocialEvent> s) {
 		editor = from;
 		judge = to;
-		this.time = date;
-		this.upcoming = upcoming;
+		event = s;
 	}
-
+	
 	public Key<Follow> getKey() {
 		return new Key<Follow>(this.editor, Follow.class, id);
 	}

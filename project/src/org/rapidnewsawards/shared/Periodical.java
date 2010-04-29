@@ -1,8 +1,6 @@
 package org.rapidnewsawards.shared;
 
 import java.util.ArrayList;
-import java.util.LinkedList;
-
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.Transient;
@@ -20,6 +18,11 @@ public class Periodical {
 
 	@Id
 	private Long id;
+
+	/*
+	 * The special editor who follows new Users without empowering them.  These follows are called Joins.
+	 */
+	public Key<User> rnaEditor;
 
 	@Transient
 	private ArrayList<Edition> editions;
@@ -77,9 +80,8 @@ public class Periodical {
 		this.editions = editions;
 	}
 	
-	// this method is 1-indexed because so are editions
 	public Edition getEdition(int i) {
-		return editions.get(i - 1);
+		return editions.get(i);
 	}
 	
 	public Edition getCurrentEdition() {

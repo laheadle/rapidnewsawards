@@ -4,8 +4,6 @@ import java.util.*;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Transient;
-
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.googlecode.objectify.Key;
 
@@ -18,12 +16,7 @@ public class Edition implements IsSerializable, Comparable<Edition> {
 	public Date end;
 
 	public int number;
-	
-	/*
-	 * The special editor who follows new Users without empowering them.  These follows are called Joins.
-	 */
-	public Key<User> rnaEditor;
-	
+		
 	public Edition() {}
 
 	public Edition(Date end, int number) {
