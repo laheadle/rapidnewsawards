@@ -55,7 +55,7 @@ public class MakeDataServlet extends HttpServlet {
 		Objectify txn = DAO.instance.fact().beginTransaction();
 		User u = new User(name, username, false);
 		txn.put(u);
-		DAO.instance.doSocial(u.getKey(), u.getKey(), e, txn, true);
+		//DAO.instance.doSocial(u.getKey(), u.getKey(), e, txn, true);
 		txn.getTxn().commit();
 		return u;
 	}

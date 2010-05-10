@@ -3,11 +3,13 @@ package org.rapidnewsawards.server;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
+import java.util.HashMap;
 import java.util.LinkedList;
 import java.util.Map;
 import java.util.logging.Logger;
 
 import org.rapidnewsawards.shared.Edition;
+import org.rapidnewsawards.shared.ScoredLink;
 import org.rapidnewsawards.shared.SocialInfo;
 import org.rapidnewsawards.shared.Follow;
 import org.rapidnewsawards.shared.RelatedUserInfo;
@@ -41,6 +43,7 @@ public class DAO extends DAOBase
         ObjectifyService.factory().register(SocialEvent.class);
         ObjectifyService.factory().register(Follow.class);
         ObjectifyService.factory().register(Link.class);
+        ObjectifyService.factory().register(ScoredLink.class);        
         ObjectifyService.factory().register(Periodical.class);
         ObjectifyService.factory().register(Edition.class);
         ObjectifyService.factory().setDatastoreTimeoutRetryCount(3);
@@ -170,6 +173,7 @@ public class DAO extends DAOBase
 	 * Store a new vote in the DB by a user for a link
 	 * 
 	 * @param r the user voting
+	 * @param e the edition during which the vote occurs
 	 * @param l the link voted for
 	 * @throws IllegalArgumentException
 	 */
@@ -177,8 +181,14 @@ public class DAO extends DAOBase
 		if (hasVoted(u, e, l)) {
 			throw new IllegalArgumentException("Already Voted");
 		}
+		
+		// TODO this will race/fail unless we put a fence around the transition stuff
+		int authority = ofy().query(Follow.class).filter("judge", u.getKey()).countAll();
+		
 		Objectify oTxn = fact().beginTransaction();
-		oTxn.put(new Vote(u.getKey(), e.getKey(), l.getKey(), new Date()));
+		oTxn.put(new Vote(u.getKey(), e.getKey(), l.getKey(), new Date(), authority));
+		
+		log.info(u.username + " " + authority + " -> " + l.url);
 		oTxn.getTxn().commit();
 	}
 	
@@ -293,7 +303,7 @@ public class DAO extends DAOBase
 			p.setCurrentEdition(null);
 		}
 
-		log.info(periodicalName.name + ": current Edition:" + current);		
+		log.fine(periodicalName.name + ": current Edition:" + current);		
 		return p;
 	}
 
@@ -524,5 +534,40 @@ public class DAO extends DAOBase
 		rui.userInfo = ui;
 		rui.following = isFollowingOrAboutToFollow(from.getKey(), to);
 		return rui;
+	}
+	
+	public void tally(Edition e) {
+		clearTally(e);
+		
+		Map<Key<Link>, ScoredLink> links = new HashMap<Key<Link>, ScoredLink>();
+		
+		for (Vote v : ofy().query(Vote.class).filter("edition", e.getKey()).fetch()) {
+			if (links.containsKey(v.link)) {
+				ScoredLink sl = links.get(v.link);
+				sl.score += v.authority;
+				// links.put(v.link, sl);
+			}
+			else {
+				links.put(v.link, new ScoredLink(e.getKey(), v.link, v.authority));
+			}
+		}
+		
+		ofy().put(links.values());
+	}
+
+	private void clearTally(Edition e) {
+		LinkedList<ScoredLink> result = new LinkedList<ScoredLink>();
+		for (ScoredLink sl : ofy().query(ScoredLink.class).filter("edition", e.getKey()).fetch()) {
+			result.add(sl);
+		}	
+		ofy().delete(result);
+	}
+	
+	public LinkedList<ScoredLink> getOrderedLinks(Edition e) {
+		LinkedList<ScoredLink> result = new LinkedList<ScoredLink>();
+		for (ScoredLink sl : ofy().query(ScoredLink.class).filter("edition", e.getKey()).order("-score").fetch()) {
+			result.add(sl);
+		}
+		return result;
 	}
 }

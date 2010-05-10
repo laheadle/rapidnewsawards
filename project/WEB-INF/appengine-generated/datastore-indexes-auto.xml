@@ -1,4 +1,4 @@
-<!-- Indices written at Wed, 28 Apr 2010 13:56:56 EDT -->
+<!-- Indices written at Fri, 7 May 2010 17:49:11 EDT -->
 
 <datastore-indexes>
 
@@ -6,6 +6,12 @@
     <datastore-index kind="Vote" ancestor="false" source="auto">
         <property name="edition" direction="asc"/>
         <property name="time" direction="desc"/>
+    </datastore-index>
+
+    <!-- Used 1 time in query history -->
+    <datastore-index kind="ScoredLink" ancestor="false" source="auto">
+        <property name="edition" direction="asc"/>
+        <property name="score" direction="desc"/>
     </datastore-index>
 
 </datastore-indexes>

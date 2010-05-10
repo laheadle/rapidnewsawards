@@ -18,16 +18,19 @@ public class Vote implements IsSerializable {
 	
 	public Key<Link> link;
 	
+	public int authority;
+	
 	public Date time;
 	
 	@Id Long id;
 	
 	public Vote() {}
 	
-	public Vote(Key<User> voter, Key<Edition> edition, Key<Link> link, Date time) {
+	public Vote(Key<User> voter, Key<Edition> edition, Key<Link> link, Date time, int authority) {
 		this.voter = voter;
 		this.edition = edition;
 		this.link = link;
 		this.time = time;
+		this.authority = authority;
 	}
 }

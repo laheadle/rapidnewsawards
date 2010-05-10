@@ -6,13 +6,16 @@ import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.RecentSocials;
 import org.rapidnewsawards.shared.RecentVotes;
 import org.rapidnewsawards.shared.RelatedUserInfo;
+import org.rapidnewsawards.shared.Return;
 import org.rapidnewsawards.shared.User;
 import org.rapidnewsawards.shared.UserInfo;
 
 
 import com.google.gwt.core.client.EntryPoint;
 import com.google.gwt.core.client.GWT;
+import com.google.gwt.dom.client.Style;
 import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.ValueChangeEvent;
 import com.google.gwt.event.logical.shared.ValueChangeHandler;
 import com.google.gwt.resources.client.CssResource;
@@ -21,13 +24,18 @@ import com.google.gwt.uibinder.client.UiField;
 import com.google.gwt.uibinder.client.UiHandler;
 import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.Button;
+import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
+import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
 
 /**
@@ -40,12 +48,12 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 	interface UB extends UiBinder<Widget, RNA> {}
 
 
-	interface Style extends CssResource {
+	interface RNAStyle extends CssResource {
 		String sideButton();
 		String sideButtonSelected();
 	}
 	
-	@UiField Style style;
+	@UiField RNAStyle style;
 
 	@UiField Label status;
 	@UiField Label title;	
@@ -61,8 +69,11 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 	  *  text describing how much time left until publication, or link to next edition	
 	  */
 	@UiField NavBox rightBox;
-	@UiField DialogBox messageBox;
-
+	@UiField LayoutPanel outerPanel;
+	@UiField LayoutPanel rightColumn;
+	@UiField LayoutPanel leftColumn;
+	@UiField LayoutPanel topPanel;
+	
 	// The ticker is updated every minute
 	private Timer tickerTimer;
 	
@@ -90,11 +101,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 		root.add(this);
 		setVisible(true);		
 
-		messageBox.show();
-		messageBox.hide();
-
-		
-	    // If the application starts with no history token, redirect to a new
+        // If the application starts with no history token, redirect to a new
 	    // 'start' state.
 	    String initToken = History.getToken();
 	    if (initToken.length() == 0) {
@@ -215,11 +222,6 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 			History.newItem("social:current:null");
 		}
 		History.fireCurrentHistoryState();
-	}
-
-	@UiHandler("okButton")
-	void handleOk(ClickEvent e) {
-		messageBox.hide();		
 	}
 
 	private String getStoriesLink(int edition) {

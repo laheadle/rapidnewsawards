@@ -1,20 +1,40 @@
 <ui:UiBinder xmlns:ui='urn:ui:com.google.gwt.uibinder'
 	xmlns:g='urn:import:com.google.gwt.user.client.ui' xmlns:rna='urn:import:org.rapidnewsawards.client'>
 
-	<ui:style type='org.rapidnewsawards.client.RNA.Style'>
-		.navigationFrame {
-			margin-left: 250px;
+	<ui:style type='org.rapidnewsawards.client.RNA.RNAStyle'>
+		.empty {
+			font-weight: bold;
+			text-align: left;
+			color: #2276BB;
+			height: 3.3em;
+		}
+
+		.leftColumn {
 			margin-bottom: auto;
-			width: 140px;
 		}
 		
-		.outerframe {
-			width: 700px;
+		.navigationBottom {
+			background-color: #cccccc;
+		}
+		
+		.navButton {
+			background-color: white;
+		}
+		
+
+		.outerPanel {
+			margin: 0 auto 0 auto;
+			height: 100%;
+			width: 720px;
+			border-style:solid;
+			border-width:1px;
+		}
+			
+		.rightColumn {
 		}
 		
 		.top {
-			padding: 10px;
-			width: 100%;
+			padding: 0;
 			background-color: #FFFF5E;
 		}
 		
@@ -24,12 +44,6 @@
 			background-color: #cccccc;
 		}
 		
-		.empty {
-			font-weight: bold;
-			text-align: left;
-			color: #2276BB;
-			height: 3.3em;
-		}
 		
 		.title {
 			text-align: center;
@@ -57,28 +71,14 @@
 		}
 		
 		.status {
-			height: 20px;
-			padding: 10px;
 			text-align: left;
-		}
-		
-		.navigationBottom {
-			height: 580px;
-			width: 100%;
-			background-color: #cccccc;
-		}
-		
-		.navButton {
-			background-color: white;
 		}
 		
 		.sideButton {
 			background-color: #cccccc;
 			padding: 0px 0px;
 			border: none;
-			height: 20px;
 			color: #2276BB;
-			width: 100%;
 			text-align: left;
 		}
 		
@@ -90,83 +90,88 @@
 			background-color: #B0CECC;
 			padding: 0px 0px;
 			border: none;
-			height: 20px;
 			color: #2276BB;
-			width: 100%;
 			text-align: left;
+		}
+
+		.sideNoButton {
+			background-color: #cccccc;
+			padding: 0px 0px;
+			border: none;
+			color: #2276BB;
 		}
 		
 		.eventPanel {
-			width: 100%
 		}
 	</ui:style>
 
-	<g:HorizontalPanel>
-		<g:VerticalPanel styleName='{style.navigationFrame}'>
-			<g:HorizontalPanel styleName='{style.topLeft}'>
-				<g:Label styleName='{style.empty}'>
-					Sign In
-				</g:Label>
-			</g:HorizontalPanel>
+	<g:LayoutPanel styleName='{style.outerPanel}' ui:field='outerPanel'>
 
+		<g:layer left='0px' width='120px'>
+			<g:LayoutPanel styleName='{style.leftColumn}' ui:field='leftColumn'>
 
-			<g:DialogBox autoHide="true" modal="true" ui:field='messageBox'>
-				<g:caption>
-					<b>Illegal Command</b>
-				</g:caption>
-					<g:Button width='100%' ui:field='okButton'>Okay</g:Button>
-			</g:DialogBox>
+				<g:layer top='0px' height='50px'>
+					<g:LayoutPanel styleName='{style.topLeft}'>
+						<g:layer>
+							<g:Label styleName='{style.empty}'> Sign In </g:Label>
+						</g:layer>
+					</g:LayoutPanel>
+				</g:layer>
 
+				<g:layer top='50px' bottom='0px'>
+					<g:LayoutPanel styleName='{style.navigationBottom}'>
+						<g:layer top='0px' height="20px" LayoutAlignment='ALIGN_LEFT'>
+							<g:Button styleName='{style.sideButtonSelected}' ui:field='showCurrentEdition'> Current Edition </g:Button>
+						</g:layer>
+						<g:layer top='20px' height="20px" LayoutAlignment='ALIGN_LEFT'>
+							<g:Button styleName='{style.sideButton}' ui:field='showStories'>Votes</g:Button>
+						</g:layer>
+						<g:layer top='40px' height="20px" LayoutAlignment='ALIGN_MIDDLE'>
+							<g:Button styleName='{style.sideButton}' ui:field='showSocial'>Social</g:Button>
+						</g:layer>
+						<g:layer top='60px' bottom='0px' LayoutAlignment='ALIGN_MIDDLE'>
+						    <g:Button styleName='{style.sideNoButton}'> </g:Button>
+						</g:layer>
+					</g:LayoutPanel> <!-- nav bottom -->
+				</g:layer>
 
-			<g:VerticalPanel styleName='{style.navigationBottom}'>
+			</g:LayoutPanel> <!-- left column -->
+		</g:layer>
+
+		<g:layer left='120px' right='0px'>
+			<g:LayoutPanel styleName='{style.rightColumn}' ui:field='rightColumn'>
+
+				<g:layer left='0px' right='0px' top='0%' height='50px'>
+					<g:LayoutPanel styleName='{style.top}' ui:field='topPanel'>					
+						<g:layer left='20px' width='130px' top='15px' height='20px' horizontalPosition='right'>
+							<rna:NavBox ui:field="leftBox"></rna:NavBox>
+						</g:layer>
+						<g:layer left='150px' right='150px' top='5px' bottom='5px'>
+							<g:Label styleName='{style.title}' ui:field="title">Journalism</g:Label>
+						</g:layer>
+						<g:layer width='150px' right='0px' top='15px' height='20px'>
+							<rna:NavBox ui:field="rightBox"></rna:NavBox>
+						</g:layer>
+					</g:LayoutPanel>
+				</g:layer>
+
+				<g:layer top='50px' height='50px'>
+					<g:LayoutPanel>
+						<g:layer LayoutAlignment='ALIGN_MIDDLE'>
+							<g:Label styleName='{style.status}' ui:field='status'></g:Label>
+						</g:layer>
+					</g:LayoutPanel>
+				</g:layer>
+
+				<g:layer top='100px' bottom='0px'>
+					<g:SimplePanel styleName='{style.eventPanel}' ui:field='mainPanel' />
+				</g:layer>
+
+			</g:LayoutPanel> <!-- rightColumn -->
 			
-				<g:cell height="20px" horizontalAlignment='ALIGN_LEFT'
-					verticalAlignment='ALIGN_MIDDLE'>
-					<g:Button styleName='{style.sideButtonSelected}' ui:field='showCurrentEdition'>
-						Current Edition
-           			</g:Button>
-				</g:cell>
+			
+		</g:layer>
 
-				<g:cell height="20px" horizontalAlignment='ALIGN_LEFT'
-					verticalAlignment='ALIGN_MIDDLE'>
-					<g:Button styleName='{style.sideButton}' ui:field='showStories'>
-						Votes
-           			</g:Button>
-				</g:cell>
-
-				<g:cell height="20px" horizontalAlignment='ALIGN_LEFT'
-					verticalAlignment='ALIGN_MIDDLE'>
-					<g:Button styleName='{style.sideButton}' ui:field='showSocial'>
-						Social
-					</g:Button>
-				</g:cell>
-				
-				<g:cell height="100%" verticalAlignment='ALIGN_MIDDLE'>
-					<g:Button styleName='{style.sideButton}'>
-					</g:Button>
-				</g:cell>
-
-			</g:VerticalPanel>
-
-		</g:VerticalPanel>
-
-		<g:VerticalPanel styleName='{style.outerframe}'>
-
-			<g:HorizontalPanel styleName='{style.top}'>
-				<rna:NavBox ui:field="leftBox"></rna:NavBox>
-				<g:Label styleName='{style.title}' ui:field="title">Journalism</g:Label>
-				<rna:NavBox ui:field="rightBox"></rna:NavBox>
-			</g:HorizontalPanel>
-
-			<g:HorizontalPanel>
-				<g:cell width="520px" verticalAlignment='ALIGN_MIDDLE'>
-					<g:Label styleName='{style.status}' ui:field='status'></g:Label>
-				</g:cell>
-			</g:HorizontalPanel>
-
-			<g:SimplePanel styleName='{style.eventPanel}' ui:field='mainPanel'/>
-
-		</g:VerticalPanel>
-	</g:HorizontalPanel>
+	</g:LayoutPanel> <!-- outerPanel -->
 
 </ui:UiBinder>
