@@ -25,6 +25,11 @@
 		<servlet-class>org.rapidnewsawards.server.MakeDataServlet</servlet-class>
 	</servlet>
 
+	<servlet>
+		<servlet-name>doSomethingServlet</servlet-name>
+		<servlet-class>org.rapidnewsawards.server.DoSomethingServlet</servlet-class>
+	</servlet>
+
 	<servlet-mapping>
 		<servlet-name>rnaServlet</servlet-name>
 		<url-pattern>/rapid_news_awards/rna</url-pattern>
@@ -40,6 +45,12 @@
 	<servlet-mapping>
 		<servlet-name>voteServlet</servlet-name>
 		<url-pattern>/vote</url-pattern>
+	</servlet-mapping>
+
+
+	<servlet-mapping>
+		<servlet-name>doSomethingServlet</servlet-name>
+		<url-pattern>/doSomething</url-pattern>
 	</servlet-mapping>
 
 

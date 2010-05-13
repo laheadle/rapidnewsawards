@@ -39,7 +39,7 @@ public class VoteServlet extends HttpServlet {
 		String url = request.getParameter("href");
 		
 		// TODO broken on some complex hrefs
-		Link l = DAO.instance.findOrCreateLinkByURL(url);
+		Link l = DAO.instance.findOrCreateLinkByURL(url, u.getKey());
 		
 		try	{
 			DAO.instance.voteFor(u, e, l);

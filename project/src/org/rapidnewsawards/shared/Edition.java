@@ -11,7 +11,7 @@ import com.googlecode.objectify.Key;
 public class Edition implements IsSerializable, Comparable<Edition> {
 	
 	@Id
-	Long id;
+	String id;
 	
 	public Date end;
 
@@ -20,6 +20,7 @@ public class Edition implements IsSerializable, Comparable<Edition> {
 	public Edition() {}
 
 	public Edition(Date end, int number) {
+		this.id = ""+number;
 		this.end = end;
 		this.number = number;
 	}

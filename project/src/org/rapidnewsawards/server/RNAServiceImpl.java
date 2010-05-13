@@ -11,6 +11,7 @@ import org.rapidnewsawards.client.RNAService;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.RecentSocials;
+import org.rapidnewsawards.shared.RecentStories;
 import org.rapidnewsawards.shared.RecentVotes;
 import org.rapidnewsawards.shared.RelatedUserInfo;
 import org.rapidnewsawards.shared.Return;
@@ -70,5 +71,10 @@ RNAService {
 			from = DAO.instance.findUserByUsername("jny2");
 		}
 		return DAO.instance.getRelatedUserInfo(Name.JOURNALISM, from, new Key<User>(User.class, userId));
+	}
+
+	@Override
+	public RecentStories sendTopStories(Integer editionNum) {
+		return DAO.instance.getTopStories(editionNum, Name.JOURNALISM);
 	}
 }

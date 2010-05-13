@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.logging.Logger;
 
 import org.rapidnewsawards.shared.Edition;
+import org.rapidnewsawards.shared.RecentStories;
 import org.rapidnewsawards.shared.ScoredLink;
 import org.rapidnewsawards.shared.SocialInfo;
 import org.rapidnewsawards.shared.Follow;
@@ -20,6 +21,7 @@ import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.Periodical;
 import org.rapidnewsawards.shared.RecentSocials;
 import org.rapidnewsawards.shared.RecentVotes;
+import org.rapidnewsawards.shared.StoryInfo;
 import org.rapidnewsawards.shared.User;
 import org.rapidnewsawards.shared.UserInfo;
 import org.rapidnewsawards.shared.User_Link;
@@ -209,14 +211,18 @@ public class DAO extends DAOBase
     }
 
     // TODO this is not transactional - could result in duplicates; need parent
-	public Link findOrCreateLinkByURL(String url) {
+	public Link findOrCreateLinkByURL(String url, Key<User> submitter) {
 		Objectify o = ofy();
 		
     	Link l = findByFieldName(Link.class, Name.URL, url, null);
     	if (l != null)
     		return l;		
+    	else if (submitter == null) {
+    		log.warning("tried to create link without submitter: " + url);
+    		return null;
+    	}
     	else {
-    		l = new Link(url);
+    		l = new Link(url, null, submitter);
     		o.put(l);
     		return l;
     	}
@@ -468,6 +474,50 @@ public class DAO extends DAOBase
 		return s;
 	}
 
+	
+
+
+	public RecentStories getTopStories(Integer editionNum, Name name) {
+		// TODO error checking
+		
+		Edition e = getEdition(editionNum, name);
+		LinkedList<ScoredLink> scored = getScoredLinks(e);
+		LinkedList<Key<Link>> linkKeys = new LinkedList<Key<Link>>();
+		
+		for(ScoredLink sl : scored) {
+			linkKeys.add(sl.link);
+		}
+		
+		Map<Key<Link>, Link> linkMap = ofy().get(linkKeys);
+
+		// for the submitter of each vote
+		LinkedList<Key<User>> userKeys = new LinkedList<Key<User>>();
+		
+		for(Link l : linkMap.values()) {
+			userKeys.add(l.submitter);
+		}
+		
+		Map<Key<User>, User> userMap = ofy().get(userKeys);
+
+		LinkedList<StoryInfo> stories = new LinkedList<StoryInfo>();
+		
+		for(ScoredLink sl : scored) {
+			StoryInfo si = new StoryInfo();
+			si.link = linkMap.get(sl.link);
+			si.score = sl.score;
+			si.submitter = userMap.get(si.link.submitter);
+			stories.add(si);
+		}
+
+		RecentStories result = new RecentStories();
+		result.edition = e;
+		result.numEditions = getNumEditions(name);
+		result.stories = stories;
+		
+		return result;
+	}
+
+	
 	/* Runs three queries: first get keys, then use the keys to get 2 sets of entities
 	 * 
 	 */
@@ -537,7 +587,6 @@ public class DAO extends DAOBase
 	}
 	
 	public void tally(Edition e) {
-		clearTally(e);
 		
 		Map<Key<Link>, ScoredLink> links = new HashMap<Key<Link>, ScoredLink>();
 		
@@ -552,6 +601,7 @@ public class DAO extends DAOBase
 			}
 		}
 		
+		clearTally(e);		
 		ofy().put(links.values());
 	}
 
@@ -563,11 +613,12 @@ public class DAO extends DAOBase
 		ofy().delete(result);
 	}
 	
-	public LinkedList<ScoredLink> getOrderedLinks(Edition e) {
+	public LinkedList<ScoredLink> getScoredLinks(Edition e) {
 		LinkedList<ScoredLink> result = new LinkedList<ScoredLink>();
 		for (ScoredLink sl : ofy().query(ScoredLink.class).filter("edition", e.getKey()).order("-score").fetch()) {
 			result.add(sl);
 		}
 		return result;
 	}
+
 }

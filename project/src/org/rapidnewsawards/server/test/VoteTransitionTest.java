@@ -21,7 +21,7 @@ public class VoteTransitionTest extends EditionTransitionTest {
 		Edition e1 = DAO.instance.getCurrentEdition(Name.JOURNALISM);		
 		User mg = DAO.instance.findUserByUsername("megangarber");
 
-		Link l = DAO.instance.findOrCreateLinkByURL("http://example.com");
+		Link l = DAO.instance.findOrCreateLinkByURL("http://example.com", mg.getKey());
 		assertEquals(DAO.instance.getLatestUser_Links(e1).size(), 0);
 		DAO.instance.voteFor(mg, e1, l);
 		assertTrue(DAO.instance.hasVoted(mg, e1, l));
@@ -53,9 +53,9 @@ public class VoteTransitionTest extends EditionTransitionTest {
 		
 		e2 = DAO.instance.getCurrentEdition(Name.JOURNALISM);
 		
-		Link l1 = DAO.instance.findOrCreateLinkByURL("http://example.com");
-		Link l2 = DAO.instance.findOrCreateLinkByURL("http://example2.com");
-		Link l3 = DAO.instance.findOrCreateLinkByURL("http://example3.com");
+		Link l1 = DAO.instance.findOrCreateLinkByURL("http://example.com", mg.getKey());
+		Link l2 = DAO.instance.findOrCreateLinkByURL("http://example2.com", mg.getKey());
+		Link l3 = DAO.instance.findOrCreateLinkByURL("http://example3.com", mg.getKey());
 		
 		DAO.instance.voteFor(jny2, e2, l1);
 
@@ -66,7 +66,7 @@ public class VoteTransitionTest extends EditionTransitionTest {
 
 		DAO.instance.tally(e2);
 		
-		Iterator<ScoredLink> iter = DAO.instance.getOrderedLinks(e2).iterator();
+		Iterator<ScoredLink> iter = DAO.instance.getScoredLinks(e2).iterator();
 		
 		assertTrue(iter.hasNext());
 		ScoredLink sl1 = iter.next();
