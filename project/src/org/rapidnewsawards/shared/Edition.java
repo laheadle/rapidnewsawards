@@ -10,17 +10,20 @@ import com.googlecode.objectify.Key;
 @Entity
 public class Edition implements IsSerializable, Comparable<Edition> {
 	
-	@Id
-	String id;
+	@Id	
+	public String id;
 	
 	public Date end;
 
 	public int number;
-		
+	
+	public Key<Periodical> periodical;
+	
 	public Edition() {}
 
-	public Edition(Date end, int number) {
+	public Edition(Date end, int number, Key<Periodical> periodical) {
 		this.id = ""+number;
+		this.periodical = periodical;
 		this.end = end;
 		this.number = number;
 	}
@@ -46,4 +49,21 @@ public class Edition implements IsSerializable, Comparable<Edition> {
 		return new Key<Edition>(Edition.class, id);
 	}
 
+	public Key<Edition> getPreviousKey() {
+		return getPreviousKey(id);
+	}
+
+	public Key<Edition> getNextKey() {
+		return getNextKey(id);
+	}
+
+	public static Key<Edition> getNextKey(String id) {
+		String nextId = new Integer(id) + 1 +"";
+		return new Key<Edition>(Edition.class, nextId);		
+	}
+	public static Key<Edition> getPreviousKey(String id) {
+		String nextId = new Integer(id) - 1 +"";
+		return new Key<Edition>(Edition.class, nextId);		
+	}
+	
 }

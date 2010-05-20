@@ -1,10 +1,14 @@
 package org.rapidnewsawards.server.test;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import junit.framework.TestCase;
 
 import org.rapidnewsawards.server.DAO;
+import org.rapidnewsawards.server.MakeDataServlet;
+import org.rapidnewsawards.shared.Edition;
+import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.User;
 
 import com.google.appengine.api.datastore.dev.LocalDatastoreService;
@@ -13,12 +17,23 @@ import com.google.apphosting.api.ApiProxy;
 
 public abstract class RNATest extends TestCase {
 
+	protected static DAO d = DAO.instance;
+		
 	protected User getUser(String username) {
 		if (username == null)
 			username = "megangarber";
 
 		return DAO.instance.findUserByUsername(username);
 	}
+
+	public void doTransition() {
+		Edition current = d.getEdition(Name.JOURNALISM, -1, null);
+		Edition next = d.getEdition(Name.JOURNALISM, -2, null);
+		d.transitionEdition(Name.JOURNALISM);
+		d.socialTransition(next);
+		d.finalizeTally(current.getKey());
+	}
+
 
 	@Override
 	public void setUp() throws Exception {
@@ -28,7 +43,7 @@ public abstract class RNATest extends TestCase {
 
         ApiProxyLocalImpl proxy = (ApiProxyLocalImpl) ApiProxy.getDelegate();
         proxy.setProperty(LocalDatastoreService.NO_STORAGE_PROPERTY, Boolean.TRUE.toString());
-        
+		MakeDataServlet.makeData(3, 30 * 60 * MakeDataServlet.ONE_SECOND, null);
 	}
 
 	@Override
@@ -39,7 +54,7 @@ public abstract class RNATest extends TestCase {
         
 		ApiProxy.setDelegate(null);
         ApiProxy.setEnvironmentForCurrentThread(null);
-
+        
         super.tearDown();
 	}
 	

@@ -14,9 +14,9 @@ import org.rapidnewsawards.shared.Cell;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.Periodical;
+import org.rapidnewsawards.shared.Root;
 import org.rapidnewsawards.shared.User;
-import org.rapidnewsawards.shared.Periodical.EditionsIndex;
-
+import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 
 public class MakeDataServlet extends HttpServlet {
@@ -72,11 +72,15 @@ public class MakeDataServlet extends HttpServlet {
 	}
 
 	public static ArrayList<Edition> makeEditions(int editionCount, long periodSize) {
-		final Periodical p = new Periodical(Name.JOURNALISM);
+		final Root root = new Root();
+		root.id = 1L;
+		DAO.instance.ofy().put(root);
+		
+		final Periodical p = new Periodical(Name.JOURNALISM, new Key<Root>(Root.class, 1L));
 		User u = makeRNAEditor();
 		p.rnaEditor = u.getKey();
-		Objectify txn = DAO.instance.fact().beginTransaction();
-		txn.put(p);
+		Objectify o = DAO.instance.ofy();
+		o.put(p);
 
 
 		// create editions using a local function class
@@ -85,30 +89,26 @@ public class MakeDataServlet extends HttpServlet {
 		final Date[] current = { new Date() };
 		final class makeEd {
 			final long duration;
-			public makeEd(long l) { duration = l; }
+			final Periodical p;
+			
+			public makeEd(long l, Periodical p) { duration = l; this.p = p;}
 			// this is called repeatedly to generate new editions
 			public Edition make() { 
 				current[0] = new Date(current[0].getTime() + duration); 
-				return new Edition(current[0], number[0]++); 
+				return new Edition(current[0], number[0]++, p.getKey()); 
 			}
 		}
 
 		ArrayList<Edition> editions = new ArrayList<Edition>();
 		for(int i1 = 0;i1 < editionCount;i1++) {
-			editions.add(new makeEd(periodSize).make());
+			editions.add(new makeEd(periodSize, p).make());
 		}
 
 		// generate keys
-		// don't use the same transaction -- different entity groups
+
 		DAO.instance.ofy().put(editions);		
-
-		EditionsIndex index = new EditionsIndex(p, editions);
-
-		txn.put(index);
-
 		p.setcurrentEditionKey(editions.get(0).getKey());
-		txn.put(p);
-		txn.getTxn().commit();
+		o.put(p);
 
 		return editions;
 	}

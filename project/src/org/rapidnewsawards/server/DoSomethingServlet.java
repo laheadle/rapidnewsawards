@@ -54,7 +54,7 @@ public class DoSomethingServlet extends HttpServlet {
 
 		DAO.instance.voteFor(jny2, e, l3);
 
-		DAO.instance.tally(e);
+		DAO.instance.tally(e.getKey());
 		
 		out.println("tally done");
 		

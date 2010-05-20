@@ -50,6 +50,11 @@ public class VoteServlet extends HttpServlet {
 			out.println("vote already counted");	
 			return;
 		}
+		catch (IllegalStateException ex) {
+			log.warning("BAD VOTE STATE: " + u.getUsername() + ", " + url);
+			out.println("That edition is no longer current, or a transition to the next edition is in progress");	
+			return;
+		}
 
 		log.info("VOTE: " + u.getUsername() + ", " + url);
 		out.println("vote counted");

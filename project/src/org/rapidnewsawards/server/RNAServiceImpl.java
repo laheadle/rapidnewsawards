@@ -38,13 +38,13 @@ RNAService {
 		Edition next = null;
 
 		if (edition == null) {
-			current = DAO.instance.getRawEdition(Name.JOURNALISM, -1, null);
-			next = DAO.instance.getRawEdition(Name.JOURNALISM, -2, null);
+			current = DAO.instance.getEdition(Name.JOURNALISM, -1, null);
+			next = DAO.instance.getEdition(Name.JOURNALISM, -2, null);
 		}
 		else {
 			// next after edition
-			current = DAO.instance.getRawEdition(Name.JOURNALISM, edition, null);
-			next = DAO.instance.getRawEdition(Name.JOURNALISM, edition + 1, null);
+			current = DAO.instance.getEdition(Name.JOURNALISM, edition, null);
+			next = DAO.instance.getEdition(Name.JOURNALISM, edition + 1, null);
 		}
 		
 		if (current == null || next == null) {
@@ -56,11 +56,11 @@ RNAService {
 
 	public Return doSocial(User from, User to, boolean on) {
 		// read-only transaction 
-		// TODO lock?
 		final DAO d = DAO.instance;
-		Edition e = d.getRawEdition(Name.JOURNALISM, -2, null);
+		Edition e = d.getEdition(Name.JOURNALISM, -2, null);
+		// TODO hardcoded
 		from = d.findUserByUsername("jny2");
-		Return result = d.doSocial(from.getKey(), to.getKey(), e, null, on);
+		Return result = d.doSocial(from.getKey(), to.getKey(), e, on);
 		return result;
 	}
 	

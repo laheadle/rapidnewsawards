@@ -12,10 +12,13 @@ import com.googlecode.objectify.annotation.Parent;
 
 @Entity
 public class Periodical {
+
 	private Key<Edition> currentEditionKey;
 	
-	private String name;
+	public String name;
 
+	@Parent public Key<Root> root;
+	
 	@Id
 	private Long id;
 
@@ -24,32 +27,21 @@ public class Periodical {
 	 */
 	public Key<User> rnaEditor;
 
-	@Transient
-	private ArrayList<Edition> editions;
+	public boolean live;
 
-	@Transient
-	private Edition currentEdition;
+	public boolean inSocialTransition;
 
-	public static class EditionsIndex {
-	    @Id Long id; 
-	    @Parent Key<Periodical> parent; 
-	    public ArrayList<Key<Edition>> editions;
+	public boolean tallying;
 
-	    public EditionsIndex() {}
-
-		public EditionsIndex(Periodical parent, ArrayList<Edition> editions) {
-			ArrayList<Key<Edition>> eKeys = new ArrayList<Key<Edition>>();
-			for(Edition e : editions) {
-				eKeys.add(e.getKey());
-			}
-	    	this.parent = parent.getKey();
-	    	this.editions = eKeys;
-		}
-
-	}
-
-	public Periodical(Name name) {
+	/*
+	 * only called when intializing the db
+	 */
+	public Periodical(Name name, Key<Root> root) {
 		this();
+		this.root = root;
+		this.inSocialTransition = false;
+		this.tallying = false;
+		this.live = true;
 		this.name = name.name;
 	}
 	
@@ -74,22 +66,6 @@ public class Periodical {
 
 	public Key<Edition> getCurrentEditionKey() {
 		return this.currentEditionKey;
-	}
-
-	public void setEditions(ArrayList<Edition> editions) {
-		this.editions = editions;
-	}
-	
-	public Edition getEdition(int i) {
-		return editions.get(i);
-	}
-	
-	public Edition getCurrentEdition() {
-		return currentEdition;
-	}
-
-	public void setCurrentEdition(Edition edition) {
-		this.currentEdition = edition;
 	}
 	
 }
