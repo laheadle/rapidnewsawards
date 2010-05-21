@@ -16,8 +16,13 @@ import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.Periodical;
 import org.rapidnewsawards.shared.Root;
 import org.rapidnewsawards.shared.User;
+
+import com.google.appengine.api.labs.taskqueue.Queue;
+import com.google.appengine.api.labs.taskqueue.QueueFactory;
+import com.google.appengine.api.labs.taskqueue.TaskOptions;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
+import static com.google.appengine.api.labs.taskqueue.TaskOptions.Builder.*;
 
 public class MakeDataServlet extends HttpServlet {
 	@Override
@@ -30,6 +35,8 @@ public class MakeDataServlet extends HttpServlet {
 		out.println("created 100 editions");
 	}
 
+	public static boolean testing = false;
+	
 	public final static long ONE_SECOND = 1000; 
 	public final static long ONE_MINUTE = 60 * 1000; 	
 	public final static long FIVE_MINUTES = 5 * ONE_MINUTE; 
@@ -70,7 +77,7 @@ public class MakeDataServlet extends HttpServlet {
 		txn.getTxn().commit();
 		return u;
 	}
-
+	 
 	public static ArrayList<Edition> makeEditions(int editionCount, long periodSize) {
 		final Root root = new Root();
 		root.id = 1L;
@@ -105,8 +112,17 @@ public class MakeDataServlet extends HttpServlet {
 		}
 
 		// generate keys
-
 		DAO.instance.ofy().put(editions);		
+		
+		// make transition tasks
+		if (!testing) {
+			for (Edition e : editions) {
+				Queue queue = QueueFactory.getDefaultQueue();
+				queue.add(url("/tasks/transition").param("fromEdition", e.id)
+						.etaMillis(e.end.getTime()).method(TaskOptions.Method.GET));
+			}
+		}
+		
 		p.setcurrentEditionKey(editions.get(0).getKey());
 		o.put(p);
 

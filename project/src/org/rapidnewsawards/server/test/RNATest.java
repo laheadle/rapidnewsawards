@@ -43,6 +43,7 @@ public abstract class RNATest extends TestCase {
 
         ApiProxyLocalImpl proxy = (ApiProxyLocalImpl) ApiProxy.getDelegate();
         proxy.setProperty(LocalDatastoreService.NO_STORAGE_PROPERTY, Boolean.TRUE.toString());
+        MakeDataServlet.testing = true;
 		MakeDataServlet.makeData(3, 30 * 60 * MakeDataServlet.ONE_SECOND, null);
 	}
 
@@ -54,7 +55,9 @@ public abstract class RNATest extends TestCase {
         
 		ApiProxy.setDelegate(null);
         ApiProxy.setEnvironmentForCurrentThread(null);
-        
+
+        MakeDataServlet.testing = false;
+
         super.tearDown();
 	}
 	

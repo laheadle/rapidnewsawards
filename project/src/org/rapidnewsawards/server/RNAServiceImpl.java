@@ -29,8 +29,11 @@ import org.rapidnewsawards.shared.UserInfo;
 public class RNAServiceImpl extends RemoteServiceServlet implements
 RNAService {
 
+	// TODO: on client side, null means current edition; on server, -1 does.
+	private int ed(Integer edition) { return edition == null ? -1 : edition; }
+	
 	public RecentVotes sendRecentVotes(Integer edition) {
-		return DAO.instance.getRecentVotes(edition, Name.JOURNALISM);
+		return DAO.instance.getRecentVotes(ed(edition), Name.JOURNALISM);
 	}
 
 	public RecentSocials sendRecentSocials(Integer edition) {
@@ -75,6 +78,6 @@ RNAService {
 
 	@Override
 	public RecentStories sendTopStories(Integer editionNum) {
-		return DAO.instance.getTopStories(editionNum, Name.JOURNALISM);
+		return DAO.instance.getTopStories(ed(editionNum), Name.JOURNALISM);
 	}
 }

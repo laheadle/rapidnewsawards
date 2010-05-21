@@ -396,6 +396,10 @@ public class DAO extends DAOBase
 		return getEdition(periodicalName, -1, null);
 	}
 	
+	public Edition getNextEdition(Name periodicalName) {
+		return getEdition(periodicalName, -2, null);
+	}
+	
 	// TODO cache this
 	public int getNumEditions(Name periodicalName) {
 		final Periodical p = findByFieldName(Periodical.class, Name.NAME, periodicalName.name, null);
@@ -413,7 +417,7 @@ public class DAO extends DAOBase
 		return result;
 	}
 	
-	public RecentVotes getRecentVotes(Integer edition, Name name) {
+	public RecentVotes getRecentVotes(int edition, Name name) {
 		Edition e = getEdition(name, edition, null);
 		// TODO handle bad edition number
 		RecentVotes s = new RecentVotes();
@@ -461,7 +465,7 @@ public class DAO extends DAOBase
 	
 
 
-	public RecentStories getTopStories(Integer editionNum, Name name) {
+	public RecentStories getTopStories(int editionNum, Name name) {
 		// TODO error checking
 		
 		Edition e = getEdition(name, editionNum, null);
@@ -572,15 +576,6 @@ public class DAO extends DAOBase
 
 	private static int RETRY_TIMES = 20; 
 
-	public void publish() {
-		Edition current = getEdition(Name.JOURNALISM, -2, null);
-		Edition next = getEdition(Name.JOURNALISM, -2, null);
-		transitionEdition(Name.JOURNALISM);
-        Queue queue = QueueFactory.getDefaultQueue();
-        queue.add(url("/tasks/socialTransition").param("edition", ""+next.number));	
-        queue.add(url("/tasks/finalizeTally").param("edition", ""+current.number));
-	}
-	
 	public boolean transitionEdition(Name periodicalName) {
 		
 		LockedPeriodical locked = lockPeriodical();

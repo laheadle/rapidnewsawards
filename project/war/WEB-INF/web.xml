@@ -30,6 +30,16 @@
 		<servlet-class>org.rapidnewsawards.server.DoSomethingServlet</servlet-class>
 	</servlet>
 
+	<servlet>
+		<servlet-name>transitionTask</servlet-name>
+		<servlet-class>org.rapidnewsawards.server.TransitionTask</servlet-class>
+	</servlet>
+
+	<servlet-mapping>
+		<servlet-name>transitionTask</servlet-name>
+		<url-pattern>/tasks/transition</url-pattern>
+	</servlet-mapping>
+
 	<servlet-mapping>
 		<servlet-name>rnaServlet</servlet-name>
 		<url-pattern>/rapid_news_awards/rna</url-pattern>
