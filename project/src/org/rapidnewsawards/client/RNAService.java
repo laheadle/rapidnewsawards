@@ -11,8 +11,8 @@ import com.google.gwt.user.client.rpc.RemoteServiceRelativePath;
  */
 @RemoteServiceRelativePath("rna")
 public interface RNAService extends RemoteService {
-	RelatedUserInfo sendRelatedUser(User from, long userId);
-	Return doSocial(User from, User to, boolean on);
+	RelatedUserInfo sendRelatedUser(long userId);
+	Return doSocial(User to, boolean on);
 	RecentVotes sendRecentVotes(Integer edition);
 	RecentSocials sendRecentSocials(Integer edition);
 	RecentStories sendTopStories(Integer editionNum);

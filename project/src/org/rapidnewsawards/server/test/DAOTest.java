@@ -35,7 +35,6 @@ public class DAOTest extends RNATest {
 	public void testUser() {
 		User mg = getUser(null);
 		assertNotNull(mg);
-		assertEquals(mg.getUsername(), "megangarber");
 	}
 	
 	@Test

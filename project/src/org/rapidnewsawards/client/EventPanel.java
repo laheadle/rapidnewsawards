@@ -44,7 +44,7 @@ public class EventPanel extends Composite {
 		vPanel.clear();
 
 		for (SocialInfo s : socials) {
-			EventRecord rec = new EventRecord(s.editor, s.on ? " is about to follow " : " is about to unfollow ", s.judge.getName());
+			EventRecord rec = new EventRecord(s.editor, s.on ? " is about to follow " : " is about to unfollow ", s.judge.email);
 			vPanel.add(rec);
 			vPanel.setCellWidth(rec, "100%");
 

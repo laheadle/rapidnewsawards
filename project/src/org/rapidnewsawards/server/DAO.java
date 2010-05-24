@@ -56,17 +56,11 @@ public class DAO extends DAOBase
     }
 
     public static DAO instance = new DAO();
+	public User user = null;
 	private static final Logger log = Logger.getLogger(DAO.class.getName());
         
-    public User findUserByUsername(String username) {
-    	Objectify o = ofy();
-    	
-    	User u = o.query(User.class).filter("username", username).filter("isRNA", false).get();
-
-    	if (u == null)
-    		return null;
-    	
-    	return u;
+    public User findUserByLogin(String email, String domain) {
+    	return ofy().query(User.class).filter("email", email).filter("domain", domain).get();
 	}
     
     public User findRNAUser() {
@@ -227,12 +221,13 @@ public class DAO extends DAOBase
 	 * @throws IllegalArgumentException
 	 */
 	public boolean voteFor(User u, Edition e, Link l) throws IllegalArgumentException {
-
+		// TODO only judges can vote, ditto for ed follows
+		
 		// obtain lock
 		LockedPeriodical lp = lockPeriodical();
 		
 		if (lp == null) {
-			log.warning("vote failed: " + u.username + " -> " + l.url);
+			log.warning("vote failed: " + u + " -> " + l.url);
 			return false;
 		}
 		
@@ -256,7 +251,7 @@ public class DAO extends DAOBase
 
 		ofy().put(new Vote(u.getKey(), e.getKey(), l.getKey(), new Date(), authority));
 
-		log.info(u.username + " " + authority + " -> " + l.url);
+		log.info(u + " " + authority + " -> " + l.url);
 		
 		// release lock
 		lp.transaction.getTxn().commit();
@@ -570,7 +565,7 @@ public class DAO extends DAOBase
 		UserInfo ui = getUserInfo(periodical, to);
 		RelatedUserInfo rui = new RelatedUserInfo();
 		rui.userInfo = ui;
-		rui.following = isFollowingOrAboutToFollow(from.getKey(), to);
+		rui.following = from != null? isFollowingOrAboutToFollow(from.getKey(), to) : false;
 		return rui;
 	}
 

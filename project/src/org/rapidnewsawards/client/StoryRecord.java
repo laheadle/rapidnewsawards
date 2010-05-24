@@ -23,7 +23,7 @@ public class StoryRecord extends Composite {
 
 		InlineHTML score = new InlineHTML("<span style='color: blue; margin-right: 5px; font-size: large'>"+info.score+"</span>");
 		InlineHTML domain = new InlineHTML(" "+info.link.url);
-		InlineHTML submitter = new InlineHTML(" / "+info.submitter.username);
+		InlineHTML submitter = new InlineHTML(" / "+info.submitter.email);
 		InlineHTML title = new InlineHTML(""+info.link.title);
 		
 		String html = "<div id='"+recordid+"' style='margin: 10px 0 0 0; padding-bottom: 0'>"+

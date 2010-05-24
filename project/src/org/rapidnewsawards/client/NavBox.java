@@ -32,7 +32,7 @@ public class NavBox extends Composite {
 	      public void onClick(ClickEvent event) {
 	        boolean checked = ((CheckBox) event.getSource()).getValue();
 
-	        RNA.rnaService.doSocial(from, to, checked, new AsyncCallback<Return>() {
+	        RNA.rnaService.doSocial(to, checked, new AsyncCallback<Return>() {
 	        	
 				public void onSuccess(Return result) {
 					rna.setStatus(result.s);

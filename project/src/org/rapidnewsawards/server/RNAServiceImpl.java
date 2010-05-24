@@ -1,12 +1,24 @@
 package org.rapidnewsawards.server;
 
 
+import com.google.appengine.api.users.UserServiceFactory;
+import com.google.appengine.api.users.UserService;
 import com.google.gwt.user.server.rpc.RemoteServiceServlet;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 
+import java.io.IOException;
 import java.util.logging.Logger;
 
+import javax.servlet.Filter;
+import javax.servlet.FilterChain;
+import javax.servlet.FilterConfig;
+import javax.servlet.ServletException;
+import javax.servlet.ServletRequest;
+import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpSession;
+
+import org.mortbay.log.Log;
 import org.rapidnewsawards.client.RNAService;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Name;
@@ -27,8 +39,10 @@ import org.rapidnewsawards.shared.UserInfo;
 
 @SuppressWarnings("serial")
 public class RNAServiceImpl extends RemoteServiceServlet implements
-RNAService {
-
+RNAService, Filter {
+	private static final Logger log = Logger.getLogger(DAO.class.getName());
+	private static DAO d = DAO.instance;
+	
 	// TODO: on client side, null means current edition; on server, -1 does.
 	private int ed(Integer edition) { return edition == null ? -1 : edition; }
 	
@@ -57,27 +71,55 @@ RNAService {
 		return DAO.instance.getRecentSocials(current, next, Name.JOURNALISM);
 	}
 
-	public Return doSocial(User from, User to, boolean on) {
+	public Return doSocial(User to, boolean on) {
+		
+		if (d.user == null) {
+			log.warning("attempt to follow with null user");
+			return Return.ILLEGAL_OPERATION;
+		}
+		
 		// read-only transaction 
-		final DAO d = DAO.instance;
 		Edition e = d.getEdition(Name.JOURNALISM, -2, null);
-		// TODO hardcoded
-		from = d.findUserByUsername("jny2");
-		Return result = d.doSocial(from.getKey(), to.getKey(), e, on);
+		Return result = d.doSocial(d.user.getKey(), to.getKey(), e, on);
 		return result;
 	}
 	
 	@Override
-	public RelatedUserInfo sendRelatedUser(User from, long userId) {
-		if (from == null) {
-			// TODO logins
-			from = DAO.instance.findUserByUsername("jny2");
-		}
-		return DAO.instance.getRelatedUserInfo(Name.JOURNALISM, from, new Key<User>(User.class, userId));
+	public RelatedUserInfo sendRelatedUser(long userId) {
+		return d.getRelatedUserInfo(Name.JOURNALISM, d.user, new Key<User>(User.class, userId));
 	}
 
 	@Override
 	public RecentStories sendTopStories(Integer editionNum) {
-		return DAO.instance.getTopStories(ed(editionNum), Name.JOURNALISM);
+		return d.getTopStories(ed(editionNum), Name.JOURNALISM);
 	}
+
+	@Override
+	public void doFilter(ServletRequest request, ServletResponse response,
+			FilterChain chain) throws IOException, ServletException {
+		UserService userService = UserServiceFactory.getUserService();
+		com.google.appengine.api.users.User appUser = userService.getCurrentUser();
+		if (appUser == null) {
+			d.user = null;
+		}
+		else {
+			User u = DAO.instance.findUserByLogin(appUser.getEmail(), appUser.getAuthDomain());
+			if (u == null) {
+				// first time logging in; create new user
+				u = new User();
+				u.email = appUser.getEmail();
+				u.domain = appUser.getAuthDomain();
+				DAO.instance.ofy().put(u);
+				d.user = u;
+			}
+		}
+		chain.doFilter(request, response);
+	}
+
+	public void Login(String username, String password) {}
+	
+	@Override
+	public void init(FilterConfig arg0) throws ServletException {
+	}
+
 }

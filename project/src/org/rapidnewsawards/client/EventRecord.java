@@ -22,7 +22,7 @@ public class EventRecord extends Composite {
 		"</p> </div>";
 
 		myPanel = new HTMLPanel(div);
-		Anchor a = new Anchor(subject.username, "#user:"+subject.id+":null");
+		Anchor a = new Anchor(subject.email, "#user:"+subject.id+":null");
 		myPanel.add(a, spanid);
 		myPanel.add(new InlineLabel(verb), paraid);
 		myPanel.add(new InlineLabel(object), paraid);		

@@ -41,7 +41,7 @@ import com.google.gwt.user.client.ui.Widget;
 
 /**
  * History Token format: Action:Arg1:Arg2 where 
- * Action = 'stories' | 'social'
+ * Action = 'stories' | 'social' | 'top' | 'user'
  * 
  */
 public class RNA extends Composite implements EntryPoint, ValueChangeHandler<String>  {
@@ -299,10 +299,10 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 		
 		final RNA rna = this;
 		
-		rnaService.sendRelatedUser(user, userId, new AsyncCallback<RelatedUserInfo>() {
+		rnaService.sendRelatedUser(userId, new AsyncCallback<RelatedUserInfo>() {
 
 			public void onSuccess(RelatedUserInfo result) {
-				title.setText(result.userInfo.user.name);
+				title.setText(result.userInfo.user.email);
 				cancelTickerTimer();
 				leftBox.setLabelText("");
 				rightBox.setFollowCheckBox(result.following, user, result.userInfo.user, rna);

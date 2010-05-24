@@ -11,7 +11,9 @@ public enum Return {
 	ABOUT_TO_UNFOLLOW("About to Unfollow "), 
 	PENDING_FOLLOW_CANCELLED("Pending Follow Cancelled"), 
 	NO_LONGER_CURRENT("Sorry, that edition is no longer current"), 
-	FAILED("The operation failed.  Please try again"), TRANSITION_IN_PROGRESS("A transition between editions is in progress.  Please try again");
+	FAILED("The operation failed.  Please try again"), 
+	TRANSITION_IN_PROGRESS("A transition between editions is in progress.  Please try again"), 
+	ILLEGAL_OPERATION("Illegal Operation");
 
 
 public String s;

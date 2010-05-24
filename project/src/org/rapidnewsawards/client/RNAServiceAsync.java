@@ -13,9 +13,9 @@ public interface RNAServiceAsync {
 	void sendRecentSocials(Integer editionNum,
 			AsyncCallback<RecentSocials> asyncCallback);
 
-	void sendRelatedUser(User from, long userId, AsyncCallback<RelatedUserInfo> callback);
+	void sendRelatedUser(long userId, AsyncCallback<RelatedUserInfo> callback);
 
-	void doSocial(User from, User to, boolean checked, AsyncCallback<Return> asyncCallback);
+	void doSocial(User to, boolean checked, AsyncCallback<Return> asyncCallback);
 
 	void sendTopStories(Integer editionNum,
 			AsyncCallback<RecentStories> asyncCallback);

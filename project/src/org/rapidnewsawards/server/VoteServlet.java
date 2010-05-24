@@ -30,9 +30,11 @@ public class VoteServlet extends HttpServlet {
 			return;			
 		}
 		
-		User u = DAO.instance.findUserByUsername(request.getParameter("username"));
+		User u = DAO.instance.user;
+		
 		if (u == null) {
-			out.println("No such voter");
+			// TODO REDIRECT
+			out.println("Not loggee in");
 			return;
 		}
 		
@@ -46,17 +48,16 @@ public class VoteServlet extends HttpServlet {
 		}
 		// TODO handle malformed urls
 		catch (IllegalArgumentException ex) {
-			log.warning("BAD VOTE: " + u.getUsername() + ", " + url);
+			log.warning("BAD VOTE: " + u + ", " + url);
 			out.println("vote already counted");	
 			return;
 		}
 		catch (IllegalStateException ex) {
-			log.warning("BAD VOTE STATE: " + u.getUsername() + ", " + url);
+			log.warning("BAD VOTE STATE: " + u + ", " + url);
 			out.println("That edition is no longer current, or a transition to the next edition is in progress");	
 			return;
 		}
 
-		log.info("VOTE: " + u.getUsername() + ", " + url);
 		out.println("vote counted");
 		
 	}

@@ -46,37 +46,24 @@ public class MakeDataServlet extends HttpServlet {
 		ArrayList<Edition> editions = makeEditions(editionCount, periodSize);
 
 		Edition second = editions.get(1);
-		makeEditor(second, "Megan Garber", "megangarber");
-		makeEditor(second, "Josh Young", "jny2");
-		makeEditor(second, "Steve Outing", "steveouting");	
+		makeEditor("megangarber@gmail.com");
+		makeEditor("jny2@gmail.com");
+		makeEditor("steveouting@gmail.com");	
 		
 		if (numUsers != null)
 			numUsers.value = new Integer(3);
 	}
 
 
-	public static User makeEditor(Edition e, String name, String username) {
-		if ("__rna__" == username)
-			return null;
-		
+	public static User makeEditor(String email) {
 		Objectify txn = DAO.instance.fact().beginTransaction();
-		User u = new User(name, username, false);
+		User u = new User(email, "gmail.com");
 		txn.put(u);
 		//DAO.instance.doSocial(u.getKey(), u.getKey(), e, txn, true);
 		txn.getTxn().commit();
 		return u;
 	}
 
-	/*
-	 * See Edition.rnaEditor
-	 */
-	public static User makeRNAEditor() {
-		Objectify txn = DAO.instance.fact().beginTransaction();
-		User u = new User("RNA", "__rna__", true);
-		txn.put(u);
-		txn.getTxn().commit();
-		return u;
-	}
 	 
 	public static ArrayList<Edition> makeEditions(int editionCount, long periodSize) {
 		final Root root = new Root();
@@ -84,8 +71,6 @@ public class MakeDataServlet extends HttpServlet {
 		DAO.instance.ofy().put(root);
 		
 		final Periodical p = new Periodical(Name.JOURNALISM, new Key<Root>(Root.class, 1L));
-		User u = makeRNAEditor();
-		p.rnaEditor = u.getKey();
 		Objectify o = DAO.instance.ofy();
 		o.put(p);
 

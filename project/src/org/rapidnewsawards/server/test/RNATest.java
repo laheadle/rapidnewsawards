@@ -19,11 +19,11 @@ public abstract class RNATest extends TestCase {
 
 	protected static DAO d = DAO.instance;
 		
-	protected User getUser(String username) {
-		if (username == null)
-			username = "megangarber";
-
-		return DAO.instance.findUserByUsername(username);
+	protected User getUser(String name) {
+		if (name == null)
+			name = "megangarber";
+		
+		return d.findUserByLogin(name + "@gmail.com", "gmail.com"); 
 	}
 
 	public void doTransition() {

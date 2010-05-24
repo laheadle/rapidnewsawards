@@ -33,9 +33,9 @@ public class DoSomethingServlet extends HttpServlet {
 		
 		// insert some votes in the current edition
 		
-		User megangarber = DAO.instance.findUserByUsername("megangarber");
-		User jny2 = DAO.instance.findUserByUsername("jny2");
-		User steveouting = DAO.instance.findUserByUsername("steveouting");
+		User megangarber = DAO.instance.findUserByLogin("megangarber@gmail.com", "gmail.com");
+		User jny2 = DAO.instance.findUserByLogin("jny2@gmail.com", "gmail.com");
+		User steveouting = DAO.instance.findUserByLogin("steveouting@gmail.com", "gmail.com");
 		
 		String url1 = "http://example.com";
 		String url2 = "http://example2.com";

@@ -19,7 +19,7 @@ public class VoteTransitionTest extends RNATest {
 	@Test
 	public void testVotes() {
 		Edition e1 = d.getCurrentEdition(Name.JOURNALISM);		
-		User mg = d.findUserByUsername("megangarber");
+		User mg = getUser("megangarber");
 
 		Link l = d.findOrCreateLinkByURL("http://example.com", mg.getKey());
 		assertEquals(d.getLatestUser_Links(e1).size(), 0);
@@ -38,9 +38,9 @@ public class VoteTransitionTest extends RNATest {
 		d.getCurrentEdition(Name.JOURNALISM);		
 		Edition e2 = d.getEdition(Name.JOURNALISM, 1, null);
 
-		User mg = d.findUserByUsername("megangarber");
-		User jny2 = d.findUserByUsername("jny2");
-		User steveouting = d.findUserByUsername("steveouting");
+		User mg = getUser("megangarber");
+		User jny2 = getUser("jny2");
+		User steveouting = getUser("steveouting");
 
 		// megan follows josh 
 		d.doSocial(mg.getKey(), jny2.getKey(), e2, true);
