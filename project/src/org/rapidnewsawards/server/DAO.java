@@ -26,6 +26,7 @@ import org.rapidnewsawards.shared.RecentVotes;
 import org.rapidnewsawards.shared.StoryInfo;
 import org.rapidnewsawards.shared.User;
 import org.rapidnewsawards.shared.UserInfo;
+import org.rapidnewsawards.shared.User_Authority;
 import org.rapidnewsawards.shared.User_Link;
 import org.rapidnewsawards.shared.Vote;
 import org.rapidnewsawards.shared.Vote_Link;
@@ -57,7 +58,7 @@ public class DAO extends DAOBase
 
     public static DAO instance = new DAO();
 	public User user = null;
-	private static final Logger log = Logger.getLogger(DAO.class.getName());
+	public static final Logger log = Logger.getLogger(DAO.class.getName());
         
     public User findUserByLogin(String email, String domain) {
     	return ofy().query(User.class).filter("email", email).filter("domain", domain).get();
@@ -127,22 +128,21 @@ public class DAO extends DAOBase
 		final SocialEvent aboutToSocial = getAboutToSocial(from, to, e, o);
 		
 		if (on) {
-			// this follow won't take effect until a transition
-			if (following != null) {
-				log.warning("Already following: [" + from + ", " + to + "]");
-				r = Return.ALREADY_FOLLOWING;
-			}
-			else if (aboutToSocial != null && aboutToSocial.on) {
-				log.warning("Already about to follow: [" + from + ", " + to + "]");
-				r = Return.ALREADY_ABOUT_TO_FOLLOW;				
-			}
-			else if (aboutToSocial != null) {
+			if (aboutToSocial != null && !aboutToSocial.on) {
 				// cancel (delete) the pending unfollow
 				o.delete(aboutToSocial);
 				r = Return.PENDING_UNFOLLOW_CANCELLED;				
 			}			
+			else if (aboutToSocial != null && aboutToSocial.on) {
+				log.warning("Already about to follow: [" + from + ", " + to + "]");
+				r = Return.ALREADY_ABOUT_TO_FOLLOW;				
+			}
+			else if (following != null) {
+				log.warning("Already following: [" + from + ", " + to + "]");
+				r = Return.ALREADY_FOLLOWING;
+			}
 			else {
-				// this unfollow won't take effect until a transition
+				// this follow won't take effect until a transition
 				final SocialEvent follow = new SocialEvent(from, to, e.getKey(), new Date(), on);
 				r = Return.ABOUT_TO_FOLLOW;
 				o.put(follow);
@@ -220,43 +220,57 @@ public class DAO extends DAOBase
 	 * @param l the link voted for
 	 * @throws IllegalArgumentException
 	 */
-	public boolean voteFor(User u, Edition e, Link l) throws IllegalArgumentException {
+	public Return voteFor(User u, Edition e, Link l, Boolean on) throws IllegalArgumentException {
 		// TODO only judges can vote, ditto for ed follows
 		
 		// obtain lock
 		LockedPeriodical lp = lockPeriodical();
-		
-		if (lp == null) {
+
+		if (lp == null || e == null) {
 			log.warning("vote failed: " + u + " -> " + l.url);
-			return false;
+			return Return.FAILED;
 		}
-		
+
 		if (!lp.periodical.getCurrentEditionKey().equals(e.getKey())) {
 			log.warning("Attempted to vote in old edition");
-			lp.transaction.getTxn().commit();
-			throw new IllegalStateException("That Edition is no longer current");		
+			lp.transaction.getTxn().rollback();
+			return Return.NO_LONGER_CURRENT;
 		}
 
 		if (lp.periodical.inSocialTransition) {
 			log.warning("Attempted to vote during transition");
+			lp.transaction.getTxn().rollback();
+			return Return.TRANSITION_IN_PROGRESS;
+		}
+
+		if (on) {
+			if (hasVoted(u, e, l)) {
+				lp.transaction.getTxn().rollback();
+				return Return.ALREADY_VOTED;
+			}
+
+			int authority = ofy().query(Follow.class).filter("judge", u.getKey()).countAll();
+
+			ofy().put(new Vote(u.getKey(), e.getKey(), l.getKey(), new Date(), authority));
+
+			log.info(u + " " + authority + " -> " + l.url);
+
+			// release lock
 			lp.transaction.getTxn().commit();
-			throw new IllegalStateException("Transition in progress");					
+
+			return Return.SUCCESS;
 		}
-		
-		if (hasVoted(u, e, l)) {
-			throw new IllegalArgumentException("Already Voted");
+		else {
+			Vote v = ofy().query(Vote.class).filter("edition", e.getKey()).filter("link", l.getKey()).get();
+			if (v == null) {
+				lp.transaction.getTxn().rollback();
+				return Return.HAS_NOT_VOTED;
+			}
+			else {
+				ofy().delete(v);
+				return Return.SUCCESS;
+			}
 		}
-
-		int authority = ofy().query(Follow.class).filter("judge", u.getKey()).countAll();
-
-		ofy().put(new Vote(u.getKey(), e.getKey(), l.getKey(), new Date(), authority));
-
-		log.info(u + " " + authority + " -> " + l.url);
-		
-		// release lock
-		lp.transaction.getTxn().commit();
-		
-		return true;
 	}
 	
     public boolean hasVoted(User u, Edition e, Link l) {
@@ -529,6 +543,32 @@ public class DAO extends DAOBase
 
 	}
 
+	public LinkedList<User_Authority> getVoters(Link l, Edition e) {
+		LinkedList<User_Authority> result = new LinkedList<User_Authority>();
+
+		Map<Key<User>, Integer> authorities = new HashMap<Key<User>, Integer>();
+		ArrayList<Key<User>> voters = new ArrayList<Key<User>>();
+
+		for (Vote v : ofy().query(Vote.class).filter("link", l.getKey()).filter("edition", e.getKey())) {
+			authorities.put(v.voter, v.authority);
+			voters.add(v.voter);
+		}
+
+		if (voters.size() == 0) {
+			log.warning("requested voters for empty link " + l);
+			return result;
+		}
+		
+		Map<Key<User>, User> vmap = ofy().get(voters);
+
+		for(int i = 0;i < voters.size();i++) {
+			result.add(new User_Authority(vmap.get(voters.get(i)), authorities.get(voters.get(i))));
+		}
+		
+		Collections.sort(result);
+		return result;
+	}
+	
 	public UserInfo getUserInfo(Name periodical, Key<User> user) {
 		UserInfo ui = new UserInfo();
 		try {

@@ -39,6 +39,11 @@ public class User implements IsSerializable {
 		return true;
 	}
 
+	@Override
+	public String toString() {
+		return email;
+	}
+	
 	public Key<User> getKey() {
 		return new Key<User>(User.class, id);
 	}

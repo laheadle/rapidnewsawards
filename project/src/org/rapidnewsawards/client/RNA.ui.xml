@@ -114,7 +114,10 @@
 				<g:layer top='0px' height='50px'>
 					<g:LayoutPanel styleName='{style.topLeft}'>
 						<g:layer>
-							<g:Label styleName='{style.empty}'> Sign In </g:Label>
+						<g:FlowPanel>
+						<g:Label ui:field='userName'></g:Label>
+							<g:Button styleName='{style.sideButton}' ui:field='signIn'> Sign In </g:Button>
+							</g:FlowPanel>
 						</g:layer>
 					</g:LayoutPanel>
 				</g:layer>

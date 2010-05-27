@@ -44,9 +44,9 @@ public class DAOTest extends RNATest {
 		
 		Link l = DAO.instance.findOrCreateLinkByURL("http://example.com", mg.getKey());
 		Link l3 = DAO.instance.findOrCreateLinkByURL("http://example2.com", mg.getKey());
-		DAO.instance.voteFor(mg, e, l);
+		DAO.instance.voteFor(mg, e, l, true);
 		assertTrue(DAO.instance.hasVoted(mg, e, l));
-		DAO.instance.voteFor(mg, e, l3);
+		DAO.instance.voteFor(mg, e, l3, true);
 		assertTrue(DAO.instance.hasVoted(mg, e, l3));
 		assertTrue(DAO.instance.hasVoted(mg, e, l));
 		Link l2 = DAO.instance.findOrCreateLinkByURL("http://bad.com", mg.getKey());

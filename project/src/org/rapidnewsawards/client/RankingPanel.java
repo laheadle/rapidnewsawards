@@ -2,6 +2,7 @@ package org.rapidnewsawards.client;
 
 import java.util.LinkedList;
 
+import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.StoryInfo;
 
 import com.google.gwt.user.client.ui.Composite;
@@ -17,12 +18,12 @@ public class RankingPanel  extends Composite {
 		initWidget(table);
 	}
 	
-	public void showTopStories(LinkedList<StoryInfo> stories) {
+	public void showTopStories(LinkedList<StoryInfo> stories, Edition edition) {
 		int i = 1;
 		table.clear();
 		
 		for(StoryInfo info : stories) {
-			StoryRecord rec = new StoryRecord(info);
+			StoryRecord rec = new StoryRecord(info, edition);
 			table.setWidget(i++, 0, rec);
 		    table.getFlexCellFormatter().setColSpan(i, 0, 3);
 		}

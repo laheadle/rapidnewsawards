@@ -14,7 +14,7 @@ import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.User;
 
 public class TransitionTask  extends HttpServlet {
-	private static final Logger log = Logger.getLogger(VoteServlet.class.getName());
+	private static final Logger log = Logger.getLogger(TransitionTask.class.getName());
 	private static DAO d = DAO.instance;
 
 	@Override
@@ -33,7 +33,12 @@ public class TransitionTask  extends HttpServlet {
 		
 		
 		d.transitionEdition(Name.JOURNALISM);
-		d.socialTransition(next);
+		if (next == null) {
+			log.info("End of periodical; last edition is" + current);
+		}
+		else {
+			d.socialTransition(next);
+		}
 		d.finalizeTally(current.getKey());		
 	}
 	

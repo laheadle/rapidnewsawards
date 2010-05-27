@@ -58,11 +58,13 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 
 	@UiField Label status;
 	@UiField Label title;	
+	@UiField Label userName;	
 	@UiField SimplePanel mainPanel;
 	@UiField Button showStories;
 	@UiField Button showCurrentEdition;
 	@UiField Button showTopStories;
 	@UiField Button showSocial;
+	@UiField Button signIn;
 	@UiField NavBox leftBox;
 	
 	EventPanel eventPanel;
@@ -104,6 +106,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 		RootLayoutPanel root = RootLayoutPanel.get();
 		eventPanel = new EventPanel();
 		rankingPanel = new RankingPanel();
+		instance = this;
 		initWidget(uiBinder.createAndBindUi(this));
 		root.add(this);
 		setVisible(true);		
@@ -144,6 +147,32 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
   	  return edition.end.getTime() - new Date().getTime();
     }
 
+	private void fetchUserInfo() {
+		new Timer() {
+			@Override
+			public void run() {
+				
+				rnaService.sendUserInfo(new AsyncCallback<User>() {
+					public void onSuccess(User result) {
+						user = result;
+						if (user == null) {
+							userName.setText("");
+							signIn.setText("Log in");							
+						}
+						else {
+							userName.setText(user.email);
+							signIn.setText("Log out");														
+						}
+					}
+
+					public void onFailure(Throwable caught) {
+						setStatus("User fetch FAILED: " + caught);
+					}
+				});				
+			}
+		}.schedule(50);
+	}
+	
 	private void scheduleTickerTimer() {
 		if (tickerTimer != null)
 			tickerTimer.cancel();
@@ -211,6 +240,40 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 		}
 	}
 	
+
+	@UiHandler("signIn")
+	void doAuth(ClickEvent e) {
+		String url = Window.Location.createUrlBuilder().buildString();
+
+		if (user == null) {
+			setStatus("Logging in...");
+			rnaService.sendLoginUrl(url, new AsyncCallback<String>() {
+
+				public void onSuccess(String loginUrl) {
+					Window.Location.assign(loginUrl);
+				}
+
+				public void onFailure(Throwable caught) {
+					setStatus("FAILED: " + caught);
+				}
+			});
+		}
+		else {
+			setStatus("Logging out...");
+			rnaService.sendLogoutUrl(url, new AsyncCallback<String>() {
+
+				public void onSuccess(String logoutUrl) {
+					Window.Location.assign(logoutUrl);
+				}
+
+				public void onFailure(Throwable caught) {
+					setStatus("FAILED: " + caught);
+				}
+			});
+
+		}
+	}
+
 	@UiHandler("showStories")
 	void showStories(ClickEvent e) {
 		if (edition instanceof Edition) {
@@ -277,13 +340,14 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 
 			public void onSuccess(RecentVotes result) {
 				openEdition(result.edition, result.numEditions);
-				if (result.votes.size() == 0) {
+				if (result.votes != null && result.votes.size() == 0) {
 					setStatus("No votes.");
 				}
 				else {
 					clearStatus();
 				}
-				eventPanel.showVotes(result.votes);
+				if (result.votes != null)
+					eventPanel.showVotes(result.votes);
 			}
 
 			public void onFailure(Throwable caught) {
@@ -381,7 +445,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 					clearStatus();
 				}
 				
-				rankingPanel.showTopStories(result.stories);
+				rankingPanel.showTopStories(result.stories, result.edition);
 			}
 
 			public void onFailure(Throwable caught) {
@@ -394,6 +458,9 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 		// check history token for which edition we are on
 		String s = event.getValue();
 		Integer editionNum;
+
+	    // go check the server for this user's login state
+	    fetchUserInfo();
 
 		String[] tokens = s.split(":");
 
@@ -462,9 +529,13 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 	public static final RNAServiceAsync rnaService = GWT
 	.create(RNAService.class);
 
-	private static RNA instance;
+	public static RNA instance;
 
 	private static UB uiBinder = GWT.create(UB.class);
+
+	public String getCurrentUrl() {
+		return Window.Location.createUrlBuilder().buildString();
+	}
 
 
 

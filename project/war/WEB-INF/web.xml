@@ -16,11 +16,6 @@
 	</servlet>
 
 	<servlet>
-		<servlet-name>voteServlet</servlet-name>
-		<servlet-class>org.rapidnewsawards.server.VoteServlet</servlet-class>
-	</servlet>
-
-	<servlet>
 		<servlet-name>makeDataServlet</servlet-name>
 		<servlet-class>org.rapidnewsawards.server.MakeDataServlet</servlet-class>
 	</servlet>
@@ -47,14 +42,14 @@
 
 
 	<servlet-mapping>
-		<servlet-name>apiServlet</servlet-name>
-		<url-pattern>/1/*</url-pattern>
+		<servlet-name>rnaServlet</servlet-name>
+		<url-pattern>/Vote/rna</url-pattern>
 	</servlet-mapping>
 
 
 	<servlet-mapping>
-		<servlet-name>voteServlet</servlet-name>
-		<url-pattern>/vote</url-pattern>
+		<servlet-name>apiServlet</servlet-name>
+		<url-pattern>/1/*</url-pattern>
 	</servlet-mapping>
 
 
@@ -69,6 +64,16 @@
 		<url-pattern>/makeData</url-pattern>
 	</servlet-mapping>
 
+
+  <filter> 
+    <filter-name>AuthFilter</filter-name> 
+    <filter-class>org.rapidnewsawards.server.AuthFilter</filter-class> 
+  </filter> 
+  <filter-mapping> 
+    <filter-name>AuthFilter</filter-name> 
+    <url-pattern>/*</url-pattern> 
+  </filter-mapping> 
+  
   <security-constraint>
         <web-resource-collection>
             <url-pattern>/tasks/*</url-pattern>

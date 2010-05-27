@@ -45,14 +45,14 @@ public class DoSomethingServlet extends HttpServlet {
 		Link l2 = DAO.instance.findOrCreateLinkByURL(url2, jny2.getKey());
 		Link l3 = DAO.instance.findOrCreateLinkByURL(url3, megangarber.getKey());
 
-		DAO.instance.voteFor(megangarber, e, l1);
-		DAO.instance.voteFor(jny2, e, l1);
-		DAO.instance.voteFor(steveouting, e, l1);
+		DAO.instance.voteFor(megangarber, e, l1, true);
+		DAO.instance.voteFor(jny2, e, l1, true);
+		DAO.instance.voteFor(steveouting, e, l1, true);
 
-		DAO.instance.voteFor(megangarber, e, l2);
-		DAO.instance.voteFor(steveouting, e, l2);
+		DAO.instance.voteFor(megangarber, e, l2, true);
+		DAO.instance.voteFor(steveouting, e, l2, true);
 
-		DAO.instance.voteFor(jny2, e, l3);
+		DAO.instance.voteFor(jny2, e, l3, true);
 
 		DAO.instance.tally(e.getKey());
 		

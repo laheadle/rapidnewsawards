@@ -8,6 +8,7 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 
 import java.io.IOException;
+import java.util.LinkedList;
 import java.util.logging.Logger;
 
 import javax.servlet.Filter;
@@ -19,8 +20,10 @@ import javax.servlet.ServletResponse;
 import javax.servlet.http.HttpSession;
 
 import org.mortbay.log.Log;
+import org.rapidnewsawards.client.RNA;
 import org.rapidnewsawards.client.RNAService;
 import org.rapidnewsawards.shared.Edition;
+import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.RecentSocials;
 import org.rapidnewsawards.shared.RecentStories;
@@ -29,6 +32,8 @@ import org.rapidnewsawards.shared.RelatedUserInfo;
 import org.rapidnewsawards.shared.Return;
 import org.rapidnewsawards.shared.User;
 import org.rapidnewsawards.shared.UserInfo;
+import org.rapidnewsawards.shared.User_Authority;
+import org.rapidnewsawards.shared.VoteResult;
 
 /**
  * The server side implementation of the RPC service.
@@ -39,17 +44,20 @@ import org.rapidnewsawards.shared.UserInfo;
 
 @SuppressWarnings("serial")
 public class RNAServiceImpl extends RemoteServiceServlet implements
-RNAService, Filter {
+RNAService {
 	private static final Logger log = Logger.getLogger(DAO.class.getName());
 	private static DAO d = DAO.instance;
 	
 	// TODO: on client side, null means current edition; on server, -1 does.
 	private int ed(Integer edition) { return edition == null ? -1 : edition; }
 	
+	@Override
 	public RecentVotes sendRecentVotes(Integer edition) {
+		// TODO don't return future editions
 		return DAO.instance.getRecentVotes(ed(edition), Name.JOURNALISM);
 	}
 
+	@Override
 	public RecentSocials sendRecentSocials(Integer edition) {
 		Edition current = null;
 		Edition next = null;
@@ -71,6 +79,7 @@ RNAService, Filter {
 		return DAO.instance.getRecentSocials(current, next, Name.JOURNALISM);
 	}
 
+	@Override
 	public Return doSocial(User to, boolean on) {
 		
 		if (d.user == null) {
@@ -94,32 +103,48 @@ RNAService, Filter {
 		return d.getTopStories(ed(editionNum), Name.JOURNALISM);
 	}
 
+	public static String home = "/Rapid_News_Awards.html?gwt.codesvr=127.0.0.1:9997";
+
 	@Override
-	public void doFilter(ServletRequest request, ServletResponse response,
-			FilterChain chain) throws IOException, ServletException {
-		UserService userService = UserServiceFactory.getUserService();
-		com.google.appengine.api.users.User appUser = userService.getCurrentUser();
-		if (appUser == null) {
-			d.user = null;
+	public VoteResult voteFor(String link, String fullLink, Edition edition, Boolean on) {
+		VoteResult vr = new VoteResult();
+        UserService userService = UserServiceFactory.getUserService();
+		
+		if (d.user == null) {
+			vr.returnVal = Return.NOT_LOGGED_IN;
+			vr.authUrl = userService.createLoginURL(fullLink);
+			return vr;
 		}
-		else {
-			User u = DAO.instance.findUserByLogin(appUser.getEmail(), appUser.getAuthDomain());
-			if (u == null) {
-				// first time logging in; create new user
-				u = new User();
-				u.email = appUser.getEmail();
-				u.domain = appUser.getAuthDomain();
-				DAO.instance.ofy().put(u);
-				d.user = u;
-			}
-		}
-		chain.doFilter(request, response);
+
+		// TODO broken on some complex hrefs
+		Link l = DAO.instance.findOrCreateLinkByURL(link, d.user.getKey());
+
+		vr.returnVal = d.voteFor(d.user, edition == null? d.getCurrentEdition(Name.JOURNALISM) : edition, l, on);
+		vr.authUrl = userService.createLogoutURL(home);
+
+		return vr;
 	}
 
-	public void Login(String username, String password) {}
-	
 	@Override
-	public void init(FilterConfig arg0) throws ServletException {
+	public LinkedList<User_Authority> getVoters(Link link, Edition e) {
+		return d.getVoters(link, e);
+	}
+
+	@Override
+	public String sendLoginUrl(String url) {
+        UserService userService = UserServiceFactory.getUserService();
+        return userService.createLoginURL(url);
+	}
+
+	@Override
+	public User sendUserInfo() {
+		return d.user;
+	}
+
+	@Override
+	public String sendLogoutUrl(String url) {
+        UserService userService = UserServiceFactory.getUserService();
+        return userService.createLogoutURL(url);
 	}
 
 }
