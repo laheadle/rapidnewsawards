@@ -12,13 +12,17 @@ import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.User;
 
 import com.google.appengine.api.datastore.dev.LocalDatastoreService;
-import com.google.appengine.tools.development.ApiProxyLocalImpl;
+import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
+import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.apphosting.api.ApiProxy;
+
 
 public abstract class RNATest extends TestCase {
 
 	protected static DAO d = DAO.instance;
-		
+
+	private final LocalServiceTestHelper helper = new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
+
 	protected User getUser(String name) {
 		if (name == null)
 			name = "megangarber";
@@ -38,26 +42,15 @@ public abstract class RNATest extends TestCase {
 	@Override
 	public void setUp() throws Exception {
         super.setUp();
-        ApiProxy.setEnvironmentForCurrentThread(new TestEnvironment());
-        ApiProxy.setDelegate(new ApiProxyLocalImpl(new File(".")){});
-
-        ApiProxyLocalImpl proxy = (ApiProxyLocalImpl) ApiProxy.getDelegate();
-        proxy.setProperty(LocalDatastoreService.NO_STORAGE_PROPERTY, Boolean.TRUE.toString());
+        helper.setUp();
         MakeDataServlet.testing = true;
 		MakeDataServlet.makeData(3, 30 * 60 * MakeDataServlet.ONE_SECOND, null);
 	}
 
 	@Override
 	public void tearDown() throws Exception {
-        ApiProxyLocalImpl proxy = (ApiProxyLocalImpl) ApiProxy.getDelegate();
-        LocalDatastoreService datastoreService = (LocalDatastoreService) proxy.getService(LocalDatastoreService.PACKAGE);
-        datastoreService.clearProfiles();
-        
-		ApiProxy.setDelegate(null);
-        ApiProxy.setEnvironmentForCurrentThread(null);
-
+        helper.tearDown();
         MakeDataServlet.testing = false;
-
         super.tearDown();
 	}
 	

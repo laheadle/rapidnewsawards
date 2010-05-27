@@ -32,6 +32,7 @@ import org.rapidnewsawards.shared.Vote;
 import org.rapidnewsawards.shared.Vote_Link;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.NotFoundException;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.Query;
@@ -53,7 +54,6 @@ public class DAO extends DAOBase
         ObjectifyService.factory().register(ScoredLink.class);        
         ObjectifyService.factory().register(Periodical.class);
         ObjectifyService.factory().register(Edition.class);
-        ObjectifyService.factory().setDatastoreTimeoutRetryCount(3);
     }
 
     public static DAO instance = new DAO();
@@ -575,7 +575,7 @@ public class DAO extends DAOBase
 			ui.user = ofy().get(user);
 			ui.votes = getLatestVote_Links(user);
 			return ui;
-		} catch (EntityNotFoundException e1) {
+		} catch (NotFoundException e1) {
 			return null;
 		}
 	}
