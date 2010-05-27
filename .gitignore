@@ -2,3 +2,4 @@
 .metadata
 *~
 *.jar
+project/war/Vote/*
