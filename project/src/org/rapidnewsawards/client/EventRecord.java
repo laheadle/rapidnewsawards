@@ -18,11 +18,11 @@ public class EventRecord extends Composite {
 		String spanid = "span"+count;
 		String paraid = "para"+count;
 		String div = "<div>"+
-		"	<p id='"+paraid+"'> <span id='"+spanid+"'> </span> "+
+		"	<p style=\"margin-left: 15px; font-size: medium\" id='"+paraid+"'> <span id='"+spanid+"'> </span> "+
 		"</p> </div>";
 
 		myPanel = new HTMLPanel(div);
-		Anchor a = new Anchor(subject.email, "#user:"+subject.id+":null");
+		Anchor a = new Anchor(subject.getDisplayName(), "#user:"+subject.id+":null");
 		myPanel.add(a, spanid);
 		myPanel.add(new InlineLabel(verb), paraid);
 		myPanel.add(new InlineLabel(object), paraid);		

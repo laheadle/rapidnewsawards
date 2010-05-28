@@ -30,4 +30,6 @@ public interface RNAServiceAsync {
 	void sendUserInfo(AsyncCallback<User> asyncCallback);
 
 	void sendLogoutUrl(String url, AsyncCallback<String> asyncCallback);
+
+	void submitStory(String url, String title, Edition e, AsyncCallback<VoteResult> asyncCallback);
 }

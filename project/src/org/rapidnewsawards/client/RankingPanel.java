@@ -18,6 +18,10 @@ public class RankingPanel  extends Composite {
 		initWidget(table);
 	}
 	
+	void clear() {
+		table.clear(true);
+	}
+	
 	public void showTopStories(LinkedList<StoryInfo> stories, Edition edition) {
 		int i = 1;
 		table.clear();

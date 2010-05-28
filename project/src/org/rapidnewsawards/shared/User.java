@@ -19,12 +19,15 @@ public class User implements IsSerializable {
 
 	public String email;
 	public String domain;
+
+	private String nickname;
 	
 	public User() {}
 	
 	public User(String email, String domain) {
 		this.email = email;
 		this.domain = domain;
+		this.nickname = "";
 	}
 
 	@Override
@@ -39,6 +42,15 @@ public class User implements IsSerializable {
 		return true;
 	}
 
+	public String getDisplayName() {
+		if (nickname == null || nickname.equals("")) {
+			return email.substring(0, email.indexOf('@'));
+		}
+		else {
+			return nickname;
+		}
+	}
+	
 	@Override
 	public String toString() {
 		return email;

@@ -160,7 +160,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 							signIn.setText("Log in");							
 						}
 						else {
-							userName.setText(user.email);
+							userName.setText(user.getDisplayName());
 							signIn.setText("Log out");														
 						}
 					}
@@ -327,6 +327,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 	private void showRankingPanel() {
 		eventPanel.setVisible(false);
 		rankingPanel.setVisible(true);
+		rankingPanel.clear();
 		mainPanel.setWidget(rankingPanel);				
 	}
 	
@@ -366,7 +367,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 		rnaService.sendRelatedUser(userId, new AsyncCallback<RelatedUserInfo>() {
 
 			public void onSuccess(RelatedUserInfo result) {
-				title.setText(result.userInfo.user.email);
+				title.setText(result.userInfo.user.getDisplayName());
 				cancelTickerTimer();
 				leftBox.setLabelText("");
 				rightBox.setFollowCheckBox(result.following, user, result.userInfo.user, rna);

@@ -40,19 +40,20 @@ public class StoryRecord extends Composite {
 		
 		String metaid = "meta" + count;
 		String titleid ="title" + count;
-		String supportid ="title" + count; // support checkbox
+		String supportid ="support" + count; // support checkbox
 		String recordid = "record" + count;
 
 		InlineHTML score = new InlineHTML("<span style='color: blue; margin-right: 5px; font-size: large'>"+info.score+"</span>");
-		InlineHTML domain = new InlineHTML(" "+info.link.url);
-		InlineHTML submitter = new InlineHTML(" / "+info.submitter.email);
+		InlineHTML domain = new InlineHTML(" "+info.link.domain);
+		InlineHTML submitter = new InlineHTML(" / "+info.submitter.getDisplayName());
 		InlineHTML title = new InlineHTML(""+info.link.title);
 		
-		String html = "<div id='"+recordid+"' style='margin: 10px 0 0 0; padding-bottom: 0'>"+
+		String html = 				"<div style='font-size: large; margin: 10px 0 10px 0' id='"+titleid+"'> </div>" +  // title
+
+		"<div id='"+recordid+"' style='margin: 10px 0 0 0; padding-bottom: 0'>"+
 				"<span style='font-size: medium'; id='"+metaid+"'> </span>" + // score, domain, submitter 
-				"<div style='font-size: large; margin: 10px 0 10px 0' id='"+titleid+"'> </div>"  + // title
-				"<div style='' id='"+supportid+"'> </div>" // support
-		+ "</div>";
+				"<div style='margin-top: 10px' id='"+supportid+"'> </div>" + // support
+		 "</div>";
 		
 		myPanel = new HTMLPanel(html);
 		myPanel.add(score, metaid);
@@ -104,7 +105,7 @@ public class StoryRecord extends Composite {
 		protected void setVoters(LinkedList<User_Authority> voters) {
 			String str = new String();
 			for (User_Authority ua : voters) {
-				str += ua.user.email + "(" + ua.authority + ") ";
+				str += ua.user.getDisplayName() + "(" + ua.authority + ") ";
 			}
 			sPanel.setWidget(new InlineHTML(str));
 		}

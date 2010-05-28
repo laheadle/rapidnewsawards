@@ -1,5 +1,6 @@
 package org.rapidnewsawards.server;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 
 import java.util.Collections;
@@ -283,29 +284,11 @@ public class DAO extends DAOBase
 	}
 
 	// clients should call convenience methods above
-    private <T> T findByFieldName(Class<T> clazz, Name fieldName, Object value, Objectify o) {
+    public <T> T findByFieldName(Class<T> clazz, Name fieldName, Object value, Objectify o) {
     	if (o == null)
     		o = ofy();
     	return o.query(clazz).filter(fieldName.name, value).get();
     }
-
-    // TODO this is not transactional - could result in duplicates; need parent
-	public Link findOrCreateLinkByURL(String url, Key<User> submitter) {
-		Objectify o = ofy();
-		
-    	Link l = findByFieldName(Link.class, Name.URL, url, null);
-    	if (l != null)
-    		return l;		
-    	else if (submitter == null) {
-    		log.warning("tried to create link without submitter: " + url);
-    		return null;
-    	}
-    	else {
-    		l = new Link(url, null, submitter);
-    		o.put(l);
-    		return l;
-    	}
-	}
 	
 	/*
 	 * makes pending social actions current.  part of the transition machinery.
@@ -706,6 +689,25 @@ public class DAO extends DAOBase
 			result.add(sl);
 		}
 		return result;
+	}
+
+	public Link createLink(String url, String title, Key<User> submitter) {
+    	if (submitter == null) {
+    		log.warning("tried to create link without submitter: " + url);
+    		return null;
+    	}
+    	else {
+    		String domain;
+			try {
+				domain = new java.net.URL(url).getHost();
+			} catch (MalformedURLException e) {
+				log.warning("bad url " + url);
+				return null;
+			}
+    		Link l = new Link(url, title, domain, submitter);
+    		ofy().put(l);
+    		return l;
+    	}	
 	}
 
 }

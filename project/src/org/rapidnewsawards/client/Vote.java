@@ -6,12 +6,18 @@ import org.rapidnewsawards.shared.Return;
 import org.rapidnewsawards.shared.VoteResult;
 
 import com.google.gwt.core.client.EntryPoint;
+import com.google.gwt.event.dom.client.ClickEvent;
+import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.Composite;
+import com.google.gwt.user.client.ui.Grid;
 import com.google.gwt.user.client.ui.HTML;
+import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
+import com.google.gwt.user.client.ui.TextBox;
 
 public class Vote extends Composite implements EntryPoint {
 
@@ -27,29 +33,65 @@ public class Vote extends Composite implements EntryPoint {
 		String href = Window.Location.getParameter("href");
 		sPanel = new SimplePanel();
 		initWidget(sPanel);
-		setStatus("Voting for " + href + "...");
+		setStatus("Looking up URL ...");
 		
 		root.add(this);
 		setVisible(true);
 		
-		RNA.rnaService.voteFor(href, Window.Location.createUrlBuilder().buildString(), null, true, new AsyncCallback<VoteResult>() {
+		final String url = Window.Location.getParameter("href");
+		
+		RNA.rnaService.voteFor(href, url, null, true, new AsyncCallback<VoteResult>() {
 
 			public void onSuccess(VoteResult result) {
-				Return returnVal = result.returnVal;
-				
-				if (returnVal.equals(Return.SUCCESS)) {
-					String authLink = "<a href=\"" + result.authUrl + "\"> (Log out) </a>";
-					setStatus("Your vote was counted" + authLink);
-				}
-				else if (returnVal.equals(Return.NOT_LOGGED_IN)) {
-					String authLink = "<a href=\"" + result.authUrl + "\"> Please log in </a>";
-					setStatus(authLink);
+				if (result == null) {
+					// first time this link is submitted
+					final TextBox urlBox = new TextBox();
+					urlBox.setVisibleLength(90);
+					urlBox.setText(url);
+					final TextBox titleBox = new TextBox();					
+					titleBox.setVisibleLength(90);
+					Button submit = new Button("Submit");
+					Grid g = new Grid(3, 2);
+					g.setWidget(0, 0, new Label("Url"));
+					g.setWidget(1, 0, new Label("Title"));
+					g.setWidget(0, 1, urlBox);
+					g.setWidget(1, 1, titleBox);
+					g.setWidget(2, 1, submit);
+					
+					submit.addClickHandler(new ClickHandler() { 
+						
+						@Override					
+						public void onClick(ClickEvent ev) {
+							RNA.rnaService.submitStory(urlBox.getText(), titleBox.getText(), null, new AsyncCallback<VoteResult>() {
+
+								public void onSuccess(VoteResult result) {
+									setStatus("Your vote was counted");									
+								}
+
+								public void onFailure(Throwable caught) {
+									setStatus("ERROR: " + caught);
+								}
+							});
+						}
+					});
+					
+					sPanel.setWidget(g);
 				}
 				else {
-					setStatus(returnVal+"");
+					Return returnVal = result.returnVal;
+					if (returnVal.equals(Return.SUCCESS)) {
+						setStatus("Your vote was counted");
+					}
+					else if (returnVal.equals(Return.NOT_LOGGED_IN)) {
+						String authLink = "<a href=\"" + result.authUrl + "\"> Please log in </a>";
+						setStatus(authLink);
+					}
+					else {
+						setStatus(returnVal+"");
+					}
 				}
 			}
-
+				
 			public void onFailure(Throwable caught) {
 				setStatus("ERROR: " + caught);
 			}

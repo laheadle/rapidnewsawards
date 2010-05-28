@@ -41,9 +41,9 @@ public class DoSomethingServlet extends HttpServlet {
 		String url2 = "http://example2.com";
 		String url3 = "http://example3.com";
 		
-		Link l1 = DAO.instance.findOrCreateLinkByURL(url1, megangarber.getKey());
-		Link l2 = DAO.instance.findOrCreateLinkByURL(url2, jny2.getKey());
-		Link l3 = DAO.instance.findOrCreateLinkByURL(url3, megangarber.getKey());
+		Link l1 = DAO.instance.createLink(url1, "Title", megangarber.getKey());
+		Link l2 = DAO.instance.createLink(url2, "Title", jny2.getKey());
+		Link l3 = DAO.instance.createLink(url3, "Title", megangarber.getKey());
 
 		DAO.instance.voteFor(megangarber, e, l1, true);
 		DAO.instance.voteFor(jny2, e, l1, true);

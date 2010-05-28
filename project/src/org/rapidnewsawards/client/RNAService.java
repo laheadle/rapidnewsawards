@@ -19,6 +19,7 @@ public interface RNAService extends RemoteService {
 	VoteResult voteFor(String link, String fullLink, Edition e, Boolean on);
 	String sendLoginUrl(String url);
 	String sendLogoutUrl(String url);
+	VoteResult submitStory(String url, String title, Edition e);
 	User sendUserInfo();
 	LinkedList<User_Authority> getVoters(Link link, Edition e);
 	RecentVotes sendRecentVotes(Integer edition);

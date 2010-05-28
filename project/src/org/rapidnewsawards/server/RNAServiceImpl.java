@@ -117,11 +117,14 @@ RNAService {
 		}
 
 		// TODO broken on some complex hrefs
-		Link l = DAO.instance.findOrCreateLinkByURL(link, d.user.getKey());
-
-		vr.returnVal = d.voteFor(d.user, edition == null? d.getCurrentEdition(Name.JOURNALISM) : edition, l, on);
-		vr.authUrl = userService.createLogoutURL(home);
-
+    	Link l = DAO.instance.findByFieldName(Link.class, Name.URL, link, null);
+    	if (l == null) {
+    		return null;
+    	}
+    	else {
+    		vr.returnVal = d.voteFor(d.user, edition == null? d.getCurrentEdition(Name.JOURNALISM) : edition, l, on);
+    		vr.authUrl = userService.createLogoutURL(home);    		
+    	}
 		return vr;
 	}
 
@@ -145,6 +148,31 @@ RNAService {
 	public String sendLogoutUrl(String url) {
         UserService userService = UserServiceFactory.getUserService();
         return userService.createLogoutURL(url);
+	}
+
+	@Override
+	public VoteResult submitStory(String url, String title, Edition edition) {
+		VoteResult vr = new VoteResult();
+        UserService userService = UserServiceFactory.getUserService();
+		
+		if (d.user == null) {
+			vr.returnVal = Return.NOT_LOGGED_IN;
+			vr.authUrl = null; // userService.createLoginURL(fullLink);
+			return vr;
+		}
+
+		// TODO broken on some complex hrefs
+    	Link l = DAO.instance.createLink(url, title, d.user.getKey());
+
+    	if (l == null) {
+    		return null;
+    	}
+    	
+    	else {
+    		vr.returnVal = d.voteFor(d.user, edition == null? d.getCurrentEdition(Name.JOURNALISM) : edition, l, true);
+    		vr.authUrl = null; // userService.createLogoutURL(home);    		
+    	}
+		return vr;
 	}
 
 }

@@ -13,21 +13,24 @@ public class Link implements IsSerializable {
 	public String url;
 	public String title;
 	public Key<User> submitter;
+	public String domain;
 	
 	@Id
 	Long id;
-	 	
+
+		 	
 	public Key<Link> getKey() {
 		return new Key<Link>(Link.class, id);
 	}
 
-	public Link(String url, String title, Key<User> submitter) {
+	public Link(String url, String title, String domain, Key<User> submitter) {
 		this.submitter = submitter;
 		if (title == null)
 			title = "Something Just Happened!";
 		this.title = title;
 		this.url = url;
+		this.domain = domain;
 	}
-
+		
 	public Link() {}
 }

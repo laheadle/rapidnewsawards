@@ -32,7 +32,7 @@ public class EventPanel extends Composite {
 		vPanel.clear();
 
 		for (User_Link v : votes) {
-			EventRecord rec = new EventRecord(v.user, " voted for ", v.link.url);
+			EventRecord rec = new EventRecord(v.user, " voted for ", v.link.domain + " / " + v.link.title);
 			vPanel.add(rec);
 			vPanel.setCellWidth(rec, "100%");
 
@@ -44,7 +44,7 @@ public class EventPanel extends Composite {
 		vPanel.clear();
 
 		for (SocialInfo s : socials) {
-			EventRecord rec = new EventRecord(s.editor, s.on ? " is about to follow " : " is about to unfollow ", s.judge.email);
+			EventRecord rec = new EventRecord(s.editor, s.on ? " is about to follow " : " is about to unfollow ", s.judge.getDisplayName());
 			vPanel.add(rec);
 			vPanel.setCellWidth(rec, "100%");
 

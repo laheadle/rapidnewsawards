@@ -21,7 +21,7 @@ public class VoteTransitionTest extends RNATest {
 		Edition e1 = d.getCurrentEdition(Name.JOURNALISM);		
 		User mg = getUser("megangarber");
 
-		Link l = d.findOrCreateLinkByURL("http://example.com", mg.getKey());
+		Link l = d.createLink("http://example.com", "title", mg.getKey());
 		assertEquals(d.getLatestUser_Links(e1).size(), 0);
 		d.voteFor(mg, e1, l, true);
 		assertTrue(d.hasVoted(mg, e1, l));
@@ -53,9 +53,9 @@ public class VoteTransitionTest extends RNATest {
 
 		e2 = d.getCurrentEdition(Name.JOURNALISM);
 		
-		Link l1 = d.findOrCreateLinkByURL("http://example.com", mg.getKey());
-		Link l2 = d.findOrCreateLinkByURL("http://example2.com", mg.getKey());
-		Link l3 = d.findOrCreateLinkByURL("http://example3.com", mg.getKey());
+		Link l1 = d.createLink("http://example.com", "title", mg.getKey());
+		Link l2 = d.createLink("http://example2.com", "title", mg.getKey());
+		Link l3 = d.createLink("http://example3.com", "title",  mg.getKey());
 		
 		d.voteFor(jny2, e2, l1, true);
 
