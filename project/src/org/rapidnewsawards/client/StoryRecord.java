@@ -15,6 +15,7 @@ import com.google.gwt.event.dom.client.ClickHandler;
 import com.google.gwt.event.logical.shared.OpenEvent;
 import com.google.gwt.event.logical.shared.OpenHandler;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DisclosurePanel;
@@ -42,33 +43,45 @@ public class StoryRecord extends Composite {
 		String titleid ="title" + count;
 		String supportid ="support" + count; // support checkbox
 		String recordid = "record" + count;
+		String votesid = "votes" + count;
 
 		InlineHTML score = new InlineHTML("<span style='color: blue; margin-right: 5px; font-size: large'>"+info.score+"</span>");
+
+		String metaText = info.link.domain + " / "+info.submitter.getDisplayName();
+		String linkText = info.link.title;
+
+		
+
+		/*
 		InlineHTML domain = new InlineHTML(" "+info.link.domain);
 		InlineHTML submitter = new InlineHTML(" / "+info.submitter.getDisplayName());
 		InlineHTML title = new InlineHTML(""+info.link.title);
+*/
 		
-		String html = 				"<div style='font-size: large; margin: 10px 0 10px 0' id='"+titleid+"'> </div>" +  // title
+		String html = 				"<div style='font-size: large; margin: 10px 10px 10px 10px' id='"+titleid+"'> </div>" +  // title
 
-		"<div id='"+recordid+"' style='margin: 10px 0 0 0; padding-bottom: 0'>"+
-				"<span style='font-size: medium'; id='"+metaid+"'> </span>" + // score, domain, submitter 
-				"<div style='margin-top: 10px' id='"+supportid+"'> </div>" + // support
+		"<div id='"+recordid+"' style='margin: 10px 10px 0 0; padding-bottom: 0'>"+
+				"<span style='margin-left: 10px; font-size: medium'; id='"+metaid+"'> </span>" + // score, domain, submitter 
+				"<div style='margin-left: 5px; ' id='"+votesid+"'> </div>" +
+				//"<div style='display: inline; padding-left: 3px' id='"+supportid+"'> </div>" + // support
 		 "</div>";
 		
 		myPanel = new HTMLPanel(html);
+		myPanel.add(new Anchor(linkText, true, info.link.url, "_blank"), titleid);
 		myPanel.add(score, metaid);
-		myPanel.add(domain, metaid);
-		myPanel.add(submitter, metaid);
-		myPanel.add(title, titleid);
-		myPanel.add(getSupportCheckBox(info.link.url, false), supportid);
+		myPanel.add(new InlineHTML(metaText), metaid);
+		
+		// myPanel.add(getSupportCheckBox(info.link.url, false), supportid);
 		
 
-	    DisclosurePanel disclosure = new DisclosurePanel("Show Votes");
+	    DisclosurePanel disclosure = new DisclosurePanel("Votes");
+	    disclosure.setStylePrimaryName("my-DisclosurePanel"); 
+
 	    Voters voters = new Voters();
 	    disclosure.setContent(voters);
 	    disclosure.addOpenHandler(voters);
 	    
-		myPanel.add(disclosure, recordid);
+		myPanel.add(disclosure, votesid);
 		initWidget(myPanel);
 	}
 	

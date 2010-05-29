@@ -45,7 +45,7 @@ public class DAOTest extends RNATest {
 	public void testParser() {
 		final String title = "<Title>abc</Title>";
 		assertEquals(TitleGrabber.tryGrab(title), "abc");
-		assertEquals(TitleGrabber.tryGrab(" <Title>\n j </Title> "), 
+		assertEquals(TitleGrabber.tryGrab(" <Title>\n j \n </Title> "), 
 				"j");
 	}
 	
