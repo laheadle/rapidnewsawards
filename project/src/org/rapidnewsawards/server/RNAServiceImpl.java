@@ -175,4 +175,9 @@ RNAService {
 		return vr;
 	}
 
+	@Override
+	public String grabTitle(String urlStr) {
+		return TitleGrabber.getTitle(urlStr);
+	}
+
 }

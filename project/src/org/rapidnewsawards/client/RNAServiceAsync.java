@@ -16,7 +16,7 @@ public interface RNAServiceAsync {
 			AsyncCallback<RecentSocials> asyncCallback);
 
 	void sendRelatedUser(long userId, AsyncCallback<RelatedUserInfo> callback);
-
+	void grabTitle(String urlStr, AsyncCallback<String> callback);
 	void doSocial(User to, boolean on, AsyncCallback<Return> asyncCallback);
 	void voteFor(String link, String fullLink, Edition e, Boolean checked, AsyncCallback<VoteResult> asyncCallback);
 	

@@ -4,6 +4,7 @@ import org.junit.Before;
 import org.junit.Test;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
+import org.rapidnewsawards.server.TitleGrabber;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.Name;
@@ -38,6 +39,14 @@ public class DAOTest extends RNATest {
 		final String displayName = mg.getDisplayName();
 		assertEquals(displayName, "megangarber");
 		assertNotNull(mg);
+	}
+
+	@Test
+	public void testParser() {
+		final String title = "<Title>abc</Title>";
+		assertEquals(TitleGrabber.tryGrab(title), "abc");
+		assertEquals(TitleGrabber.tryGrab(" <Title>\n j </Title> "), 
+				"j");
 	}
 	
 	@Test

@@ -40,7 +40,7 @@ public class Vote extends Composite implements EntryPoint {
 		
 		final String url = Window.Location.getParameter("href");
 		
-		RNA.rnaService.voteFor(href, url, null, true, new AsyncCallback<VoteResult>() {
+		RNA.rnaService.voteFor(href, Window.Location.createUrlBuilder().buildString(), null, true, new AsyncCallback<VoteResult>() {
 
 			public void onSuccess(VoteResult result) {
 				if (result == null) {
@@ -51,14 +51,16 @@ public class Vote extends Composite implements EntryPoint {
 					final TextBox titleBox = new TextBox();					
 					titleBox.setVisibleLength(90);
 					Button submit = new Button("Submit");
-					Grid g = new Grid(3, 2);
+					Grid g = new Grid(3, 3);
 					g.setWidget(0, 0, new Label("Url"));
 					g.setWidget(1, 0, new Label("Title"));
 					g.setWidget(0, 1, urlBox);
 					g.setWidget(1, 1, titleBox);
 					g.setWidget(2, 1, submit);
+					Button guess = new Button("Guess");
+					g.setWidget(1, 2, guess);					
 					
-					submit.addClickHandler(new ClickHandler() { 
+				submit.addClickHandler(new ClickHandler() { 
 						
 						@Override					
 						public void onClick(ClickEvent ev) {
@@ -74,6 +76,23 @@ public class Vote extends Composite implements EntryPoint {
 							});
 						}
 					});
+
+				guess.addClickHandler(new ClickHandler() { 
+					
+					@Override					
+					public void onClick(ClickEvent ev) {
+						RNA.rnaService.grabTitle(urlBox.getText(), new AsyncCallback<String>() {
+
+							public void onSuccess(String result) {
+								titleBox.setText(result);
+							}
+
+							public void onFailure(Throwable caught) {
+								setStatus("ERROR: " + caught);
+							}
+						});
+					}
+				});
 					
 					sPanel.setWidget(g);
 				}
