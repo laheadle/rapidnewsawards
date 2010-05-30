@@ -64,7 +64,7 @@ public class VoteTransitionTest extends RNATest {
 		d.voteFor(jny2, e2, l3, true);
 		d.voteFor(steveouting, e2, l3, true);
 
-		d.tally(e2.getKey());
+		doTransition();
 		
 		Iterator<ScoredLink> iter = d.getScoredLinks(e2).iterator();
 		

@@ -18,6 +18,10 @@ public class Edition implements IsSerializable, Comparable<Edition> {
 	public int number;
 	
 	public Key<Periodical> periodical;
+
+	public int revenue;
+
+	public int totalSpend;
 	
 	public Edition() {}
 
@@ -26,6 +30,8 @@ public class Edition implements IsSerializable, Comparable<Edition> {
 		this.periodical = periodical;
 		this.end = end;
 		this.number = number;
+		this.revenue = 0;
+		this.totalSpend = 0;
 	}
 		
 	@Override

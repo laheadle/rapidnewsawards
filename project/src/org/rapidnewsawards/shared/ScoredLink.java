@@ -13,12 +13,15 @@ public class ScoredLink {
 	public Key<Edition> edition;
 	public Key<Link> link;
 	public int score;
-	
+
+	public int revenue;
+		
 	public ScoredLink() {}
 	
-	public ScoredLink(Key<Edition> edition, Key<Link> link, int score) {
+	public ScoredLink(Key<Edition> edition, Key<Link> link, int score, int revenue) {
 		this.edition = edition;
 		this.link = link;
 		this.score = score;
+		this.revenue = revenue;
 	}
 }

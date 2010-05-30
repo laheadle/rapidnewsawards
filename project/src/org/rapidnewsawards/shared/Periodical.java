@@ -33,6 +33,8 @@ public class Periodical {
 
 	public boolean tallying;
 
+	public int balance;
+
 	/*
 	 * only called when intializing the db
 	 */
@@ -43,6 +45,7 @@ public class Periodical {
 		this.tallying = false;
 		this.live = true;
 		this.name = name.name;
+		this.balance = 1000000; // 10k dollars (in pennies)
 	}
 	
 	public Periodical() {}	

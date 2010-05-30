@@ -41,22 +41,19 @@ public class StoryRecord extends Composite {
 		
 		String metaid = "meta" + count;
 		String titleid ="title" + count;
-		String supportid ="support" + count; // support checkbox
 		String recordid = "record" + count;
 		String votesid = "votes" + count;
 
-		InlineHTML score = new InlineHTML("<span style='color: blue; margin-right: 5px; font-size: large'>"+info.score+"</span>");
+		String scoreStr;
+		if (info.revenue > 0)
+			scoreStr = "$" + info.revenue / 100 + "." + info.revenue % 100;
+		else
+			scoreStr = "" + info.score;
+		
+		InlineHTML score = new InlineHTML("<span style='color: blue; margin-right: 5px; font-size: large'>"+scoreStr+"</span>");
 
 		String metaText = info.link.domain + " / "+info.submitter.getDisplayName();
 		String linkText = info.link.title;
-
-		
-
-		/*
-		InlineHTML domain = new InlineHTML(" "+info.link.domain);
-		InlineHTML submitter = new InlineHTML(" / "+info.submitter.getDisplayName());
-		InlineHTML title = new InlineHTML(""+info.link.title);
-*/
 		
 		String html = 				"<div style='font-size: large; margin: 10px 10px 10px 10px' id='"+titleid+"'> </div>" +  // title
 

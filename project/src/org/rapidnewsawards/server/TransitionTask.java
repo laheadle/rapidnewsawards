@@ -39,7 +39,8 @@ public class TransitionTask  extends HttpServlet {
 		else {
 			d.socialTransition(next);
 		}
-		d.finalizeTally(current.getKey());		
+		d.setEditionRevenue();
+		d.fund(current.getKey());		
 	}
 	
 }

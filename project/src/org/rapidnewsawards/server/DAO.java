@@ -486,6 +486,7 @@ public class DAO extends DAOBase
 			si.link = linkMap.get(sl.link);
 			si.score = sl.score;
 			si.submitter = userMap.get(si.link.submitter);
+			si.revenue = sl.revenue;
 			stories.add(si);
 		}
 
@@ -606,6 +607,45 @@ public class DAO extends DAOBase
 		_transitionEdition(locked);
 		return true;
 	}
+
+	public void setEditionRevenue() {
+
+		LockedPeriodical lp = lockPeriodical();
+
+		if (lp == null) {
+			log.warning("failed");
+			return;
+		}
+		
+		final Periodical p = lp.periodical;
+
+		if (p == null) {
+			log.severe("No Periodical");
+			return;
+		}
+
+		if (!p.live) {
+			log.warning("tried to set balance edition of a dead periodical");
+		}
+
+		String name = p.getCurrentEditionKey().getName();
+		Edition current = ofy().find(Edition.getPreviousKey(name));
+		
+		if (current == null) {
+			log.severe("no edition matching" + name);
+			return;	
+		}
+				
+		int n = getNumEditions(p);
+		current.revenue = p.balance / (n - current.number);
+		ofy().put(current);
+
+		lp.transaction.getTxn().commit();
+
+		log.info(current + ": revenue " + current.revenue);
+	}
+
+	
 	
 	private void _transitionEdition(LockedPeriodical lp) {
 		
@@ -629,7 +669,7 @@ public class DAO extends DAOBase
 		
 		int nextNum = current.number + 1;
 		int n = getNumEditions(p);
-		
+				
 		if (nextNum == n) {
 			p.live = false;
 		}
@@ -650,22 +690,18 @@ public class DAO extends DAOBase
 		log.info(p.name + ": current Edition:" + nextNum);
 	}
 	
-	public void finalizeTally(Key<Edition> e) {
-		tally(e);
-	}
-	
 	public void tally(Key<Edition> e) {
 		
 		Map<Key<Link>, ScoredLink> links = new HashMap<Key<Link>, ScoredLink>();
 		
-		for (Vote v : ofy().query(Vote.class).filter("edition", e).fetch()) {
+		for (Vote v : ofy().query(Vote.class).filter("edition", e)) {
 			if (links.containsKey(v.link)) {
 				ScoredLink sl = links.get(v.link);
 				sl.score += v.authority;
 				// links.put(v.link, sl);
 			}
 			else {
-				links.put(v.link, new ScoredLink(e, v.link, v.authority));
+				links.put(v.link, new ScoredLink(e, v.link, v.authority, 0));
 			}
 		}
 		
@@ -675,9 +711,62 @@ public class DAO extends DAOBase
 		}
 	}
 
+	int revenue(int score, int totalScore, int editionFunds) {
+		return (int) (score / (double) totalScore * editionFunds);
+	}
+	
+	public void fund(Key<Edition> ek) {
+		
+		Map<Key<Link>, ScoredLink> links = new HashMap<Key<Link>, ScoredLink>();
+
+		Edition e = ofy().find(ek);
+		
+		if (e == null) {
+			log.severe("No edition");
+			return;
+		}
+		
+		int totalScore = 0;
+		int numLinks = 0;
+		
+		for (Vote v : ofy().query(Vote.class).filter("edition", e.getKey())) {
+			numLinks++;
+			totalScore += v.authority;
+		}
+		
+		if (totalScore == 0)
+			return;
+		
+		int totalSpend = 0;
+		for (Vote v : ofy().query(Vote.class).filter("edition", e.getKey())) {
+			if (links.containsKey(v.link)) {
+				ScoredLink sl = links.get(v.link);
+				sl.score += v.authority;
+				int revenue = revenue(sl.score, totalScore, e.revenue);
+				totalSpend += (revenue - sl.revenue);
+				sl.revenue = revenue;
+				links.put(v.link, sl);
+			}
+			else {
+				int revenue = revenue(v.authority, totalScore, e.revenue);
+				totalSpend += revenue;
+				links.put(v.link, new ScoredLink(e.getKey(), v.link, v.authority, revenue));
+			}
+		}
+		
+		e.totalSpend = totalSpend;
+		
+		clearTally(e.getKey());
+
+		if (links.size() > 0) {
+			ofy().put(links.values());
+		}
+	}
+
+
 	private void clearTally(Key<Edition> e) {
 		LinkedList<ScoredLink> result = new LinkedList<ScoredLink>();
-		for (ScoredLink sl : ofy().query(ScoredLink.class).filter("edition", e).fetch()) {
+		for (ScoredLink sl : ofy().query(ScoredLink.class).filter("edition", e)) {
 			result.add(sl);
 		}	
 		ofy().delete(result);
@@ -685,7 +774,7 @@ public class DAO extends DAOBase
 	
 	public LinkedList<ScoredLink> getScoredLinks(Edition e) {
 		LinkedList<ScoredLink> result = new LinkedList<ScoredLink>();
-		for (ScoredLink sl : ofy().query(ScoredLink.class).filter("edition", e.getKey()).order("-score").fetch()) {
+		for (ScoredLink sl : ofy().query(ScoredLink.class).filter("edition", e.getKey()).order("-score")) {
 			result.add(sl);
 		}
 		return result;

@@ -41,9 +41,9 @@ public class DoSomethingServlet extends HttpServlet {
 		String url2 = "http://example2.com";
 		String url3 = "http://example3.com";
 		
-		Link l1 = DAO.instance.createLink(url1, "Title", megangarber.getKey());
-		Link l2 = DAO.instance.createLink(url2, "Title", jny2.getKey());
-		Link l3 = DAO.instance.createLink(url3, "Title", megangarber.getKey());
+		Link l1 = DAO.instance.createLink(url1, "Title A B C", megangarber.getKey());
+		Link l2 = DAO.instance.createLink(url2, "Title D E F", jny2.getKey());
+		Link l3 = DAO.instance.createLink(url3, "Title G H I", megangarber.getKey());
 
 		DAO.instance.voteFor(megangarber, e, l1, true);
 		DAO.instance.voteFor(jny2, e, l1, true);
@@ -53,9 +53,22 @@ public class DoSomethingServlet extends HttpServlet {
 		DAO.instance.voteFor(steveouting, e, l2, true);
 
 		DAO.instance.voteFor(jny2, e, l3, true);
-
-		DAO.instance.tally(e.getKey());
+		DAO d = DAO.instance;
 		
+		Edition current = d.getCurrentEdition(Name.JOURNALISM);
+		Edition next = d.getNextEdition(Name.JOURNALISM);
+		
+		
+		d.transitionEdition(Name.JOURNALISM);
+		if (next == null) {
+			log.info("End of periodical; last edition is" + current);
+		}
+		else {
+			d.socialTransition(next);
+		}
+		d.setEditionRevenue();
+		d.fund(current.getKey());		
+
 		out.println("tally done");
 		
 	}
