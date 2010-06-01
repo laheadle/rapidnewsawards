@@ -12,6 +12,10 @@ public class EventRecord extends Composite {
 	
 	private HTMLPanel myPanel;
 	private static long count = 0; // for making unique id's
+
+	public static Anchor getUserLink(User subject) {
+		return new Anchor(subject.getDisplayName(), "#user:"+subject.id+":null");
+	}
 	
 	public EventRecord(User subject, String verb, String object) {
 		count++;
@@ -22,7 +26,7 @@ public class EventRecord extends Composite {
 		"</p> </div>";
 
 		myPanel = new HTMLPanel(div);
-		Anchor a = new Anchor(subject.getDisplayName(), "#user:"+subject.id+":null");
+		Anchor a = getUserLink(subject);
 		myPanel.add(a, spanid);
 		myPanel.add(new InlineLabel(verb), paraid);
 		myPanel.add(new InlineLabel(object), paraid);		

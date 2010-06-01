@@ -70,5 +70,9 @@ public class Periodical {
 	public Key<Edition> getCurrentEditionKey() {
 		return this.currentEditionKey;
 	}
+
+	public static String moneyPrint(int amount) {
+		return "$" + amount / 100 + "." + amount % 100;	
+	}
 	
 }

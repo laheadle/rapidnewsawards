@@ -22,6 +22,7 @@ import javax.servlet.http.HttpSession;
 import org.mortbay.log.Log;
 import org.rapidnewsawards.client.RNA;
 import org.rapidnewsawards.client.RNAService;
+import org.rapidnewsawards.shared.Donation;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.Name;
@@ -178,6 +179,14 @@ RNAService {
 	@Override
 	public String grabTitle(String urlStr) {
 		return TitleGrabber.getTitle(urlStr);
+	}
+
+	@Override
+	public String welcomeUser(String nickname, Integer donation) {
+		if (d.user == null)
+			return "failed";
+
+		return d.welcomeUser(nickname, donation);
 	}
 
 }

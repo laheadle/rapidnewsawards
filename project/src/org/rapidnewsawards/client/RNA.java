@@ -27,13 +27,16 @@ import com.google.gwt.user.client.History;
 import com.google.gwt.user.client.Timer;
 import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
+import com.google.gwt.user.client.ui.Anchor;
 import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
+import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
@@ -58,7 +61,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 
 	@UiField Label status;
 	@UiField Label title;	
-	@UiField Label userName;	
+	@UiField SimplePanel userName;	
 	@UiField SimplePanel mainPanel;
 	@UiField Button showStories;
 	@UiField Button showCurrentEdition;
@@ -147,7 +150,25 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
   	  return edition.end.getTime() - new Date().getTime();
     }
 
-	private void fetchUserInfo() {
+	public void checkFirstTimeLogin() {
+		if (user == null)
+			return;
+		
+		if (user.isInitialized)
+			return;
+		
+		final WelcomePopup popup = new WelcomePopup(this);
+
+        popup.setPopupPositionAndShow(new PopupPanel.PositionCallback() {
+          public void setPosition(int offsetWidth, int offsetHeight) {
+            int left = (Window.getClientWidth() - offsetWidth) / 3;
+            int top = (Window.getClientHeight() - offsetHeight) / 3;
+            popup.setPopupPosition(left, top);
+          }
+        });
+	}
+
+	public void fetchUserInfo() {
 		new Timer() {
 			@Override
 			public void run() {
@@ -156,12 +177,13 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 					public void onSuccess(User result) {
 						user = result;
 						if (user == null) {
-							userName.setText("");
+							userName.setWidget(new Label(""));
 							signIn.setText("Log in");							
 						}
 						else {
-							userName.setText(user.getDisplayName());
-							signIn.setText("Log out");														
+							userName.setWidget(EventRecord.getUserLink(user));
+							signIn.setText("Log out");
+							checkFirstTimeLogin();
 						}
 					}
 

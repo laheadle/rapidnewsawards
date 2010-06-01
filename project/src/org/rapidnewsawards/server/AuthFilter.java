@@ -44,7 +44,7 @@ public class AuthFilter implements Filter {
 			}
 		}
 
-		log.info("User is " + d.user);
+		log.fine("User is " + d.user);
 		
 		// response.sendRedirect(userService.createLoginURL(request.getRequestURI())); 
 

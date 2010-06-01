@@ -4,6 +4,7 @@ import java.util.LinkedList;
 
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Link;
+import org.rapidnewsawards.shared.Periodical;
 import org.rapidnewsawards.shared.Return;
 import org.rapidnewsawards.shared.StoryInfo;
 import org.rapidnewsawards.shared.User;
@@ -46,7 +47,7 @@ public class StoryRecord extends Composite {
 
 		String scoreStr;
 		if (info.revenue > 0)
-			scoreStr = "$" + info.revenue / 100 + "." + info.revenue % 100;
+			scoreStr = Periodical.moneyPrint(info.revenue);
 		else
 			scoreStr = "" + info.score;
 		

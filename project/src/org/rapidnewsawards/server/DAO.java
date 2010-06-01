@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.rapidnewsawards.shared.Donation;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.RecentStories;
 import org.rapidnewsawards.shared.Root;
@@ -52,6 +53,7 @@ public class DAO extends DAOBase
         ObjectifyService.factory().register(SocialEvent.class);
         ObjectifyService.factory().register(Follow.class);
         ObjectifyService.factory().register(Link.class);
+        ObjectifyService.factory().register(Donation.class);
         ObjectifyService.factory().register(ScoredLink.class);        
         ObjectifyService.factory().register(Periodical.class);
         ObjectifyService.factory().register(Edition.class);
@@ -640,9 +642,36 @@ public class DAO extends DAOBase
 		current.revenue = p.balance / (n - current.number);
 		ofy().put(current);
 
+		p.balance -= current.revenue;
+		lp.transaction.put(p);
+		
 		lp.transaction.getTxn().commit();
 
-		log.info(current + ": revenue " + current.revenue);
+		log.info(current + ": revenue " + Periodical.moneyPrint(current.revenue));
+		log.info("balance: " + Periodical.moneyPrint(p.balance));
+	}
+
+	public String welcomeUser(String nickname, Integer donation) {
+		log.info("welcome: " + user + ": " + Periodical.moneyPrint(donation));
+
+		LockedPeriodical lp = lockPeriodical();
+
+		user.nickname = nickname;
+		user.isInitialized = true;
+		
+		ofy().put(user);
+		
+		Donation don = new Donation(user.getKey(), donation);
+		
+		ofy().put(don);
+		
+		lp.periodical.balance += donation;
+		lp.transaction.put(lp.periodical);		
+		lp.transaction.getTxn().commit();
+
+		log.info("balance: " + Periodical.moneyPrint(lp.periodical.balance));
+
+		return "ok";
 	}
 
 	

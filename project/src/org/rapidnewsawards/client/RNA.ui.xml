@@ -74,7 +74,17 @@
 			text-align: left;
 			padding: 10px;
 		}
-		
+
+        .actionLink	{
+			background-color: #cccccc;
+			text-decoration: none;
+			margin-left: 2px;
+			padding: 0px 0px;
+			border: none;
+			color: #2276BB;
+			text-align: left;
+        }
+        
 		.sideButton {
 			background-color: #cccccc;
 			padding: 0px 0px;
@@ -115,9 +125,9 @@
 					<g:LayoutPanel styleName='{style.topLeft}'>
 						<g:layer>
 						<g:FlowPanel>
-						<g:Label ui:field='userName'></g:Label>
-							<g:Button styleName='{style.sideButton}' ui:field='signIn'> Sign In </g:Button>
-							</g:FlowPanel>
+						<g:SimplePanel styleName='{style.actionLink}' ui:field='userName'></g:SimplePanel>
+						<g:Button styleName='{style.sideButton}' ui:field='signIn'> Sign In </g:Button>
+					    </g:FlowPanel>
 						</g:layer>
 					</g:LayoutPanel>
 				</g:layer>

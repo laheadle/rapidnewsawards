@@ -20,7 +20,9 @@ public class User implements IsSerializable {
 	public String email;
 	public String domain;
 
-	private String nickname;
+	public String nickname;
+
+	public boolean isInitialized;
 	
 	public User() {}
 	
@@ -28,6 +30,7 @@ public class User implements IsSerializable {
 		this.email = email;
 		this.domain = domain;
 		this.nickname = "";
+		this.isInitialized = false;
 	}
 
 	@Override
@@ -53,7 +56,7 @@ public class User implements IsSerializable {
 	
 	@Override
 	public String toString() {
-		return email;
+		return getDisplayName() + "(" + email + ")";
 	}
 	
 	public Key<User> getKey() {
