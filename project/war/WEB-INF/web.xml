@@ -29,10 +29,18 @@
 		<servlet-name>transitionTask</servlet-name>
 		<servlet-class>org.rapidnewsawards.server.TransitionTask</servlet-class>
 	</servlet>
+	<servlet>
+		<servlet-name>tallyTask</servlet-name>
+		<servlet-class>org.rapidnewsawards.server.TallyTask</servlet-class>
+	</servlet>
 
 	<servlet-mapping>
 		<servlet-name>transitionTask</servlet-name>
 		<url-pattern>/tasks/transition</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>tallyTask</servlet-name>
+		<url-pattern>/tasks/tally</url-pattern>
 	</servlet-mapping>
 
 	<servlet-mapping>

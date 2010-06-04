@@ -17,7 +17,7 @@ public class EventRecord extends Composite {
 		return new Anchor(subject.getDisplayName(), "#user:"+subject.id+":null");
 	}
 	
-	public EventRecord(User subject, String verb, String object) {
+	public EventRecord(User subject, String verb, Anchor object) {
 		count++;
 		String spanid = "span"+count;
 		String paraid = "para"+count;
@@ -29,7 +29,7 @@ public class EventRecord extends Composite {
 		Anchor a = getUserLink(subject);
 		myPanel.add(a, spanid);
 		myPanel.add(new InlineLabel(verb), paraid);
-		myPanel.add(new InlineLabel(object), paraid);		
+		myPanel.add(object, paraid);		
 		initWidget(myPanel);
 	}
 

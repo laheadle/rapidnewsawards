@@ -30,8 +30,8 @@ public class MakeDataServlet extends HttpServlet {
 	throws ServletException, IOException {
 		PrintWriter out = response.getWriter();
 		Cell<Integer> numUsers = new Cell<Integer>(null);
-		int numEditions = 3;
-		makeData(numEditions, 1 * ONE_MINUTE, numUsers);
+		int numEditions = 10;
+		makeData(numEditions, 5 * ONE_MINUTE, numUsers);
 		out.println("created " + numUsers.value + " users");
 		out.println("created " + numEditions + " editions");
 	}
@@ -101,11 +101,13 @@ public class MakeDataServlet extends HttpServlet {
 		
 		// make transition tasks
 		if (!testing) {
+			Queue queue = QueueFactory.getDefaultQueue();
 			for (Edition e : editions) {
-				Queue queue = QueueFactory.getDefaultQueue();
 				queue.add(url("/tasks/transition").param("fromEdition", e.id)
 						.etaMillis(e.end.getTime()).method(TaskOptions.Method.GET));
 			}
+			
+			queue.add(url("/tasks/tally").etaMillis(new Date().getTime() + 2 * ONE_MINUTE).method(TaskOptions.Method.GET));
 		}
 		
 		p.setcurrentEditionKey(editions.get(0).getKey());

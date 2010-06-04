@@ -13,16 +13,16 @@ import org.rapidnewsawards.shared.User;
 public class DAOTest extends RNATest {
 
 	// todo
-	// regular tallies
 	// public view
+	// bookmarklet
 	// fix switching bug
 	// display joins
 	// add support checkbox
 	// scrolling
 	// no self follows
 	// don't spend first edition, etc
-	// fix nickname display after welcome
 	// user link style
+	// single story page
 	
 	@Override
 	@Before

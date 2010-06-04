@@ -767,6 +767,12 @@ public class DAO extends DAOBase
 	
 	public void tally(Key<Edition> e) {
 		
+		LockedPeriodical lp = lockPeriodical();
+
+		if (lp == null) {
+			throw new IllegalStateException("lock failed for tally");		
+		}
+
 		Map<Key<Link>, ScoredLink> links = new HashMap<Key<Link>, ScoredLink>();
 		
 		for (Vote v : ofy().query(Vote.class).filter("edition", e)) {
@@ -783,7 +789,9 @@ public class DAO extends DAOBase
 		clearTally(e);
 		if (links.size() > 0) {
 			ofy().put(links.values());
-		}
+		}				
+		
+		lp.transaction.getTxn().commit();
 	}
 
 	int revenue(int score, int totalScore, int editionFunds) {
@@ -791,6 +799,12 @@ public class DAO extends DAOBase
 	}
 	
 	public void fund(Key<Edition> ek) {
+		LockedPeriodical lp = lockPeriodical();
+
+		if (lp == null) {
+			log.warning("failed to lock for tally");
+			throw new IllegalStateException("lock failed for fund");
+		}
 		
 		Map<Key<Link>, ScoredLink> links = new HashMap<Key<Link>, ScoredLink>();
 
@@ -809,8 +823,10 @@ public class DAO extends DAOBase
 			totalScore += v.authority;
 		}
 		
-		if (totalScore == 0)
+		if (totalScore == 0) {
+			lp.transaction.getTxn().commit();
 			return;
+		}
 		
 		int totalSpend = 0;
 		for (Vote v : ofy().query(Vote.class).filter("edition", e.getKey())) {
@@ -836,6 +852,9 @@ public class DAO extends DAOBase
 		if (links.size() > 0) {
 			ofy().put(links.values());
 		}
+
+		lp.transaction.getTxn().commit();
+
 	}
 
 

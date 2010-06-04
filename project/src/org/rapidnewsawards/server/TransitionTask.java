@@ -28,10 +28,9 @@ public class TransitionTask  extends HttpServlet {
 		Edition next = d.getNextEdition(Name.JOURNALISM);
 		
 		if (!from.equals(current)) {
-			log.warning("edition 1 not current (2 is):" + from + ", " + current);
+			log.warning("edition 1 not current (2 is): " + from + ", " + current);
 		}
 		
-		// this is bad because it keeps current edition which is expired
 		if (next == null) {
 			d.finishPeriodical(Name.JOURNALISM);
 			log.info("End of periodical; last edition is" + current);

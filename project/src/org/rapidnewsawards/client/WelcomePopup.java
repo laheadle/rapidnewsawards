@@ -79,9 +79,9 @@ public class WelcomePopup extends PopupPanel {
 				RNA.rnaService.welcomeUser(nickBox.getText(), donation, new AsyncCallback<String>() {
 
 					public void onSuccess(String result) {
+						hide();
 						RNA.instance.setStatus("Welcome, " + nickBox.getText() + "!");
 						RNA.instance.fetchUserInfo();
-						hide();
 					}
 
 					public void onFailure(Throwable caught) {
