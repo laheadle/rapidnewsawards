@@ -31,12 +31,13 @@ public class TransitionTask  extends HttpServlet {
 			log.warning("edition 1 not current (2 is):" + from + ", " + current);
 		}
 		
-		
-		d.transitionEdition(Name.JOURNALISM);
+		// this is bad because it keeps current edition which is expired
 		if (next == null) {
+			d.finishPeriodical(Name.JOURNALISM);
 			log.info("End of periodical; last edition is" + current);
 		}
 		else {
+			d.transitionEdition(Name.JOURNALISM);
 			d.socialTransition(next);
 		}
 		d.setEditionRevenue();

@@ -183,13 +183,16 @@ public class DAO extends DAOBase
 		if (o == null)
 			o = instance.ofy();
 
+		if (e == null)
+			return null;
+		
 		return o.query(SocialEvent.class).ancestor(from).filter("judge", to).filter("edition", e.getKey()).get();
 	}
 	
 	public boolean isFollowingOrAboutToFollow(Key<User> from, Key<User> to) {
 		Edition e = getEdition(Name.JOURNALISM, -2, null);
 		SocialEvent about = getAboutToSocial(from, to, e, null);
-		
+
 		if (about != null) {
 			return about.on;
 		}
@@ -375,10 +378,15 @@ public class DAO extends DAOBase
 			return  null;
 
 		if (number == -1) {
+			if (!p.live)
+				return null;
+			
 			return ofy().find(p.getCurrentEditionKey());
 		}
 
 		if (number == -2) {
+			if (!p.live)
+				return null;
 			return ofy().find(Edition.getNextKey(p.getCurrentEditionKey().getName()));			
 		}
 		
@@ -610,7 +618,7 @@ public class DAO extends DAOBase
 		return true;
 	}
 
-	public void setEditionRevenue() {
+	public void finishPeriodical(Name journalism) {
 
 		LockedPeriodical lp = lockPeriodical();
 
@@ -627,28 +635,66 @@ public class DAO extends DAOBase
 		}
 
 		if (!p.live) {
-			log.warning("tried to set balance edition of a dead periodical");
+			log.warning("tried to finish a dead periodical");
 		}
 
-		String name = p.getCurrentEditionKey().getName();
-		Edition current = ofy().find(Edition.getPreviousKey(name));
+		p.live = false;
+		p.setcurrentEditionKey(null);
+		ofy().put(p);
 		
-		if (current == null) {
-			log.severe("no edition matching" + name);
+		lp.transaction.getTxn().commit();
+	}
+
+	public void setEditionRevenue() {
+
+		LockedPeriodical lp = lockPeriodical();
+
+		if (lp == null) {
+			log.warning("failed");
+			return;
+		}
+		
+		final Periodical p = lp.periodical;
+
+		if (p == null) {
+			log.severe("No Periodical");
+			return;
+		}
+
+		Edition prev = getPreviousEdition(lp);
+		
+		if (prev == null) {
+			log.severe("no previous edition");
 			return;	
 		}
-				
-		int n = getNumEditions(p);
-		current.revenue = p.balance / (n - current.number);
-		ofy().put(current);
 
-		p.balance -= current.revenue;
+		if (!p.live) {
+			log.warning("spending all remaining revenue");
+			prev.revenue = p.balance;
+			p.balance = 0;
+		}
+		else {
+			int n = getNumEditions(p);
+			prev.revenue = p.balance / (n - prev.number);
+			p.balance -= prev.revenue;
+		}
+
+		ofy().put(prev);
 		lp.transaction.put(p);
 		
 		lp.transaction.getTxn().commit();
 
-		log.info(current + ": revenue " + Periodical.moneyPrint(current.revenue));
+		log.info(prev + ": revenue " + Periodical.moneyPrint(prev.revenue));
 		log.info("balance: " + Periodical.moneyPrint(p.balance));
+	}
+
+	private Edition getPreviousEdition(LockedPeriodical lp) {
+		Key<Edition> current = lp.periodical.getCurrentEditionKey();
+		if (current == null) {
+			// last edition
+			current = new Key<Edition>(Edition.class, ""+(getNumEditions(lp.periodical) - 1));
+		}
+		return ofy().find(Edition.getPreviousKey(current.getName()));
 	}
 
 	public String welcomeUser(String nickname, Integer donation) {
@@ -716,7 +762,7 @@ public class DAO extends DAOBase
 		ofy().put(p);
 		lp.transaction.getTxn().commit();
 		
-		log.info(p.name + ": current Edition:" + nextNum);
+		log.info(p.name + ": New current Edition:" + nextNum);
 	}
 	
 	public void tally(Key<Edition> e) {
@@ -827,5 +873,6 @@ public class DAO extends DAOBase
     		return l;
     	}	
 	}
+
 
 }

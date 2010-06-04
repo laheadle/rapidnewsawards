@@ -13,7 +13,6 @@ import org.rapidnewsawards.shared.User;
 public class DAOTest extends RNATest {
 
 	// todo
-	// ensure whole periodical runs without errors
 	// regular tallies
 	// public view
 	// fix switching bug
@@ -23,6 +22,7 @@ public class DAOTest extends RNATest {
 	// no self follows
 	// don't spend first edition, etc
 	// fix nickname display after welcome
+	// user link style
 	
 	@Override
 	@Before

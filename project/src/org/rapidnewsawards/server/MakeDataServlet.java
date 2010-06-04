@@ -30,9 +30,10 @@ public class MakeDataServlet extends HttpServlet {
 	throws ServletException, IOException {
 		PrintWriter out = response.getWriter();
 		Cell<Integer> numUsers = new Cell<Integer>(null);
-		makeData(24, 5 * ONE_MINUTE, numUsers);
+		int numEditions = 3;
+		makeData(numEditions, 1 * ONE_MINUTE, numUsers);
 		out.println("created " + numUsers.value + " users");
-		out.println("created 100 editions");
+		out.println("created " + numEditions + " editions");
 	}
 
 	public static boolean testing = false;
@@ -43,9 +44,8 @@ public class MakeDataServlet extends HttpServlet {
 
 	public static void makeData (int editionCount, long periodSize, Cell<Integer> numUsers) {		
 		// add users to first edition
-		ArrayList<Edition> editions = makeEditions(editionCount, periodSize);
+		makeEditions(editionCount, periodSize);
 
-		Edition second = editions.get(1);
 		makeEditor("megangarber@gmail.com");
 		makeEditor("jny2@gmail.com");
 		makeEditor("steveouting@gmail.com");	
