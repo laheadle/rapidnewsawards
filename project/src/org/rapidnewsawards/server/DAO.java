@@ -661,31 +661,46 @@ public class DAO extends DAOBase
 			return;
 		}
 
-		Edition prev = getPreviousEdition(lp);
-		
-		if (prev == null) {
-			log.severe("no previous edition");
-			return;	
-		}
+		Edition e;
 
 		if (!p.live) {
 			log.warning("spending all remaining revenue");
-			prev.revenue = p.balance;
+			
+			e = getLastEdition(p);
+			
+			if (e == null) {
+				log.severe("no final edition");
+				return;	
+			}
+			e.revenue = p.balance;
 			p.balance = 0;
 		}
 		else {
+			e = getPreviousEdition(lp);
+			
+			if (e == null) {
+				log.severe("no previous edition");
+				return;	
+			}
+
 			int n = getNumEditions(p);
-			prev.revenue = p.balance / (n - prev.number);
-			p.balance -= prev.revenue;
+			e.revenue = p.balance / (n - e.number);
+			p.balance -= e.revenue;
 		}
 
-		ofy().put(prev);
+		ofy().put(e);
 		lp.transaction.put(p);
 		
 		lp.transaction.getTxn().commit();
 
-		log.info(prev + ": revenue " + Periodical.moneyPrint(prev.revenue));
+		log.info(e + ": revenue " + Periodical.moneyPrint(e.revenue));
 		log.info("balance: " + Periodical.moneyPrint(p.balance));
+	}
+
+	private Edition getLastEdition(final Periodical p) {
+		Edition e;
+		e = ofy().find(Edition.getPreviousKey(""+getNumEditions(p)));
+		return e;
 	}
 
 	private Edition getPreviousEdition(LockedPeriodical lp) {
@@ -733,6 +748,7 @@ public class DAO extends DAOBase
 
 		if (!p.live) {
 			log.warning("tried to publish edition of a dead periodical");
+			return;
 		}
 
 		Edition current = ofy().find(p.getCurrentEditionKey());
@@ -749,7 +765,7 @@ public class DAO extends DAOBase
 			p.live = false;
 		}
 		else if (nextNum > n) {
-			log.severe("bug in edition numbers");
+			log.severe("bug in edition numbers: " + nextNum);
 			return;
 		}
 		else {
@@ -765,7 +781,7 @@ public class DAO extends DAOBase
 		log.info(p.name + ": New current Edition:" + nextNum);
 	}
 	
-	public void tally(Key<Edition> e) {
+	public Periodical tally(Key<Edition> e) {
 		
 		LockedPeriodical lp = lockPeriodical();
 
@@ -792,6 +808,7 @@ public class DAO extends DAOBase
 		}				
 		
 		lp.transaction.getTxn().commit();
+		return lp.periodical;
 	}
 
 	int revenue(int score, int totalScore, int editionFunds) {

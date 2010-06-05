@@ -436,6 +436,10 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 		rnaService.sendRecentSocials(editionNum, new AsyncCallback<RecentSocials>() {
 
 			public void onSuccess(RecentSocials result) {
+				if (result == null) {
+					setStatus("No social events are possible in the final edition.");
+					return;
+				}
 				openEdition(result.edition, result.numEditions);
 				if (result.socials.size() == 0) {
 					setStatus("No social events.");

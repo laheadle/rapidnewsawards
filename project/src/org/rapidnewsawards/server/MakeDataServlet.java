@@ -30,8 +30,8 @@ public class MakeDataServlet extends HttpServlet {
 	throws ServletException, IOException {
 		PrintWriter out = response.getWriter();
 		Cell<Integer> numUsers = new Cell<Integer>(null);
-		int numEditions = 10;
-		makeData(numEditions, 5 * ONE_MINUTE, numUsers);
+		int numEditions = 5;
+		makeData(numEditions, 3 * ONE_MINUTE, numUsers);
 		out.println("created " + numUsers.value + " users");
 		out.println("created " + numEditions + " editions");
 	}
@@ -57,7 +57,7 @@ public class MakeDataServlet extends HttpServlet {
 
 	public static User makeEditor(String email) {
 		Objectify txn = DAO.instance.fact().beginTransaction();
-		User u = new User(email, "gmail.com");
+		User u = new User(email, "gmail.com", true);
 		txn.put(u);
 		//DAO.instance.doSocial(u.getKey(), u.getKey(), e, txn, true);
 		txn.getTxn().commit();

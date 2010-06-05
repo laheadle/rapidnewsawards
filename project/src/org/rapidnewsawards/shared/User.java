@@ -24,13 +24,16 @@ public class User implements IsSerializable {
 
 	public boolean isInitialized;
 	
+	public boolean isEditor;
+	
 	public User() {}
 	
-	public User(String email, String domain) {
+	public User(String email, String domain, boolean isEditor) {
 		this.email = email;
 		this.domain = domain;
 		this.nickname = "";
 		this.isInitialized = false;
+		this.isEditor = isEditor;
 	}
 
 	@Override

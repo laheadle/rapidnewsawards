@@ -25,6 +25,11 @@ public class NavBox extends Composite {
 	}
 
 	public void setFollowCheckBox(boolean value, final User from, final User to, final RNA rna) {
+		if (from == null || !from.isEditor) { // || to.isEditor
+			setLabelText("");
+			return;
+		}
+		
 		CheckBox cb = new CheckBox("Following");
 		cb.setValue(value);
 
