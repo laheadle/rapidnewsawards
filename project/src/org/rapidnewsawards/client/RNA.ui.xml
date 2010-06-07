@@ -181,7 +181,7 @@
 				</g:layer>
 
 				<g:layer top='80px' bottom='0px'>
-					<g:SimplePanel styleName='{style.eventPanel}' ui:field='mainPanel' />
+					<g:ScrollPanel styleName='{style.eventPanel}' ui:field='mainPanel' />
 				</g:layer>
 
 			</g:LayoutPanel> <!-- rightColumn -->

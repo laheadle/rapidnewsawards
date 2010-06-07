@@ -15,13 +15,14 @@ public class DAOTest extends RNATest {
 	// todo
 	// fix switching bug
 	// remove previous edition link from edition 0
+	// test w/explorer
 	// display joins
-	// scrolling
 	// no self follows
 	// add support checkbox
 	// don't spend first edition, etc
 	// user link style
 	// single story page
+	// add time to display vote history
 	
 	@Override
 	@Before

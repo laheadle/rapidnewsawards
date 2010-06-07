@@ -40,6 +40,7 @@ import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.PopupPanel;
 import com.google.gwt.user.client.ui.RootLayoutPanel;
+import com.google.gwt.user.client.ui.ScrollPanel;
 import com.google.gwt.user.client.ui.SimplePanel;
 import com.google.gwt.user.client.ui.VerticalPanel;
 import com.google.gwt.user.client.ui.Widget;
@@ -64,7 +65,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 	@UiField SimplePanel status;
 	@UiField Label title;
 	@UiField SimplePanel userName;
-	@UiField SimplePanel mainPanel;
+	@UiField ScrollPanel mainPanel;
 	@UiField Button showStories;
 	@UiField Button showCurrentEdition;
 	@UiField Button showTopStories;
