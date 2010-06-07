@@ -80,7 +80,8 @@ public class WelcomePopup extends PopupPanel {
 
 					public void onSuccess(String result) {
 						hide();
-						RNA.instance.setStatus("Welcome, " + nickBox.getText() + "!");
+						RNA.instance.showBookmarklet();
+						//RNA.instance.setStatus("Welcome, " + nickBox.getText() + "! Visit your user page to get your vote bookmarklet.");
 						RNA.instance.fetchUserInfo();
 					}
 

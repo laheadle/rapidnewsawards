@@ -885,6 +885,9 @@ public class DAO extends DAOBase
 	
 	public LinkedList<ScoredLink> getScoredLinks(Edition e) {
 		LinkedList<ScoredLink> result = new LinkedList<ScoredLink>();
+		if (e == null)
+			return result;
+		
 		for (ScoredLink sl : ofy().query(ScoredLink.class).filter("edition", e.getKey()).order("-score")) {
 			result.add(sl);
 		}

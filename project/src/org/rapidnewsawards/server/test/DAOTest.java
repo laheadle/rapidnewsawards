@@ -13,7 +13,6 @@ import org.rapidnewsawards.shared.User;
 public class DAOTest extends RNATest {
 
 	// todo
-	// bookmarklet
 	// fix switching bug
 	// remove previous edition link from edition 0
 	// display joins

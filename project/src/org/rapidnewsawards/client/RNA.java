@@ -32,8 +32,10 @@ import com.google.gwt.user.client.ui.Button;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
 import com.google.gwt.user.client.ui.DialogBox;
+import com.google.gwt.user.client.ui.FlowPanel;
 import com.google.gwt.user.client.ui.HTML;
 import com.google.gwt.user.client.ui.HorizontalPanel;
+import com.google.gwt.user.client.ui.InlineHTML;
 import com.google.gwt.user.client.ui.Label;
 import com.google.gwt.user.client.ui.LayoutPanel;
 import com.google.gwt.user.client.ui.PopupPanel;
@@ -59,9 +61,9 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 	
 	@UiField RNAStyle style;
 
-	@UiField Label status;
-	@UiField Label title;	
-	@UiField SimplePanel userName;	
+	@UiField SimplePanel status;
+	@UiField Label title;
+	@UiField SimplePanel userName;
 	@UiField SimplePanel mainPanel;
 	@UiField Button showStories;
 	@UiField Button showCurrentEdition;
@@ -95,11 +97,22 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 	private RankingPanel rankingPanel;
 	
 	public void setStatus(String string) {
-		status.setText(string);
+		Label l = new Label();
+		l.setText(string);
+		status.setWidget(l);
 	}
 	
 	public void clearStatus() {
-		setStatus("");
+		status.setWidget(new Label(""));
+	}
+	
+	public void showBookmarklet() {
+		String script = "javascript:(function(){window.open('http://localhost:8888/Vote.html?gwt.codesvr=localhost:9997&href='+document.location.href)})()";
+		Anchor a = new Anchor("Vote", script);
+		FlowPanel fp = new FlowPanel();
+		fp.add(new InlineHTML("Drag this link to your bookmarks toolbar, then use it to vote for pages you find: "));
+		fp.add(a);
+		status.setWidget(fp);
 	}
 
 	/**
@@ -174,6 +187,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 			public void run() {
 				
 				rnaService.sendUserInfo(new AsyncCallback<User>() {
+
 					public void onSuccess(User result) {
 						user = result;
 						if (user == null) {
@@ -389,15 +403,18 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 		rnaService.sendRelatedUser(userId, new AsyncCallback<RelatedUserInfo>() {
 
 			public void onSuccess(RelatedUserInfo result) {
+				clearStatus();
+				
+				if (result == null || result.userInfo.user == null)
+					return;
+				
 				title.setText(result.userInfo.user.getDisplayName());
 				cancelTickerTimer();
 				leftBox.setLabelText("");
-				rightBox.setFollowCheckBox(result.following, user, result.userInfo.user, rna);
-				if (result.userInfo.votes.size() == 0) {
-					setStatus("No votes.");
-				}
-				else {
-					clearStatus();
+				User u = result.userInfo.user;
+				rightBox.setFollowCheckBox(result.following, user, u, rna);
+				if (u.equals(user)) {
+					showBookmarklet();
 				}
 				eventPanel.showUser(result.userInfo);
 			}

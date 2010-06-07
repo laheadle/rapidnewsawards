@@ -175,7 +175,7 @@
 				<g:layer top='50px' height='30px'>
 					<g:LayoutPanel>
 						<g:layer LayoutAlignment='ALIGN_MIDDLE'>
-							<g:Label styleName='{style.status}' ui:field='status'></g:Label>
+							<g:SimplePanel styleName='{style.status}' ui:field='status'></g:SimplePanel>
 						</g:layer>
 					</g:LayoutPanel>
 				</g:layer>

@@ -62,7 +62,10 @@ public class EventPanel extends Composite {
 
 	public void showUser(UserInfo ui) {
 		vPanel.clear();
-
+		
+		if (ui == null)
+			return;
+		
 		for (Vote_Link v : ui.votes) {
 			EventRecord rec = new EventRecord(ui.user, " voted for ", getAnchor(v.link));
 			vPanel.add(rec);
