@@ -18,10 +18,28 @@ import org.rapidnewsawards.shared.User;
 @SuppressWarnings("serial")
 public class DoSomethingServlet extends HttpServlet {
 	private static final Logger log = Logger.getLogger(DoSomethingServlet.class.getName());
+	private static HttpServletResponse response;
 	
 	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response)
+	public void doGet(HttpServletRequest request, HttpServletResponse resp)
 	throws ServletException, IOException {
+		response = resp;
+		fixJosh();
+	}
+
+	public void fixJosh() throws IOException {
+		PrintWriter out = response.getWriter();
+		User josh = DAO.instance.findUserByLogin("JoshuaNYoung@gmail.com", "gmail.com");
+		if (josh.isEditor)
+			out.println("josh fixed");
+		else {
+			out.println("trying to fix josh");
+			josh.isEditor = true;
+			DAO.instance.ofy().put(josh);
+		}
+	}
+	
+	public void doThing() throws IOException {
 		PrintWriter out = response.getWriter();
 
 		Edition e = DAO.instance.getCurrentEdition(Name.JOURNALISM);

@@ -13,16 +13,23 @@ import org.rapidnewsawards.shared.User;
 public class DAOTest extends RNATest {
 
 	// todo
-	// fix switching bug
-	// remove previous edition link from edition 0
+	// make bigger, easier to read
+	// don't require case sensitive editor logins
 	// test w/explorer
-	// display joins
+	// make top story submitters / voters into user links
+	// test judge joins
 	// no self follows
+	// improve vote interactivity
 	// add support checkbox
 	// don't spend first edition, etc
 	// user link style
 	// single story page
+	// make killdata admin
+	// send time remaining from server
+	// forbid voting / joining dead periodical
+	// don't display future editions
 	// add time to display vote history
+	// break transitions into smaller tasks
 	
 	@Override
 	@Before
@@ -49,7 +56,7 @@ public class DAOTest extends RNATest {
 		User mg = getUser(null);
 		
 		final String displayName = mg.getDisplayName();
-		assertEquals(displayName, "megangarber");
+		assertEquals(displayName, "ohthatmeg");
 		assertNotNull(mg);
 	}
 

@@ -5,6 +5,7 @@ import org.rapidnewsawards.shared.User;
 
 import com.google.gwt.event.dom.client.ClickEvent;
 import com.google.gwt.event.dom.client.ClickHandler;
+import com.google.gwt.user.client.Window;
 import com.google.gwt.user.client.rpc.AsyncCallback;
 import com.google.gwt.user.client.ui.CheckBox;
 import com.google.gwt.user.client.ui.Composite;
@@ -25,18 +26,18 @@ public class NavBox extends Composite {
 	}
 
 	public void setFollowCheckBox(boolean value, final User from, final User to, final RNA rna) {
-		if (from == null || !from.isEditor) { // || to.isEditor
+		if (from == null || !from.isEditor) {
 			setLabelText("");
 			return;
 		}
-		
+
 		CheckBox cb = new CheckBox("Following");
 		cb.setValue(value);
 
 		cb.addClickHandler(new ClickHandler() {
 	      public void onClick(ClickEvent event) {
 	        boolean checked = ((CheckBox) event.getSource()).getValue();
-
+	        rna.setStatus("Working...");
 	        RNA.rnaService.doSocial(to, checked, new AsyncCallback<Return>() {
 	        	
 				public void onSuccess(Return result) {

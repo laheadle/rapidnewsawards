@@ -25,7 +25,7 @@ public abstract class RNATest extends TestCase {
 
 	protected User getUser(String name) {
 		if (name == null)
-			name = "megangarber";
+			name = "ohthatmeg";
 		
 		return d.findUserByLogin(name + "@gmail.com", "gmail.com"); 
 	}

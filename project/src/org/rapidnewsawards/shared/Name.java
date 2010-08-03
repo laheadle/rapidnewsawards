@@ -1,5 +1,7 @@
 package org.rapidnewsawards.shared;
 
+import java.util.HashMap;
+
 public enum Name {
 
 	JOURNALISM("Journalism"),

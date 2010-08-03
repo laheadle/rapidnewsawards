@@ -96,6 +96,9 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 	private User user;
 
 	private RankingPanel rankingPanel;
+
+	public interface Command { public void run(); }
+	public Command userSetCommand;
 	
 	public void setStatus(String string) {
 		Label l = new Label();
@@ -108,7 +111,14 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 	}
 	
 	public void showBookmarklet() {
-		String script = "javascript:(function(){window.open('http://localhost:8888/Vote.html?gwt.codesvr=localhost:9997&href='+document.location.href)})()";
+		boolean debug = false;
+		String script;
+		if (debug) {
+			script = "javascript:(function(){window.open('http://localhost:8888/Vote.html?gwt.codesvr=localhost:9997&href='+document.location.href)})()";
+		}
+		else {
+			script = "javascript:(function(){window.open('http://rapidawards.appspot.com/Vote.html?href='+document.location.href)})()";
+		}
 		Anchor a = new Anchor("Vote", script);
 		FlowPanel fp = new FlowPanel();
 		fp.add(new InlineHTML("Drag this link to your bookmarks toolbar, then use it to vote for pages you find: "));
@@ -127,12 +137,12 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 		initWidget(uiBinder.createAndBindUi(this));
 		root.add(this);
 		setVisible(true);		
-
+		
         // If the application starts with no history token, redirect to a new
 	    // 'start' state.
 	    String initToken = History.getToken();
 	    if (initToken.length() == 0) {
-	      History.newItem("stories:current:null");
+	      History.newItem("top:current:null");
 	    }
 
 	    // Add history listener
@@ -183,31 +193,16 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 	}
 
 	public void fetchUserInfo() {
-		new Timer() {
-			@Override
-			public void run() {
-				
-				rnaService.sendUserInfo(new AsyncCallback<User>() {
+		rnaService.sendUserInfo(new AsyncCallback<User>() {
 
-					public void onSuccess(User result) {
-						user = result;
-						if (user == null) {
-							userName.setWidget(new Label(""));
-							signIn.setText("Log in");							
-						}
-						else {
-							userName.setWidget(EventRecord.getUserLink(user));
-							signIn.setText("Log out");
-							checkFirstTimeLogin();
-						}
-					}
-
-					public void onFailure(Throwable caught) {
-						setStatus("User fetch FAILED: " + caught);
-					}
-				});				
+			public void onSuccess(User result) {
+				setUser(result);
 			}
-		}.schedule(50);
+
+			public void onFailure(Throwable caught) {
+				setStatus("User fetch FAILED: " + caught);
+			}
+		});				
 	}
 	
 	private void scheduleTickerTimer() {
@@ -234,7 +229,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 			if (edition.number == numEditions - 1)
 				rightBox.setLabelText("Completed");
 			else 
-				rightBox.setLink("Next Edition", getStoriesLink(edition.number + 1));
+				rightBox.setLink("Next Edition", getCommand(edition.number + 1));
 		}
 		if (tickerTimer == null)
 			return;
@@ -324,7 +319,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 
 	@UiHandler("showCurrentEdition")
 	void showCurrentEdition(ClickEvent e) {
-		History.newItem("stories:current:null");
+		History.newItem((getCurrentController().equals("user")? "top" : getCurrentController()) + ":current:null");
 		History.fireCurrentHistoryState();
 	}
 
@@ -350,8 +345,11 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 		History.fireCurrentHistoryState();
 	}
 
-	private String getStoriesLink(int edition) {
-		return "stories:" + edition + ":null";		
+	/*
+	 * Return the current controller specialized on the given edition
+	 */
+	private String getCommand(int edition) {
+		return getCurrentController() + ":" + edition + ":null";		
 	}
 
 	private void showEventPanel() {
@@ -373,7 +371,7 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 		setStatus("Getting votes...");
 		enable(showStories);
 		showEventPanel();
-
+		
 		rnaService.sendRecentVotes(editionNum, new AsyncCallback<RecentVotes>() {
 
 			public void onSuccess(RecentVotes result) {
@@ -393,7 +391,47 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 			}
 		});
 	}
- 
+ 	
+	public void onUserSet(Command c) {
+		if (user != null)
+			c.run();
+		else
+			this.userSetCommand = c;
+	}
+
+	public void cancelUserSet() {
+		this.userSetCommand = null;
+	}
+
+	public void setUser(User u) {
+		user = u;
+
+		if (user == null) {
+			userName.setWidget(new Label(""));
+			signIn.setText("Log in");							
+		}
+		else {
+			userName.setWidget(EventRecord.getUserLink(user));
+			signIn.setText("Log out");
+			checkFirstTimeLogin();
+		}
+		
+		if (this.userSetCommand != null)
+			this.userSetCommand.run();
+	}
+
+
+	public String getCurrentController() {
+	    String s = History.getToken();
+		String[] tokens = s.split(":");
+
+		if (tokens.length != 3) {
+			return ""; // silent failure
+		}
+
+		return tokens[0];		
+	}
+
 
 	private void getUser(long userId) {
 		setStatus("Getting user...");
@@ -403,20 +441,34 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 		
 		rnaService.sendRelatedUser(userId, new AsyncCallback<RelatedUserInfo>() {
 
-			public void onSuccess(RelatedUserInfo result) {
+			public void onSuccess(final RelatedUserInfo result) {
 				clearStatus();
 				
-				if (result == null || result.userInfo.user == null)
+				if (result == null || result.userInfo == null || result.userInfo.user == null) {
+					setStatus("No such user");
 					return;
+				}
 				
 				title.setText(result.userInfo.user.getDisplayName());
 				cancelTickerTimer();
 				leftBox.setLabelText("");
-				User u = result.userInfo.user;
-				rightBox.setFollowCheckBox(result.following, user, u, rna);
-				if (u.equals(user)) {
-					showBookmarklet();
-				}
+				final User u = result.userInfo.user;
+				onUserSet(new Command() {
+				
+					public void run() {
+						
+						if (!getCurrentController().equals("user")) {
+							cancelUserSet();
+							return;
+						}
+						
+						rightBox.setFollowCheckBox(result.following, user, u, rna);
+						if (u.equals(user)) {
+							showBookmarklet();
+						}						
+					}
+					
+				});
 				eventPanel.showUser(result.userInfo);
 			}
 
@@ -429,19 +481,23 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 
 	private void openEdition(Edition e, int numEditions) {
 		this.numEditions = numEditions;
+
 		if (e == null) {
 			edition = null;
-			setStatus("Journalism is complete");
-			title.setText("Journalism");
-			leftBox.setLink("Last Edition", getStoriesLink(numEditions - 1));
+			title.setText("Redirecting...");
+			rightBox.setLabelText("");
 			cancelTickerTimer();
+			runCommand(getCommand(numEditions - 1));
+			//			leftBox.setLink("Last Edition", getController(numEditions - 1));
 		}
 		else {
 			edition = e;
 			final int number = edition.number;
 			title.setText("Journalism #" + number);
 			if (number > 0)
-				leftBox.setLink("Previous Edition", getStoriesLink(number - 1));
+				leftBox.setLink("Previous Edition", getCommand(number - 1));
+			else
+				leftBox.setLabelText("");
 			scheduleTickerTimer();
 		}
 	}
@@ -454,18 +510,18 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 		rnaService.sendRecentSocials(editionNum, new AsyncCallback<RecentSocials>() {
 
 			public void onSuccess(RecentSocials result) {
-				if (result == null) {
+				openEdition(result.edition, result.numEditions);
+				if (result.edition == null) {
 					setStatus("No social events are possible in the final edition.");
 					return;
 				}
-				openEdition(result.edition, result.numEditions);
-				if (result.socials.size() == 0) {
+				else if (result.socials == null || result.socials.size() == 0) {
 					setStatus("No social events.");
 				}
 				else {
 					clearStatus();
+					eventPanel.showSocials(result.socials);
 				}
-				eventPanel.showSocials(result.socials);
 			}
 
 			public void onFailure(Throwable caught) {
@@ -501,7 +557,10 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 
 	public void onValueChange(ValueChangeEvent<String> event) {
 		// check history token for which edition we are on
-		String s = event.getValue();
+		runCommand(event.getValue());
+	}
+	
+	public void runCommand(String s) {
 		Integer editionNum;
 
 	    // go check the server for this user's login state

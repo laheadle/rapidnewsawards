@@ -29,7 +29,7 @@ import org.rapidnewsawards.shared.StoryInfo;
 import org.rapidnewsawards.shared.User;
 import org.rapidnewsawards.shared.UserInfo;
 import org.rapidnewsawards.shared.User_Authority;
-import org.rapidnewsawards.shared.User_Link;
+import org.rapidnewsawards.shared.User_Vote_Link;
 import org.rapidnewsawards.shared.Vote;
 import org.rapidnewsawards.shared.Vote_Link;
 import com.google.appengine.api.datastore.EntityNotFoundException;
@@ -64,6 +64,10 @@ public class DAO extends DAOBase
 	public static final Logger log = Logger.getLogger(DAO.class.getName());
         
     public User findUserByLogin(String email, String domain) {
+    	if (email == null || domain == null)
+    		return null;
+    	email = email.toLowerCase();
+    	domain = domain.toLowerCase();
     	return ofy().query(User.class).filter("email", email).filter("domain", domain).get();
 	}
     
@@ -144,6 +148,9 @@ public class DAO extends DAOBase
 				log.warning("Already following: [" + from + ", " + to + "]");
 				r = Return.ALREADY_FOLLOWING;
 			}
+			else if (!isEditor(from)) {
+				r = Return.NOT_AN_EDITOR;
+			}
 			else {
 				// this follow won't take effect until a transition
 				final SocialEvent follow = new SocialEvent(from, to, e.getKey(), new Date(), on);
@@ -172,6 +179,15 @@ public class DAO extends DAOBase
 	}
 
 
+	private boolean isEditor(Key<User> from) {
+		User u = ofy().find(from);
+		if (u == null) {
+			log.severe("bad input");
+			return false;
+		}		
+		return u.isEditor;
+	}
+
 	public Follow getFollow(Key<User> from, Key<User> to, Objectify o) {
 		if (o == null)
 			o = instance.ofy();
@@ -186,7 +202,7 @@ public class DAO extends DAOBase
 		if (e == null)
 			return null;
 		
-		return o.query(SocialEvent.class).ancestor(from).filter("judge", to).filter("edition", e.getKey()).get();
+		return o.query(SocialEvent.class).filter("editor", from).filter("judge", to).filter("edition", e.getKey()).get();
 	}
 	
 	public boolean isFollowingOrAboutToFollow(Key<User> from, Key<User> to) {
@@ -309,7 +325,7 @@ public class DAO extends DAOBase
 
 		log.info("Social transition into " + to);
 
-		for (SocialEvent s : o.query(SocialEvent.class).filter("edition", to.getKey())) {
+		for (SocialEvent s : o.query(SocialEvent.class).filter("edition", to.getKey()).filter("editor !=", User.getRNAEditor())) {
 			Follow old = ofy().query(Follow.class).ancestor(s.editor).filter("judge", s.judge).get();
 
 			if (s.on == false) {
@@ -385,8 +401,10 @@ public class DAO extends DAOBase
 		}
 
 		if (number == -2) {
-			if (!p.live)
+			if (!p.live) {
+				log.warning("Next edition requested for dead periodical");
 				return null;
+			}
 			return ofy().find(Edition.getNextKey(p.getCurrentEditionKey().getName()));			
 		}
 		
@@ -427,30 +445,38 @@ public class DAO extends DAOBase
 		s.numEditions = getNumEditions(name);
 		if (e == null)
 			return s;
-		s.votes = getLatestUser_Links(e);
+		s.votes = getLatestUser_Vote_Links(e);
 		return s;
 	}
 
 	/* Runs three queries: first get keys, then use the keys to get 2 sets of entities
 	 * 
 	 */
-	public LinkedList<User_Link> getLatestUser_Links(Edition e) {
-		LinkedList<User_Link> result = new LinkedList<User_Link>();
+	public LinkedList<User_Vote_Link> getLatestUser_Vote_Links(Edition e) {
+		LinkedList<User_Vote_Link> result = new LinkedList<User_Vote_Link>();
 		
 		ArrayList<Key<User>> users = new ArrayList<Key<User>>();
 		ArrayList<Key<Link>> links = new ArrayList<Key<Link>>();
 		
 		Query<Vote> q = ofy().query(Vote.class).filter("edition", e.getKey()).order("-time");
-		
+
+		LinkedList<Vote> votes = new LinkedList<Vote>();
 		for (Vote v : q) {
+			votes.add(v);
+		}
+		
+		for (Vote v : votes) {
 			users.add(v.voter);
 			links.add(v.link);
 		}
+		
 		Map<Key<User>, User> umap = ofy().get(users);
 		Map<Key<Link>, Link> lmap = ofy().get(links);
 		
-		for(int i = 0;i < users.size();i++) {
-			result.add(new User_Link(umap.get(users.get(i)), lmap.get(links.get(i))));
+		int i = 0;
+		for(Vote v : votes) { // iterate again in the same order
+			result.add(new User_Vote_Link(umap.get(users.get(i)), v, lmap.get(links.get(i))));
+			i++;
 		}
 
 		return result;
@@ -460,7 +486,10 @@ public class DAO extends DAOBase
 		RecentSocials s = new RecentSocials();
 		s.edition = edition;
 		s.numEditions = getNumEditions(name);
-		s.socials = getLatestEditor_Judges(nextEdition);
+		
+		if (nextEdition != null) {
+			s.socials = getLatestEditor_Judges(nextEdition);
+		}
 		return s;
 	}
 
@@ -519,7 +548,7 @@ public class DAO extends DAOBase
 		ArrayList<Key<User>> judges = new ArrayList<Key<User>>();
 		ArrayList<Boolean> bools = new ArrayList<Boolean>();
 		// think - does this show everything we want?
-		Query<SocialEvent> q = ofy().query(SocialEvent.class).filter("edition", e).order("-time");
+		Query<SocialEvent> q = ofy().query(SocialEvent.class).filter("edition", e.getKey()).order("-time");
 		
 		for (SocialEvent event : q) {
 			editors.add(event.editor);
@@ -712,7 +741,7 @@ public class DAO extends DAOBase
 		return ofy().find(Edition.getPreviousKey(current.getName()));
 	}
 
-	public String welcomeUser(String nickname, Integer donation) {
+	public User welcomeUser(String nickname, Integer donation) {
 		log.info("welcome: " + user + ": " + Periodical.moneyPrint(donation));
 
 		LockedPeriodical lp = lockPeriodical();
@@ -725,6 +754,17 @@ public class DAO extends DAOBase
 		Donation don = new Donation(user.getKey(), donation);
 		
 		ofy().put(don);
+
+		Edition next = getNextEdition(Name.JOURNALISM);
+		
+		if (next == null) {
+			log.warning("join failed");
+			return null;
+		}
+		else {
+			SocialEvent join = new SocialEvent(User.getRNAEditor(), user.getKey(), next.getKey(), new Date(), true);
+			ofy().put(join);
+		}
 		
 		lp.periodical.balance += donation;
 		lp.transaction.put(lp.periodical);		
@@ -732,7 +772,7 @@ public class DAO extends DAOBase
 
 		log.info("balance: " + Periodical.moneyPrint(lp.periodical.balance));
 
-		return "ok";
+		return user;
 	}
 
 	

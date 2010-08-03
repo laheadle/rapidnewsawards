@@ -16,7 +16,8 @@ public enum Return {
 	ILLEGAL_OPERATION("Illegal Operation"), 
 	ALREADY_VOTED("You have already voted for this"),
 	NOT_LOGGED_IN("You must log in first"), 
-	HAS_NOT_VOTED("You cannot cancel a vote unless you have voted");
+	HAS_NOT_VOTED("You cannot cancel a vote unless you have voted"), 
+	FORBIDDEN_DURING_FINAL("You can't do that during the final edition"), NOT_AN_EDITOR("Only Editors can do this");
 
 
 public String s;

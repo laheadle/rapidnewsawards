@@ -73,7 +73,7 @@ RNAService {
 			next = DAO.instance.getEdition(Name.JOURNALISM, edition + 1, null);
 		}
 		
-		if (current == null || next == null) {
+		if (current == null) {
 			return null;
 		}
 
@@ -90,6 +90,10 @@ RNAService {
 		
 		// read-only transaction 
 		Edition e = d.getEdition(Name.JOURNALISM, -2, null);
+		if (e == null) {
+			log.warning(d.user + "Attempted to socialize during final edition");
+			return Return.FORBIDDEN_DURING_FINAL;			
+		}
 		Return result = d.doSocial(d.user.getKey(), to.getKey(), e, on);
 		return result;
 	}
@@ -182,9 +186,9 @@ RNAService {
 	}
 
 	@Override
-	public String welcomeUser(String nickname, Integer donation) {
+	public User welcomeUser(String nickname, Integer donation) {
 		if (d.user == null)
-			return "failed";
+			return null;
 
 		return d.welcomeUser(nickname, donation);
 	}

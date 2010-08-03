@@ -6,10 +6,11 @@ import javax.persistence.Id;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.Cached;
 
 
 
-@Entity
+@Cached
 public class User implements IsSerializable {
 
 	@Id
@@ -29,11 +30,22 @@ public class User implements IsSerializable {
 	public User() {}
 	
 	public User(String email, String domain, boolean isEditor) {
-		this.email = email;
-		this.domain = domain;
+		if (email == null || domain == null)
+			return;
+		
+		this.email = email.toLowerCase();
+		this.domain = domain.toLowerCase();
 		this.nickname = "";
 		this.isInitialized = false;
 		this.isEditor = isEditor;
+		this.lastLogin = new Date();
+	}
+
+	/*
+	 * The special editor who follows new Users without empowering them.  These follows are called Joins because the user joins the community.
+	 */
+	public static Key<User> getRNAEditor() {
+		return new Key<User>(User.class, 1L);
 	}
 
 	@Override

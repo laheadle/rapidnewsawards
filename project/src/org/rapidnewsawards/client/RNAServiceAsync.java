@@ -33,5 +33,5 @@ public interface RNAServiceAsync {
 
 	void submitStory(String url, String title, Edition e, AsyncCallback<VoteResult> asyncCallback);
 
-	void welcomeUser(String nickname, Integer donation, AsyncCallback<String> asyncCallback);
+	void welcomeUser(String nickname, Integer donation, AsyncCallback<User> asyncCallback);
 }

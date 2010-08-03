@@ -17,8 +17,8 @@ public class FollowTransitionTest extends RNATest {
 	public void testFollows() {
 		Edition e2 = DAO.instance.getEdition(Name.JOURNALISM, 1, null);
 				
-		User mg = getUser("megangarber");
-		User jny2 = getUser("jny2");
+		User mg = getUser("ohthatmeg");
+		User jny2 = getUser("Joshuanyoung");
 
 		Return r = DAO.instance.doSocial(mg.getKey(), jny2.getKey(), e2, true);
 		assertEquals(r.s, Return.ABOUT_TO_FOLLOW.s);

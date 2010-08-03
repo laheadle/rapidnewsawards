@@ -6,8 +6,9 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.Cached;
 
-@Entity
+@Cached
 public class Edition implements IsSerializable, Comparable<Edition> {
 	
 	@Id	

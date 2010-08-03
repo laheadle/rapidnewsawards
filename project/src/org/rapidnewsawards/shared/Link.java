@@ -5,9 +5,10 @@ import javax.persistence.Id;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.Cached;
 
 
-@Entity
+@Cached
 public class Link implements IsSerializable {
 	
 	public String url;
@@ -25,8 +26,6 @@ public class Link implements IsSerializable {
 
 	public Link(String url, String title, String domain, Key<User> submitter) {
 		this.submitter = submitter;
-		if (title == null)
-			title = "Something Just Happened!";
 		this.title = title;
 		this.url = url;
 		this.domain = domain;

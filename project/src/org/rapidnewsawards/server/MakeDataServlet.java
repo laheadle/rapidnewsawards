@@ -2,6 +2,9 @@ package org.rapidnewsawards.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.text.DateFormat;
+import java.text.ParseException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -25,13 +28,19 @@ import com.googlecode.objectify.Objectify;
 import static com.google.appengine.api.labs.taskqueue.TaskOptions.Builder.*;
 
 public class MakeDataServlet extends HttpServlet {
+	public static PrintWriter out;
+
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
-		PrintWriter out = response.getWriter();
+		out = response.getWriter();
 		Cell<Integer> numUsers = new Cell<Integer>(null);
 		int numEditions = 5;
-		makeData(numEditions, 3 * ONE_MINUTE, numUsers);
+		try {
+			makeData(numEditions, 12 * ONE_HOUR, numUsers);
+		} catch (ParseException e) {
+			e.printStackTrace(out);
+		}
 		out.println("created " + numUsers.value + " users");
 		out.println("created " + numEditions + " editions");
 	}
@@ -40,18 +49,29 @@ public class MakeDataServlet extends HttpServlet {
 	
 	public final static long ONE_SECOND = 1000; 
 	public final static long ONE_MINUTE = 60 * 1000; 	
+	public final static long ONE_HOUR = 60 * ONE_MINUTE; 		
 	public final static long FIVE_MINUTES = 5 * ONE_MINUTE; 
 
-	public static void makeData (int editionCount, long periodSize, Cell<Integer> numUsers) {		
+	public static void makeData (int editionCount, long periodSize, Cell<Integer> numUsers) throws ParseException {		
 		// add users to first edition
 		makeEditions(editionCount, periodSize);
 
-		makeEditor("megangarber@gmail.com");
-		makeEditor("jny2@gmail.com");
+		makeRNAEditor();
+		makeEditor("ohthatmeg@gmail.com");
+		makeEditor("jthomas100@gmail.com");
+		makeEditor("joshuanyoung@gmail.com");
+		makeEditor("laheadle@gmail.com");		
 		makeEditor("steveouting@gmail.com");	
 		
 		if (numUsers != null)
-			numUsers.value = new Integer(3);
+			numUsers.value = new Integer(5);
+	}
+
+
+	private static void makeRNAEditor() {
+		User rna = new User("__rnaEditor@gmail.com", "gmail.com", true);
+		rna.id = 1L;
+		DAO.instance.ofy().put(rna);
 	}
 
 
@@ -65,7 +85,7 @@ public class MakeDataServlet extends HttpServlet {
 	}
 
 	 
-	public static ArrayList<Edition> makeEditions(int editionCount, long periodSize) {
+	public static ArrayList<Edition> makeEditions(int editionCount, long periodSize) throws ParseException {
 		final Root root = new Root();
 		root.id = 1L;
 		DAO.instance.ofy().put(root);
@@ -78,7 +98,11 @@ public class MakeDataServlet extends HttpServlet {
 		// create editions using a local function class
 		// using arrays lets us mutate their contents from the local class method
 		final int[] number = { 0 };
-		final Date[] current = { new Date() };
+		
+		Date start = new Date(); //new SimpleDateFormat ("yyyy-MM-dd hh:mma z").parse("2010-06-15 10:07am ET");
+		//out.println("start: " + start.toString());
+	    
+		final Date[] current = { start };
 		final class makeEd {
 			final long duration;
 			final Periodical p;
@@ -107,6 +131,7 @@ public class MakeDataServlet extends HttpServlet {
 						.etaMillis(e.end.getTime()).method(TaskOptions.Method.GET));
 			}
 			
+			// adds itself again every few minutes
 			queue.add(url("/tasks/tally").etaMillis(new Date().getTime() + 2 * ONE_MINUTE).method(TaskOptions.Method.GET));
 		}
 		

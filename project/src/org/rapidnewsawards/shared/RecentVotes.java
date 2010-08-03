@@ -8,5 +8,5 @@ public class RecentVotes implements IsSerializable {
 	public RecentVotes() {};
 	public Edition edition;
 	public int numEditions;
-	public LinkedList<User_Link> votes;
+	public LinkedList<User_Vote_Link> votes;
 }

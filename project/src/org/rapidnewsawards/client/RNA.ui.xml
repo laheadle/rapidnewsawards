@@ -23,9 +23,10 @@
 		
 
 		.outerPanel {
-			margin: 0 auto 0 auto;
+			margin-left: 20%;
+			margin-right: 20%;
 			height: 100%;
-			width: 720px;
+			width: 60%;
 			border-style:solid;
 			border-width:1px;
 		}
@@ -118,7 +119,7 @@
 
 	<g:LayoutPanel styleName='{style.outerPanel}' ui:field='outerPanel'>
 
-		<g:layer left='0px' width='120px'>
+		<g:layer left='0px' width='120px'> <!-- make 168 -->
 			<g:LayoutPanel styleName='{style.leftColumn}' ui:field='leftColumn'>
 
 				<g:layer top='0px' height='50px'>
@@ -138,15 +139,18 @@
 							<g:Button styleName='{style.sideButtonSelected}' ui:field='showCurrentEdition'> Current Edition </g:Button>
 						</g:layer>
 						<g:layer top='20px' height="20px" LayoutAlignment='ALIGN_LEFT'>
+							<g:Label styleName='{style.sideNoButton}'> </g:Label>
+						</g:layer>
+						<g:layer top='40px' height="20px" LayoutAlignment='ALIGN_LEFT'>
 							<g:Button styleName='{style.sideButton}' ui:field='showTopStories'>Top Stories</g:Button>
 						</g:layer>						
-						<g:layer top='40px' height="20px" LayoutAlignment='ALIGN_LEFT'>
+						<g:layer top='60px' height="20px" LayoutAlignment='ALIGN_LEFT'>
 							<g:Button styleName='{style.sideButton}' ui:field='showStories'>Votes</g:Button>
 						</g:layer>
-						<g:layer top='60px' height="20px" LayoutAlignment='ALIGN_MIDDLE'>
+						<g:layer top='80px' height="20px" LayoutAlignment='ALIGN_MIDDLE'>
 							<g:Button styleName='{style.sideButton}' ui:field='showSocial'>Social</g:Button>
 						</g:layer>
-						<g:layer top='80px' bottom='0px' LayoutAlignment='ALIGN_MIDDLE'>
+						<g:layer top='100px' bottom='0px' LayoutAlignment='ALIGN_MIDDLE'>
 						    <g:Button styleName='{style.sideNoButton}'> </g:Button>
 						</g:layer>
 					</g:LayoutPanel> <!-- nav bottom -->
@@ -155,7 +159,7 @@
 			</g:LayoutPanel> <!-- left column -->
 		</g:layer>
 
-		<g:layer left='120px' right='0px'>
+		<g:layer left='120px' right='0px'> <!-- make 864 -->
 			<g:LayoutPanel styleName='{style.rightColumn}' ui:field='rightColumn'>
 
 				<g:layer left='0px' right='0px' top='0%' height='50px'>

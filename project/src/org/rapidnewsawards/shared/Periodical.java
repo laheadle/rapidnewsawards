@@ -22,11 +22,6 @@ public class Periodical {
 	@Id
 	private Long id;
 
-	/*
-	 * The special editor who follows new Users without empowering them.  These follows are called Joins.
-	 */
-	public Key<User> rnaEditor;
-
 	public boolean live;
 
 	public boolean inSocialTransition;
@@ -45,7 +40,7 @@ public class Periodical {
 		this.tallying = false;
 		this.live = true;
 		this.name = name.name;
-		this.balance = 1000000; // 10k dollars (in pennies)
+		this.balance = 500000; // 5k dollars (in pennies)
 	}
 	
 	public Periodical() {}	
@@ -58,9 +53,9 @@ public class Periodical {
 	public void setName(String name) {
 		this.name = name;
 	}
-
+	
 	public Key<Periodical> getKey() {
-		return new Key<Periodical>(Periodical.class, id);
+		return new Key<Periodical>(root, Periodical.class, id);
 	}
 
 	public void setcurrentEditionKey(Key<Edition> Key) {

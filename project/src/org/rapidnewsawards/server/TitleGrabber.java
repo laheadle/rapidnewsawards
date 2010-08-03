@@ -14,6 +14,10 @@ public class TitleGrabber {
 	
 	public static String getTitle(String urlStr) {
 
+		// &#039; = "
+		// &#8221; = ”
+		// &#8220; = “
+		// &#8217; = ’
         try {
             URL url = new URL(urlStr);
             BufferedReader reader = new BufferedReader(new InputStreamReader(url.openStream()));

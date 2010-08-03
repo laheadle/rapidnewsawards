@@ -15,9 +15,8 @@ public class SocialEvent {
 	Long id;
 
     /*
-     * The actor; if this field is the rnaEditor, then this SocialEvent is a "Join" -- somebody has joined the site but no power is granted
+     * The actor; if this field is null, then this SocialEvent is a "Join" -- somebody has joined the site but no power is granted
      */
-    @Parent
 	public Key<User> editor;
 	public Key<Edition> edition;
 	public Key<User> judge;
@@ -38,7 +37,7 @@ public class SocialEvent {
 	}
 
 	public Key<SocialEvent> getKey() {
-		return new Key<SocialEvent>(this.editor, SocialEvent.class, id);
+		return new Key<SocialEvent>(SocialEvent.class, id);
 	}
 
 }

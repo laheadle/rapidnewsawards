@@ -1,5 +1,6 @@
 package org.rapidnewsawards.client;
 
+import org.rapidnewsawards.shared.User;
 import org.rapidnewsawards.shared.VoteResult;
 
 import com.google.gwt.event.dom.client.ClickEvent;
@@ -76,13 +77,18 @@ public class WelcomePopup extends PopupPanel {
 				
 				int donation = getDonation();
 				
-				RNA.rnaService.welcomeUser(nickBox.getText(), donation, new AsyncCallback<String>() {
+				RNA.rnaService.welcomeUser(nickBox.getText(), donation, new AsyncCallback<User>() {
 
-					public void onSuccess(String result) {
+					public void onSuccess(User result) {
 						hide();
-						RNA.instance.showBookmarklet();
+						if (result == null) {
+							RNA.instance.setStatus("Unable to join community.  Is this the final edition?");
+						}
+						else {
+							RNA.instance.showBookmarklet();
+						}
 						//RNA.instance.setStatus("Welcome, " + nickBox.getText() + "! Visit your user page to get your vote bookmarklet.");
-						RNA.instance.fetchUserInfo();
+						RNA.instance.setUser(result);
 					}
 
 					public void onFailure(Throwable caught) {

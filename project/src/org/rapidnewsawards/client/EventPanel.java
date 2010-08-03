@@ -6,7 +6,7 @@ import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.SocialInfo;
 import org.rapidnewsawards.shared.User;
 import org.rapidnewsawards.shared.UserInfo;
-import org.rapidnewsawards.shared.User_Link;
+import org.rapidnewsawards.shared.User_Vote_Link;
 import org.rapidnewsawards.shared.Vote_Link;
 
 import com.google.gwt.user.client.ui.Anchor;
@@ -31,11 +31,11 @@ public class EventPanel extends Composite {
 		vPanel.clear();
 	}
 
-	public void showVotes(LinkedList<User_Link> votes) {
+	public void showVotes(LinkedList<User_Vote_Link> votes) {
 		vPanel.clear();
 
-		for (User_Link v : votes) {
-			EventRecord rec = new EventRecord(v.user, " voted for ", getAnchor(v.link));
+		for (User_Vote_Link v : votes) {
+			EventRecord rec = new EventRecord(v.user, getGavePoints(v.vote.authority), getAnchor(v.link));
 			vPanel.add(rec);
 			vPanel.setCellWidth(rec, "100%");
 
@@ -48,7 +48,13 @@ public class EventPanel extends Composite {
 
 		for (SocialInfo s : socials) {
 			Anchor judgeA = EventRecord.getUserLink(s.judge);
-			EventRecord rec = new EventRecord(s.editor, s.on ? " is about to follow " : " is about to unfollow ", judgeA);
+			EventRecord rec;
+			if (s.editor.getKey().equals(User.getRNAEditor())) {
+				rec = new EventRecord(null, "welcomes ", judgeA);				
+			}
+			else {
+				rec = new EventRecord(s.editor, s.on ? " is about to follow " : " is about to unfollow ", judgeA);
+			}
 			vPanel.add(rec);
 			vPanel.setCellWidth(rec, "100%");
 
@@ -60,6 +66,11 @@ public class EventPanel extends Composite {
 		return new Anchor(link.domain + " / " + link.title, link.url, "_blank");
 	}
 
+	private String getGavePoints(int authority) {
+		String points = authority == 1 ? " point " : " points ";
+		return " gave " + authority + points + "to ";
+	}
+	
 	public void showUser(UserInfo ui) {
 		vPanel.clear();
 		
@@ -67,7 +78,7 @@ public class EventPanel extends Composite {
 			return;
 		
 		for (Vote_Link v : ui.votes) {
-			EventRecord rec = new EventRecord(ui.user, " voted for ", getAnchor(v.link));
+			EventRecord rec = new EventRecord(ui.user, getGavePoints(v.vote.authority), getAnchor(v.link));
 			vPanel.add(rec);
 			vPanel.setCellWidth(rec, "100%");
 		}

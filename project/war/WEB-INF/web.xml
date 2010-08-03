@@ -21,6 +21,11 @@
 	</servlet>
 
 	<servlet>
+		<servlet-name>killDataServlet</servlet-name>
+		<servlet-class>org.rapidnewsawards.server.KillDataServlet</servlet-class>
+	</servlet>
+
+	<servlet>
 		<servlet-name>doSomethingServlet</servlet-name>
 		<servlet-class>org.rapidnewsawards.server.DoSomethingServlet</servlet-class>
 	</servlet>
@@ -72,10 +77,19 @@
 		<url-pattern>/makeData</url-pattern>
 	</servlet-mapping>
 
+	<servlet-mapping>
+		<servlet-name>killDataServlet</servlet-name>
+		<url-pattern>/killData</url-pattern>
+	</servlet-mapping>
+
 
   <filter> 
     <filter-name>AuthFilter</filter-name> 
     <filter-class>org.rapidnewsawards.server.AuthFilter</filter-class> 
+    <init-param>
+      <param-name>adminEmail</param-name>
+      <param-value>laheadle@gmail.com</param-value>
+    </init-param>
   </filter> 
   <filter-mapping> 
     <filter-name>AuthFilter</filter-name> 

@@ -3,9 +3,10 @@ package org.rapidnewsawards.shared;
 import javax.persistence.Id;
 
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Entity;
 
-@Entity
+@Cached
 public class ScoredLink {
 	@Id
 	public Long id;

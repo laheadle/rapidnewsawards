@@ -6,10 +6,11 @@ import javax.persistence.Id;
 
 import com.google.gwt.user.client.rpc.IsSerializable;
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Entity;
 import com.googlecode.objectify.annotation.Parent;
 
-@Entity
+@Cached
 public class Vote implements IsSerializable {
 	@Parent
 	public Key<User> voter;
@@ -33,4 +34,6 @@ public class Vote implements IsSerializable {
 		this.time = time;
 		this.authority = authority;
 	}
+	
+	public Key<Vote> getKey() { return new Key<Vote>(voter, Vote.class, id); }
 }

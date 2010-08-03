@@ -24,7 +24,7 @@ public interface RNAService extends RemoteService {
 	User sendUserInfo();
 	LinkedList<User_Authority> getVoters(Link link, Edition e);
 	RecentVotes sendRecentVotes(Integer edition);
-	String welcomeUser(String nickname, Integer donation);
+	User welcomeUser(String nickname, Integer donation);
 
 	RecentSocials sendRecentSocials(Integer edition);
 	RecentStories sendTopStories(Integer editionNum);

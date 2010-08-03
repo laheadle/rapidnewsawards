@@ -27,6 +27,10 @@ public class TransitionTask  extends HttpServlet {
 		Edition current = d.getCurrentEdition(Name.JOURNALISM);
 		Edition next = d.getNextEdition(Name.JOURNALISM);
 		
+		if (from == null) {
+			log.severe("Edition " + _from + " does not exist");
+			return;
+		}
 		if (!from.equals(current)) {
 			log.warning("edition 1 not current (2 is): " + from + ", " + current);
 		}

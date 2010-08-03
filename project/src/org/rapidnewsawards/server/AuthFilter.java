@@ -1,6 +1,7 @@
 package org.rapidnewsawards.server;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.logging.Logger;
 
 import javax.servlet.Filter;
@@ -19,6 +20,7 @@ import com.google.appengine.api.users.UserServiceFactory;
 public class AuthFilter implements Filter {
 	private static final Logger log = Logger.getLogger(AuthFilter.class.getName());
 	private static DAO d = DAO.instance;
+	private String adminEmail;
 
 	@Override
 	public void doFilter(ServletRequest request, ServletResponse response,
@@ -31,16 +33,16 @@ public class AuthFilter implements Filter {
 		}
 		else {
 			User u = DAO.instance.findUserByLogin(appUser.getEmail(), appUser.getAuthDomain());
-			if (u == null) {
-				// first time logging in; create new user
-				u = new User();
-				u.email = appUser.getEmail();
-				u.domain = appUser.getAuthDomain();
+			if (u == null && !adminEmail.equals(appUser.getEmail())) {
+				// first time logging in; create new user unless this is the admin
+				u = new User(appUser.getEmail(), appUser.getAuthDomain(), false);
 				DAO.instance.ofy().put(u);
 				d.user = u;
 			}
 			else {
+				u.lastLogin = new Date();
 				d.user = u;
+				DAO.instance.ofy().put(u);
 			}
 		}
 
@@ -52,8 +54,15 @@ public class AuthFilter implements Filter {
 	}
 	
 	@Override
-	public void init(FilterConfig arg0) throws ServletException {
-		log.info("init filter");
+	public void init(FilterConfig config) throws ServletException {
+		adminEmail = config.getInitParameter("adminEmail");
+		if (adminEmail == null || adminEmail.equals("")) {
+			adminEmail = "";
+			log.warning("no admin email specified.  Watch out for auto-creation of a duplicate user with the admin's email");
+		}
+		else {
+			log.info("Admin email: " + adminEmail);
+		}
 	}
 
 	@Override

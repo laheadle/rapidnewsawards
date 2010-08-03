@@ -19,13 +19,13 @@ public class VoteTransitionTest extends RNATest {
 	@Test
 	public void testVotes() {
 		Edition e1 = d.getCurrentEdition(Name.JOURNALISM);		
-		User mg = getUser("megangarber");
+		User mg = getUser(null);
 
 		Link l = d.createLink("http://example.com", "title", mg.getKey());
-		assertEquals(d.getLatestUser_Links(e1).size(), 0);
+		assertEquals(d.getLatestUser_Vote_Links(e1).size(), 0);
 		d.voteFor(mg, e1, l, true);
 		assertTrue(d.hasVoted(mg, e1, l));
-		assertEquals("User_Link Exists", d.getLatestUser_Links(e1).size(), 1);
+		assertEquals("User_Vote_Link Exists", d.getLatestUser_Vote_Links(e1).size(), 1);
 		
 		doTransition();
 		
@@ -38,8 +38,8 @@ public class VoteTransitionTest extends RNATest {
 		d.getCurrentEdition(Name.JOURNALISM);		
 		Edition e2 = d.getEdition(Name.JOURNALISM, 1, null);
 
-		User mg = getUser("megangarber");
-		User jny2 = getUser("jny2");
+		User mg = getUser("ohthatmeg");
+		User jny2 = getUser("joshuanyoung");
 		User steveouting = getUser("steveouting");
 
 		// megan follows josh 
