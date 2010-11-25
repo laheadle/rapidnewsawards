@@ -1,6 +1,6 @@
 package org.rapidnewsawards.server.test;
 
-import static org.easymock.EasyMock.verify;
+//import static org.easymock.EasyMock.verify;
 
 import java.util.Iterator;
 

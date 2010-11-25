@@ -355,7 +355,7 @@ public class DAO extends DAOBase
 	}
 
 	public boolean isExpired(Edition e) {
-		Perishable expiry = Config.injector.getInstance(PerishableFactory.class).create(e.end);
+		Perishable expiry = new Calendar(e.end); //Config.injector.getInstance(PerishableFactory.class).create(e.end);
 		return expiry.isExpired();
 	}
 

@@ -50,7 +50,7 @@ public class Vote extends Composite implements EntryPoint {
 					urlBox.setText(url);
 					final TextBox titleBox = new TextBox();					
 					titleBox.setVisibleLength(90);
-					Button submit = new Button("Submit");
+					final Button submit = new Button("Submit");
 					Grid g = new Grid(3, 3);
 					g.setWidget(0, 0, new Label("Url"));
 					g.setWidget(1, 0, new Label("Title"));
@@ -94,7 +94,7 @@ public class Vote extends Composite implements EntryPoint {
 					}
 				});
 					
-					sPanel.setWidget(g);
+				sPanel.setWidget(g);
 				}
 				else {
 					Return returnVal = result.returnVal;

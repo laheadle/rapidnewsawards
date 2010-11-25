@@ -12,7 +12,6 @@ import com.google.gwt.user.client.ui.InlineLabel;
 
 public class EventRecord extends Composite {
 	
-	private HTMLPanel myPanel;
 	private static long count = 0; // for making unique id's
 
 	public static Anchor getUserLink(User subject) {
@@ -27,7 +26,7 @@ public class EventRecord extends Composite {
 		"	<p style=\"margin: 10px 0px 10px 15px; width:68ex; font-size: medium\" id='"+paraid+"'> <span id='"+spanid+"'> </span> "+
 		"</p> </div>";
 
-		myPanel = new HTMLPanel(div);
+		HTMLPanel myPanel = new HTMLPanel(div);
 		if (subject == null) {
 			InlineHTML h = new InlineHTML("RNA Journalism");
 			myPanel.add(h, spanid);

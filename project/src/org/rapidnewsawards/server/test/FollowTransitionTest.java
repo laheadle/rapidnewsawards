@@ -1,6 +1,6 @@
 package org.rapidnewsawards.server.test;
 
-import static org.easymock.EasyMock.verify;
+//import static org.easymock.EasyMock.verify;
 
 import org.junit.Test;
 import org.rapidnewsawards.server.DAO;

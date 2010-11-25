@@ -107,7 +107,7 @@ public class StoryRecord extends Composite {
 				}
 
 				public void onFailure(Throwable caught) {
-					setLabelText("FAILED: " + caught);
+					RNA.instance.errorMessage("FAILED: " + caught);
 				}
 			});			
 		}

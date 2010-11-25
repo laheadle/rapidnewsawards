@@ -100,7 +100,20 @@ public class RNA extends Composite implements EntryPoint, ValueChangeHandler<Str
 	public interface Command { public void run(); }
 	public Command userSetCommand;
 	
-	public void setStatus(String string) {
+	public int Warning = 0;
+	public int ERROR = 1;
+	public int INFO = 2;
+	//public int FIX_ENUM = "a";
+	
+	public void setStatus(String str) {
+		setStatusImpl(INFO, str);
+	}
+	
+	public void errorMessage(String str) {
+		setStatusImpl(ERROR, str);
+	}
+	
+	public void setStatusImpl(int level, String string) {
 		Label l = new Label();
 		l.setText(string);
 		status.setWidget(l);
