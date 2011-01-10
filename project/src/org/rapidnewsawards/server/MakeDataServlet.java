@@ -37,7 +37,7 @@ public class MakeDataServlet extends HttpServlet {
 		Cell<Integer> numUsers = new Cell<Integer>(null);
 		int numEditions = 5;
 		try {
-			makeData(numEditions, 12 * ONE_HOUR, numUsers);
+			makeData(numEditions, 5 * FIVE_MINUTES, numUsers);
 		} catch (ParseException e) {
 			e.printStackTrace(out);
 		}
@@ -90,7 +90,7 @@ public class MakeDataServlet extends HttpServlet {
 		root.id = 1L;
 		DAO.instance.ofy().put(root);
 		
-		final Periodical p = new Periodical(Name.JOURNALISM, new Key<Root>(Root.class, 1L));
+		final Periodical p = new Periodical(Name.AGGREGATOR_NAME, new Key<Root>(Root.class, 1L));
 		Objectify o = DAO.instance.ofy();
 		o.put(p);
 

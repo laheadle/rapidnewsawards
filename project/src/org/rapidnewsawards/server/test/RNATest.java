@@ -31,9 +31,9 @@ public abstract class RNATest extends TestCase {
 	}
 
 	public void doTransition() {
-		Edition current = d.getEdition(Name.JOURNALISM, -1, null);
-		Edition next = d.getEdition(Name.JOURNALISM, -2, null);
-		d.transitionEdition(Name.JOURNALISM);
+		Edition current = d.getEdition(Name.AGGREGATOR_NAME, -1, null);
+		Edition next = d.getEdition(Name.AGGREGATOR_NAME, -2, null);
+		d.transitionEdition(Name.AGGREGATOR_NAME);
 		d.socialTransition(next);
 		d.setEditionRevenue();
 		d.fund(current.getKey());

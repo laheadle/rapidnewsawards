@@ -14,7 +14,7 @@ public class FinalEditionCurrentTest extends RNATest {
 		for (int i = 0;i < numEditions - 1;i++) {
 			doTransition();
 		}		
-		Edition e = DAO.instance.getCurrentEdition(Name.JOURNALISM);
+		Edition e = DAO.instance.getCurrentEdition(Name.AGGREGATOR_NAME);
 		assertNotNull(e);
 		assertEquals(e.number, numEditions - 1);
 	}

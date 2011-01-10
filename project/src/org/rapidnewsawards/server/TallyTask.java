@@ -27,7 +27,7 @@ public class TallyTask  extends HttpServlet {
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
-		Edition current = d.getCurrentEdition(Name.JOURNALISM);
+		Edition current = d.getCurrentEdition(Name.AGGREGATOR_NAME);
 		if (current != null) {
 			d.tally(current.getKey());
 			Queue queue = QueueFactory.getDefaultQueue();

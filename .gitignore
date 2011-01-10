@@ -4,3 +4,4 @@
 *.jar
 project/war/Vote/*
 project/extras/*
+project/.gwt/*

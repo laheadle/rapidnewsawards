@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <title>Rapid News Awards</title>
+    <link href="rna.css" media="all" rel="stylesheet" type="text/css"/>
+    <script src="js/json2.js"></script>
+    <script src="js/jquery-1.4.2.js"></script>
+    <script src="js/underscore-1.1.3.js"></script>
+    <script src="js/backbone.js"></script>
+    <script src="js/vote.js"></script>
+    <script src="js/rna.js"></script>
+  </head>
+
+  <body>
+
+    <!-- RNA App Interface -->
+
+    <div id="rna-vote">
+      <div class="title">
+        <h1>Vote for Story</h1>
+      </div>
+
+      <div id="flash">
+	<span></span>
+      </div>
+
+      <div id="main">
+      </div>
+    </div>
+
+    <!-- Templates -->
+
+    <script type="text/template" id="submission-template">
+	title
+	<input type="text" name="title"/> <br>
+	url
+	<input type="text" name="url"/>
+	<input type="submit"/>
+    </script>
+
+
+  </body>
+
+</html>

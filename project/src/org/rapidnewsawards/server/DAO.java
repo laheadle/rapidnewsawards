@@ -31,6 +31,7 @@ import org.rapidnewsawards.shared.UserInfo;
 import org.rapidnewsawards.shared.User_Authority;
 import org.rapidnewsawards.shared.User_Vote_Link;
 import org.rapidnewsawards.shared.Vote;
+import org.rapidnewsawards.shared.VoteResult;
 import org.rapidnewsawards.shared.Vote_Link;
 import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.googlecode.objectify.Key;
@@ -42,6 +43,10 @@ import com.googlecode.objectify.helper.DAOBase;
 
 import com.google.appengine.api.labs.taskqueue.Queue;
 import com.google.appengine.api.labs.taskqueue.QueueFactory;
+import com.google.appengine.api.users.UserService;
+import com.google.appengine.api.users.UserServiceFactory;
+import com.google.gson.JsonElement;
+
 import static com.google.appengine.api.labs.taskqueue.TaskOptions.Builder.*;
 
 public class DAO extends DAOBase
@@ -206,7 +211,7 @@ public class DAO extends DAOBase
 	}
 	
 	public boolean isFollowingOrAboutToFollow(Key<User> from, Key<User> to) {
-		Edition e = getEdition(Name.JOURNALISM, -2, null);
+		Edition e = getEdition(Name.AGGREGATOR_NAME, -2, null);
 		SocialEvent about = getAboutToSocial(from, to, e, null);
 
 		if (about != null) {
@@ -755,7 +760,7 @@ public class DAO extends DAOBase
 		
 		ofy().put(don);
 
-		Edition next = getNextEdition(Name.JOURNALISM);
+		Edition next = getNextEdition(Name.AGGREGATOR_NAME);
 		
 		if (next == null) {
 			log.warning("join failed");
@@ -775,7 +780,52 @@ public class DAO extends DAOBase
 		return user;
 	}
 
-	
+	public static String home = "/Rapid_News_Awards.html?gwt.codesvr=127.0.0.1:9997";
+
+	public VoteResult voteFor(String link, String fullLink, Edition edition, Boolean on) {
+		VoteResult vr = new VoteResult();
+        UserService userService = UserServiceFactory.getUserService();
+		
+		if (user == null) {
+			vr.returnVal = Return.NOT_LOGGED_IN;
+			vr.authUrl = userService.createLoginURL(fullLink);
+			return vr;
+		}
+
+		// TODO broken on some complex hrefs
+    	Link l = DAO.instance.findByFieldName(Link.class, Name.URL, link, null);
+    	if (l == null) {
+    		return null;
+    	}
+    	else {
+    		vr.returnVal = voteFor(user, edition == null? getCurrentEdition(Name.AGGREGATOR_NAME) : edition, l, on);
+    		vr.authUrl = userService.createLogoutURL(home);    		
+    	}
+		return vr;
+	}
+
+	public VoteResult submitStory(String url, String title, Edition edition) {
+		VoteResult vr = new VoteResult();
+		
+		if (user == null) {
+			vr.returnVal = Return.NOT_LOGGED_IN;
+			vr.authUrl = null; // userService.createLoginURL(fullLink);
+			return vr;
+		}
+
+		// TODO broken on some complex hrefs
+    	Link l = createLink(url, title, user.getKey());
+
+    	if (l == null) {
+    		return null;
+    	}
+    	
+    	else {
+    		vr.returnVal = voteFor(user, edition == null? getCurrentEdition(Name.AGGREGATOR_NAME) : edition, l, true);
+    		vr.authUrl = null; // userService.createLogoutURL(home);    		
+    	}
+		return vr;
+	}
 	
 	private void _transitionEdition(LockedPeriodical lp) {
 		
@@ -951,6 +1001,22 @@ public class DAO extends DAOBase
     		ofy().put(l);
     		return l;
     	}	
+	}
+
+	public Return doSocial(User to, Boolean on) {		
+		if (user == null) {
+			log.warning("attempt to follow with null user");
+			return Return.ILLEGAL_OPERATION;
+		}
+		
+		// read-only transaction 
+		Edition e = getEdition(Name.AGGREGATOR_NAME, -2, null);
+		if (e == null) {
+			log.warning(user + "Attempted to socialize during final edition");
+			return Return.FORBIDDEN_DURING_FINAL;			
+		}
+		Return result = doSocial(user.getKey(), to.getKey(), e, on);
+		return result;
 	}
 
 

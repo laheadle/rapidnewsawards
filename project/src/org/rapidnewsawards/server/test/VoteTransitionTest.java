@@ -18,7 +18,7 @@ public class VoteTransitionTest extends RNATest {
 	
 	@Test
 	public void testVotes() {
-		Edition e1 = d.getCurrentEdition(Name.JOURNALISM);		
+		Edition e1 = d.getCurrentEdition(Name.AGGREGATOR_NAME);		
 		User mg = getUser(null);
 
 		Link l = d.createLink("http://example.com", "title", mg.getKey());
@@ -29,14 +29,14 @@ public class VoteTransitionTest extends RNATest {
 		
 		doTransition();
 		
-		Edition e2 = d.getCurrentEdition(Name.JOURNALISM);
+		Edition e2 = d.getCurrentEdition(Name.AGGREGATOR_NAME);
 		
 		assertFalse(d.hasVoted(mg, e2, l));
 	}
 
 	public void testTally() {
-		d.getCurrentEdition(Name.JOURNALISM);		
-		Edition e2 = d.getEdition(Name.JOURNALISM, 1, null);
+		d.getCurrentEdition(Name.AGGREGATOR_NAME);		
+		Edition e2 = d.getEdition(Name.AGGREGATOR_NAME, 1, null);
 
 		User mg = getUser("ohthatmeg");
 		User jny2 = getUser("joshuanyoung");
@@ -51,7 +51,7 @@ public class VoteTransitionTest extends RNATest {
 
 		doTransition();
 
-		e2 = d.getCurrentEdition(Name.JOURNALISM);
+		e2 = d.getCurrentEdition(Name.AGGREGATOR_NAME);
 		
 		Link l1 = d.createLink("http://example.com", "title", mg.getKey());
 		Link l2 = d.createLink("http://example2.com", "title", mg.getKey());

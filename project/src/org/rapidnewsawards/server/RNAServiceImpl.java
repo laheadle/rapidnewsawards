@@ -55,7 +55,7 @@ RNAService {
 	@Override
 	public RecentVotes sendRecentVotes(Integer edition) {
 		// TODO don't return future editions
-		return DAO.instance.getRecentVotes(ed(edition), Name.JOURNALISM);
+		return DAO.instance.getRecentVotes(ed(edition), Name.AGGREGATOR_NAME);
 	}
 
 	@Override
@@ -64,73 +64,41 @@ RNAService {
 		Edition next = null;
 
 		if (edition == null) {
-			current = DAO.instance.getEdition(Name.JOURNALISM, -1, null);
-			next = DAO.instance.getEdition(Name.JOURNALISM, -2, null);
+			current = DAO.instance.getEdition(Name.AGGREGATOR_NAME, -1, null);
+			next = DAO.instance.getEdition(Name.AGGREGATOR_NAME, -2, null);
 		}
 		else {
 			// next after edition
-			current = DAO.instance.getEdition(Name.JOURNALISM, edition, null);
-			next = DAO.instance.getEdition(Name.JOURNALISM, edition + 1, null);
+			current = DAO.instance.getEdition(Name.AGGREGATOR_NAME, edition, null);
+			next = DAO.instance.getEdition(Name.AGGREGATOR_NAME, edition + 1, null);
 		}
 		
 		if (current == null) {
 			return null;
 		}
 
-		return DAO.instance.getRecentSocials(current, next, Name.JOURNALISM);
+		return DAO.instance.getRecentSocials(current, next, Name.AGGREGATOR_NAME);
 	}
 
 	@Override
 	public Return doSocial(User to, boolean on) {
-		
-		if (d.user == null) {
-			log.warning("attempt to follow with null user");
-			return Return.ILLEGAL_OPERATION;
-		}
-		
-		// read-only transaction 
-		Edition e = d.getEdition(Name.JOURNALISM, -2, null);
-		if (e == null) {
-			log.warning(d.user + "Attempted to socialize during final edition");
-			return Return.FORBIDDEN_DURING_FINAL;			
-		}
-		Return result = d.doSocial(d.user.getKey(), to.getKey(), e, on);
-		return result;
+		return d.doSocial(to, on);
 	}
 	
 	@Override
 	public RelatedUserInfo sendRelatedUser(long userId) {
-		return d.getRelatedUserInfo(Name.JOURNALISM, d.user, new Key<User>(User.class, userId));
+		return d.getRelatedUserInfo(Name.AGGREGATOR_NAME, d.user, new Key<User>(User.class, userId));
 	}
 
 	@Override
 	public RecentStories sendTopStories(Integer editionNum) {
-		return d.getTopStories(ed(editionNum), Name.JOURNALISM);
+		return d.getTopStories(ed(editionNum), Name.AGGREGATOR_NAME);
 	}
 
-	public static String home = "/Rapid_News_Awards.html?gwt.codesvr=127.0.0.1:9997";
 
 	@Override
 	public VoteResult voteFor(String link, String fullLink, Edition edition, Boolean on) {
-		VoteResult vr = new VoteResult();
-        UserService userService = UserServiceFactory.getUserService();
-		
-		if (d.user == null) {
-			vr.returnVal = Return.NOT_LOGGED_IN;
-			vr.authUrl = userService.createLoginURL(fullLink);
-			return vr;
-		}
-
-		// TODO broken on some complex hrefs
-    	Link l = DAO.instance.findByFieldName(Link.class, Name.URL, link, null);
-    	if (l == null) {
-    		return null;
-    	}
-    	else {
-    		vr.returnVal = d.voteFor(d.user, edition == null? d.getCurrentEdition(Name.JOURNALISM) : edition, l, on);
-    		vr.authUrl = userService.createLogoutURL(home);    		
-    	}
-		return vr;
+		return d.voteFor(link, fullLink, edition, on);
 	}
 
 	@Override
@@ -157,27 +125,7 @@ RNAService {
 
 	@Override
 	public VoteResult submitStory(String url, String title, Edition edition) {
-		VoteResult vr = new VoteResult();
-        UserService userService = UserServiceFactory.getUserService();
-		
-		if (d.user == null) {
-			vr.returnVal = Return.NOT_LOGGED_IN;
-			vr.authUrl = null; // userService.createLoginURL(fullLink);
-			return vr;
-		}
-
-		// TODO broken on some complex hrefs
-    	Link l = DAO.instance.createLink(url, title, d.user.getKey());
-
-    	if (l == null) {
-    		return null;
-    	}
-    	
-    	else {
-    		vr.returnVal = d.voteFor(d.user, edition == null? d.getCurrentEdition(Name.JOURNALISM) : edition, l, true);
-    		vr.authUrl = null; // userService.createLogoutURL(home);    		
-    	}
-		return vr;
+		return d.submitStory(url, title, edition);
 	}
 
 	@Override

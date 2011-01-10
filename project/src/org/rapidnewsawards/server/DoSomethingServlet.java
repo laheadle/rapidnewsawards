@@ -42,7 +42,7 @@ public class DoSomethingServlet extends HttpServlet {
 	public void doThing() throws IOException {
 		PrintWriter out = response.getWriter();
 
-		Edition e = DAO.instance.getCurrentEdition(Name.JOURNALISM);
+		Edition e = DAO.instance.getCurrentEdition(Name.AGGREGATOR_NAME);
 		
 		if (e == null) {
 			out.println("No current edition");
@@ -73,11 +73,11 @@ public class DoSomethingServlet extends HttpServlet {
 		DAO.instance.voteFor(jny2, e, l3, true);
 		DAO d = DAO.instance;
 		
-		Edition current = d.getCurrentEdition(Name.JOURNALISM);
-		Edition next = d.getNextEdition(Name.JOURNALISM);
+		Edition current = d.getCurrentEdition(Name.AGGREGATOR_NAME);
+		Edition next = d.getNextEdition(Name.AGGREGATOR_NAME);
 		
 		
-		d.transitionEdition(Name.JOURNALISM);
+		d.transitionEdition(Name.AGGREGATOR_NAME);
 		if (next == null) {
 			log.info("End of periodical; last edition is" + current);
 		}

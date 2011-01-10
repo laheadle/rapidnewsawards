@@ -4,7 +4,7 @@ import java.util.HashMap;
 
 public enum Name {
 
-	JOURNALISM("Journalism"),
+	AGGREGATOR_NAME("Journalism"),
 	USERNAME("username"), 
 	URL("url"), 
 	NAME("name"), 

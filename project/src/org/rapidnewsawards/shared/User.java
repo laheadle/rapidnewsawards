@@ -35,7 +35,7 @@ public class User implements IsSerializable {
 		
 		this.email = email.toLowerCase();
 		this.domain = domain.toLowerCase();
-		this.nickname = "";
+		this.nickname = "user from " + this.domain;
 		this.isInitialized = false;
 		this.isEditor = isEditor;
 		this.lastLogin = new Date();
@@ -72,6 +72,10 @@ public class User implements IsSerializable {
 	@Override
 	public String toString() {
 		return getDisplayName() + "(" + email + ")";
+	}
+	
+	public static Key<User> getKey(Long id) {
+		return new Key<User>(User.class, id);		
 	}
 	
 	public Key<User> getKey() {

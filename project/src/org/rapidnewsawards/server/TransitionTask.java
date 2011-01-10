@@ -22,10 +22,10 @@ public class TransitionTask  extends HttpServlet {
 	throws ServletException, IOException {
 
 		String _from = request.getParameter("fromEdition");
-		Edition from = d.getEdition(Name.JOURNALISM, new Integer(_from), null);
+		Edition from = d.getEdition(Name.AGGREGATOR_NAME, new Integer(_from), null);
 
-		Edition current = d.getCurrentEdition(Name.JOURNALISM);
-		Edition next = d.getNextEdition(Name.JOURNALISM);
+		Edition current = d.getCurrentEdition(Name.AGGREGATOR_NAME);
+		Edition next = d.getNextEdition(Name.AGGREGATOR_NAME);
 		
 		if (from == null) {
 			log.severe("Edition " + _from + " does not exist");
@@ -36,11 +36,11 @@ public class TransitionTask  extends HttpServlet {
 		}
 		
 		if (next == null) {
-			d.finishPeriodical(Name.JOURNALISM);
+			d.finishPeriodical(Name.AGGREGATOR_NAME);
 			log.info("End of periodical; last edition is" + current);
 		}
 		else {
-			d.transitionEdition(Name.JOURNALISM);
+			d.transitionEdition(Name.AGGREGATOR_NAME);
 			d.socialTransition(next);
 		}
 		d.setEditionRevenue();

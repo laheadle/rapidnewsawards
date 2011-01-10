@@ -15,7 +15,7 @@ public class FollowTransitionTest extends RNATest {
 		
 	@Test
 	public void testFollows() {
-		Edition e2 = DAO.instance.getEdition(Name.JOURNALISM, 1, null);
+		Edition e2 = DAO.instance.getEdition(Name.AGGREGATOR_NAME, 1, null);
 				
 		User mg = getUser("ohthatmeg");
 		User jny2 = getUser("Joshuanyoung");
@@ -28,7 +28,7 @@ public class FollowTransitionTest extends RNATest {
 
 		doTransition();
 		
-		e2 = DAO.instance.getCurrentEdition(Name.JOURNALISM);
+		e2 = DAO.instance.getCurrentEdition(Name.AGGREGATOR_NAME);
 
 		assertNotNull(DAO.instance.getFollow(mg.getKey(), jny2.getKey(), null));
 

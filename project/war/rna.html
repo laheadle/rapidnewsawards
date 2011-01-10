@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html>
+
+  <head>
+    <title>The Craft of News</title>
+    <link href="rna.css" media="all" rel="stylesheet" type="text/css"/>
+    <script src="js/json2.js"></script>
+    <script src="js/jquery-1.4.2.js"></script>
+    <script src="js/underscore-1.1.3.js"></script>
+    <script src="js/csspopup.js"></script>
+    <script src="js/backbone.js"></script>
+    <script src="js/rna.js"></script>
+    <script src="js/stories.js"></script>
+  </head>
+
+  <body>
+
+    <!-- RNA App Interface -->
+    <div id="rna-app">
+
+      <div class="title">
+        <h1>The Craft of News</h1>
+      </div>
+
+      <div id="flash">
+	<span class="flag"></span>
+	<span class="content"></span>
+      </div>
+
+      <div id="login">
+	<a class="login"> </a>
+	<a class="logout"> </a>
+      </div>
+
+      <div id="main">
+      </div>
+
+    </div>
+
+    <!-- Welcome Popup -->
+    <div id="blanket" style="display:none;"></div>
+    <div id="popupdiv" style="display:none;">
+      Welcome to The Craft of News.  Please tell us about yourself. <br>
+      <form>
+	Nickname <input type="text" name="nickname"/> <br>
+	Web Page <input type="text" name="webpage"/> <br>
+	<input type="submit" value="submit information" />
+      </form>
+    </div>
+
+    <!-- Templates -->
+    <script type="text/template" id="story-template">
+      <span class="score"></span>
+      <a class="story" href="<%= link.url %>"></a>
+      <span class="submitter"> submitted by <a class="link"> <%= submitter.nickname %> </a> </span>
+    </script>
+
+    <script type="text/template" id="person-template">
+      <div class="person">
+	<a> </a>
+      </div>
+    </script>
+
+  </body>
+
+</html>

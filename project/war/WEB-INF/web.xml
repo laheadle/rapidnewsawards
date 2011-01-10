@@ -11,6 +11,11 @@
 	</servlet>
 
 	<servlet>
+		<servlet-name>JSONServlet</servlet-name>
+		<servlet-class>org.rapidnewsawards.server.JSONServlet</servlet-class>
+	</servlet>
+
+	<servlet>
 		<servlet-name>apiServlet</servlet-name>
 		<servlet-class>org.rapidnewsawards.server.APIServlet</servlet-class>
 	</servlet>
@@ -42,6 +47,10 @@
 	<servlet-mapping>
 		<servlet-name>transitionTask</servlet-name>
 		<url-pattern>/tasks/transition</url-pattern>
+	</servlet-mapping>
+	<servlet-mapping>
+		<servlet-name>JSONServlet</servlet-name>
+		<url-pattern>/JSONrpc</url-pattern>
 	</servlet-mapping>
 	<servlet-mapping>
 		<servlet-name>tallyTask</servlet-name>
