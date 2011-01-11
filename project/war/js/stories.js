@@ -66,8 +66,8 @@ $(function(){
 	},
 
 	tagName: 'ul',
-	id: 'list',
-	
+	className: 'edition',
+
 	stories: new StoryList, // thinkme store in controller?
 
 	initialize: function() {
@@ -90,7 +90,10 @@ $(function(){
 
 	render: function() {
 	    if (this.stories.length == 0) {
-		$(this.el).append(this.make("ul", {}, "no stories"));
+		$(this.el).append(this.make("li", {class: 'empty'}, 
+					    "No stories have been submitted for this edition."));
+		$(this.el).append(this.make("li", {class: 'empty'}, 
+					    "You have 7 hours until the next edition."));
 	    }
 	}
 

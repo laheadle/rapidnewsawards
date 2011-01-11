@@ -1,8 +1,70 @@
 
-h1 { color: black;
-   margin-bottom: 0px;
+html, body {
+    margin: 0;
+    padding: 0;
+    border: none;
+    background: white;
 }
 
+
+#rna-app {
+    min-width: 75%;
+    min-height: 100%;
+    position: fixed;
+}
+
+#header, #main, #login {
+    position: relative;
+}
+
+h1.title {
+    margin: 0.67em 0px;
+}
+
+h1 {
+    font-weight: bold;
+    font-size: 2em;
+    color: black;
+}
+
+h1.title {
+    position: relative;
+    margin-bottom: 0px;
+    display: inline;
+    padding-left: 200px;
+}
+
+#main {
+    max-width: 75%;
+    margin-left: auto;
+    margin-right: auto;
+}
+
+#main ul.edition {
+    position: relative;
+    top: 60px;
+    padding-left: 108px;
+}
+
+.edition li {
+    display: block;
+}
+
+.edition li.empty {
+    font-size: 1.4em;
+}
+
+#login {
+    top: 0;
+    padding-right: 100px;
+    float: right;
+    font-size: 1.4em;
+    margin: 0.43em 0px;
+}
+
+#line {
+    border: 1px solid black;
+}
 a.login, a.logout { color: blue; cursor: pointer }
 
 form input { width: 200 }
