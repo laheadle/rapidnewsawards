@@ -2,7 +2,7 @@
 <html>
 
   <head>
-    <title>The Craft of News</title>
+    <title>The Craft of News: A Journal</title>
     <link href="rna.css" media="all" rel="stylesheet" type="text/css"/>
     <script src="js/json2.js"></script>
     <script src="js/jquery-1.4.2.js"></script>
@@ -10,8 +10,7 @@
     <script src="js/csspopup.js"></script>
     <script src="js/backbone.js"></script>
     <script src="js/rna.js"></script>
-    <script src="js/stories.js"></script>
-  </head>
+    <script src="js/stories.js"></script></head>
 
   <body>
 
@@ -19,22 +18,26 @@
     <div id="rna-app">
 
       <div id="header">
-        <h1 class="title">The Craft of News</h1>
-	<div id="login">
+        <h1 class="spine title">The Craft of News: A Journal</h1>
+	<div id="login" class="huge">
 	  <a class="login"> </a>
 	  <a class="logout"> </a>
-	</div>
-      </div>
+	</div> </div>
 
       <div id="line"> </div>
 
-      <div id="flash">
-	<span class="flag"></span>
-	<span class="content"></span>
-      </div>
+      <div id="flash" class="spine">
+	<span class="flag large"></span>
+	<span class="content large"></span> </div>
 
-      <div id="main">
-      </div>
+      <ul id="menu"> 
+	<li> 
+	  <span class="explain"> See what we're working on. </span> 
+	  <a> Upcoming Stories </a> </li>
+	<li> 
+	  <a> Recently Published </a> </li> </ul>
+
+      <div id="main"></div>
 
     </div>
 
@@ -46,22 +49,30 @@
 	Nickname <input type="text" name="nickname"/> <br>
 	Web Page <input type="text" name="webpage"/> <br>
 	<input type="submit" value="submit information" />
-      </form>
-    </div>
+      </form> </div>
 
     <!-- Templates -->
     <script type="text/template" id="story-template">
-      <span class="score"></span>
-      <a class="story" href="<%= link.url %>"></a>
-      <span class="submitter"> submitted by <a class="link"> <%= submitter.nickname %> </a> </span>
-    </script>
+      <span class="score"> <%= score %> </span>
+      <a class="story" href="<%= link.url %>"><%= link.title %></a>
+      <span class="submitter"> submitted by 
+	<a class="link"> <%= submitter.nickname %> </a> </span></script>
+
+    <script type="text/template" id="follow-template">
+      <%= subjectLink %>
+      <span> <%= on? 'is about to follow' : 'is about to unfollow' %> </span>
+      <%= objectLink %></script>
+
+    <script type="text/template" id="welcome-template">
+      <span>Welcome, </span> 
+      <%= objectLink %>.</script>
 
     <script type="text/template" id="person-template">
       <div class="person">
 	<a> </a>
-      </div>
-    </script>
+      </div> </script>
 
-  </body>
+    <script type="text/template" id="person-link-template">
+      <a href="<%= '#person/' + id %>"><%= nickname %></a></script>
 
-</html>
+  </body> </html>

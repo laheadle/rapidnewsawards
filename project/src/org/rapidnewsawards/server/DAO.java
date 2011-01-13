@@ -487,19 +487,6 @@ public class DAO extends DAOBase
 		return result;
 	}
 
-	public RecentSocials getRecentSocials(Edition edition, Edition nextEdition, Name name) {
-		RecentSocials s = new RecentSocials();
-		s.edition = edition;
-		s.numEditions = getNumEditions(name);
-		
-		if (nextEdition != null) {
-			s.socials = getLatestEditor_Judges(nextEdition);
-		}
-		return s;
-	}
-
-	
-
 
 	public RecentStories getTopStories(int editionNum, Name name) {
 		// TODO error checking
@@ -548,6 +535,9 @@ public class DAO extends DAOBase
 	 */
 	private LinkedList<SocialInfo> getLatestEditor_Judges(Edition e) {
 		LinkedList<SocialInfo> result = new LinkedList<SocialInfo>();
+
+		if (e == null)
+			return result;
 		
 		ArrayList<Key<User>> editors = new ArrayList<Key<User>>();
 		ArrayList<Key<User>> judges = new ArrayList<Key<User>>();
@@ -825,6 +815,27 @@ public class DAO extends DAOBase
     		vr.authUrl = null; // userService.createLogoutURL(home);    		
     	}
 		return vr;
+	}
+
+	public RecentSocials getRecentSocials(Integer edition) {	
+		Edition current = null;
+		Edition next = null;
+	
+		if (edition == null) {
+			current = DAO.instance.getEdition(Name.AGGREGATOR_NAME, -1, null);
+			next = DAO.instance.getEdition(Name.AGGREGATOR_NAME, -2, null);
+		}
+		else {
+			// next after edition
+			current = DAO.instance.getEdition(Name.AGGREGATOR_NAME, edition, null);
+			next = DAO.instance.getEdition(Name.AGGREGATOR_NAME, edition + 1, null);
+		}
+			
+		RecentSocials s = new RecentSocials();
+		s.edition = current;
+		s.numEditions = getNumEditions(Name.AGGREGATOR_NAME);
+		s.socials = getLatestEditor_Judges(next);
+		return s;
 	}
 	
 	private void _transitionEdition(LockedPeriodical lp) {

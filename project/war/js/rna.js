@@ -31,7 +31,7 @@ window.initRNA = function () {
 
 
     // takes a string
-    window.flashError = function(err) {
+    window.flashError = function(msg) {
 	window.flashLog({type: 'error', content: msg});
     };
 
@@ -55,13 +55,17 @@ window.initRNA = function () {
 	}
     };
 
-    window.doRequest = function(attrs, success, err) {
+    // ajax call where method is either $.get or $.post
+    var _doRequest = function (method, attrs, success, err) {
 	log({info: 'doRequest: ' + JSON.stringify(attrs)});
-	$.get('JSONrpc', attrs, 
-	      function (data) { 
-		  data && log(attrs.fun + ' returned ' + JSON.stringify(data));
+	method.apply
+	($, ['JSONrpc', attrs, 
+	     function (data) { 
+		  var empty = !data || data == "" || data.match(/^[ \t\r\n]+/$)
+		  log(attrs.fun + ' returned ' + 
+		      (empty? 'null' : JSON.stringify(data)));
 		  try {
-		      if (!data || data == "" || data.match(/^[ \t\r\n]+/$)) {
+		      if (empty) {
 			  success(undefined);
 		      }
 		      else {
@@ -76,34 +80,17 @@ window.initRNA = function () {
 			  flashError(e.toString());
 		      }
 		  }
-	      });
+	     }]);
+    }
+
+    window.doRequest = function(attrs, success, err) {
+	_doRequest($.get, attrs, success, err);
     };
 
 
     window.doPostRequest = function(attrs, success, err) {
-	log({info: 'doRequest: ' + JSON.stringify(attrs)});
-	$.post('JSONrpc', attrs, 
-	       function (data) { 
-		   data && log(attrs.fun + ' returned ' + JSON.stringify(data));
-		   try {
-		       if (!data || data == "" || data.match(/^[ \t\r\n]+/$)) {
-			   success(undefined);
-		       }
-		       else {
-			   success(JSON.parse(data));
-		       }
-		   }
-		   catch (e) {
-		       if (err) {
-			   err(e);
-		       }
-		       else {
-			  flashError(e.toString());
-		       }
-		   }
-	       });
-    };
-
+	_doRequest($.post, attrs, success, err);
+    }
 
     window.changeURL = function(command) {
 	doRequest({ fun: command,

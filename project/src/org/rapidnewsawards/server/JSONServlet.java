@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.Name;
+import org.rapidnewsawards.shared.RecentSocials;
 import org.rapidnewsawards.shared.RecentStories;
 import org.rapidnewsawards.shared.RecentVotes;
 import org.rapidnewsawards.shared.RelatedUserInfo;
@@ -48,6 +49,10 @@ public class JSONServlet extends HttpServlet {
 			// yeah, i know. very funny.
 			if (fun.equals("edition")) {
 				RecentStories rs = d.getTopStories(ed(edition), Name.AGGREGATOR_NAME);
+				out.println(g.toJson(rs));
+			}
+			else if (fun.equals("recentSocials")) {	
+				RecentSocials rs = d.getRecentSocials(edition);
 				out.println(g.toJson(rs));
 			}
 			else if (fun.equals("voteFor")) {

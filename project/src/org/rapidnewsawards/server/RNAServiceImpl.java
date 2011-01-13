@@ -60,24 +60,7 @@ RNAService {
 
 	@Override
 	public RecentSocials sendRecentSocials(Integer edition) {
-		Edition current = null;
-		Edition next = null;
-
-		if (edition == null) {
-			current = DAO.instance.getEdition(Name.AGGREGATOR_NAME, -1, null);
-			next = DAO.instance.getEdition(Name.AGGREGATOR_NAME, -2, null);
-		}
-		else {
-			// next after edition
-			current = DAO.instance.getEdition(Name.AGGREGATOR_NAME, edition, null);
-			next = DAO.instance.getEdition(Name.AGGREGATOR_NAME, edition + 1, null);
-		}
-		
-		if (current == null) {
-			return null;
-		}
-
-		return DAO.instance.getRecentSocials(current, next, Name.AGGREGATOR_NAME);
+		return DAO.instance.getRecentSocials(edition);
 	}
 
 	@Override

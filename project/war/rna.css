@@ -1,73 +1,81 @@
 
+/* --- generics --- */
+
+.spine {
+    padding-left: 150px;
+}
+
+.large {
+    font-size: 1.2em
+}
+
+.huge {
+    font-size: 1.4em;
+}
+
+
+a { 
+    color: blue; 
+    cursor: pointer;
+    text-decoration: none;
+}
+
+/* foundations */
+
 html, body {
     margin: 0;
     padding: 0;
     border: none;
     background: white;
-}
-
-
-#rna-app {
-    min-width: 75%;
-    min-height: 100%;
-    position: fixed;
-}
-
-#header, #main, #login {
-    position: relative;
-}
-
-h1.title {
-    margin: 0.67em 0px;
-}
-
-h1 {
-    font-weight: bold;
-    font-size: 2em;
-    color: black;
-}
-
-h1.title {
-    position: relative;
-    margin-bottom: 0px;
-    display: inline;
-    padding-left: 200px;
-}
-
-#main {
-    max-width: 75%;
-    margin-left: auto;
-    margin-right: auto;
-}
-
-#main ul.edition {
-    position: relative;
-    top: 60px;
-    padding-left: 108px;
-}
-
-.edition li {
     display: block;
 }
 
-.edition li.empty {
-    font-size: 1.4em;
+body {
+    min-width: 75%; /* fixme */
+    min-height: 100%;
+    position: fixed;
+    left: 100px;
+}
+
+h1.title {
+    font-weight: bold;
+    font-size: 2em;
+    color: black;
+    display: inline;
+}
+
+#rna-app {
+}
+
+#header, #main, #login, #flash, h1.title {
+    position: relative;
+}
+
+#flash {
+    margin: 0.67em 0 0 0;
+}
+
+#menu {
+    margin: 0 0 0 0; 
+    padding-left: 0;
+    font: 1.1em bold;
+    color: blue;
+}
+
+#menu li {
+    display: block;
+}
+
+#menu li .explain {
+    display: none;
 }
 
 #login {
     top: 0;
-    padding-right: 100px;
     float: right;
-    font-size: 1.4em;
     margin: 0.43em 0px;
 }
 
-#line {
-    border: 1px solid black;
-}
-a.login, a.logout { color: blue; cursor: pointer }
-
-form input { width: 200 }
 
 #flash span.error { color: red }
 
@@ -79,11 +87,46 @@ form input { width: 200 }
     color: black; 
 }
 
-.story .submitter {
-    cursor: pointer;
+#flash span.info { color: green; }
+
+
+#line {
+    border: 1px solid black;
 }
 
-#flash span.info { color: green; }
+/* --- supporting --- */
+
+
+form input { width: 200 }
+
+#main {
+    min-width: 100%;
+}
+
+#main ul.edition {
+    position: relative;
+    top: 0;
+    padding-left: 154px;
+    margin-left: 0;
+}
+
+.edition .spine {
+    position: relative;
+    margin: auto 0 auto 0;    
+}
+
+.edition li {
+    display: block;
+}
+
+.edition li.empty {
+    font-size: 1.4em;
+}
+
+
+
+/* ----- dead */
+
 
 #blanket {
     background-color:#111;

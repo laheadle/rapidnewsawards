@@ -1,20 +1,27 @@
+// -*- outline-regexp:  "[ \t]*//[*]+" -*-
+
 // Load the application once the DOM is ready, using `jQuery.ready`:
 $(function(){
+
+    //* globals
 
     var isEditor = function () {
 	return app.loginView.user.get('isEditor');
     };
 
-    // Story Model
-    // ----------
-    window.Story = Backbone.Model.extend({});
+    function defaultAction() {
+	if (Backbone.history.getFragment() == '') {
+	    window.app.edition();
+	}
+    }
 
-    // Story Collection
-    // ---------------
+
+
+    //* stories
+    window.Story = Backbone.Model.extend({});
 
     window.StoryList = Backbone.Collection.extend({
 
-	// Reference to this collection's model.
 	model: Story,
 
 	comparator: function(story) {
@@ -23,13 +30,8 @@ $(function(){
 
     });
 
-    // Story View
-    // --------------
-
-    // The DOM element for a story...
     window.StoryView = Backbone.View.extend({
 
-	//... is a list tag.
 	tagName:  "li",
 	className: "story",
 
@@ -60,7 +62,8 @@ $(function(){
 	
     });
 
-    window.EditionView = Backbone.View.extend({
+    
+    window.StoriesView = Backbone.View.extend({
 
 	events: {
 	},
@@ -68,14 +71,15 @@ $(function(){
 	tagName: 'ul',
 	className: 'edition',
 
-	stories: new StoryList, // thinkme store in controller?
+	list: new StoryList, // thinkme store in controller?
 
 	initialize: function() {
 	    _.bindAll(this, 'addOne', 'addAll', 'render');
 
-	    this.stories.bind('add',     this.addOne);
-	    this.stories.bind('refresh', this.addAll);
-	    this.stories.bind('all', this.render);
+	    this.list.bind('add',     this.addOne);
+	    this.list.bind('refresh', this.addAll);
+	    this.list.bind('all', this.render);
+	    $("#main").html('');
 	    $("#main").append(this.el);
 	},
 
@@ -85,11 +89,18 @@ $(function(){
 	},
 
 	addAll: function() {
-	    this.stories.each(this.addOne);
+	    this.list.each(this.addOne);
+	},
+
+	refresh: function(data) {
+	    this.list.refresh(_.map(data.stories,
+				    function (s) { 
+					return new Story(s) 
+				    }));
 	},
 
 	render: function() {
-	    if (this.stories.length == 0) {
+	    if (this.list.length == 0) {
 		$(this.el).append(this.make("li", {class: 'empty'}, 
 					    "No stories have been submitted for this edition."));
 		$(this.el).append(this.make("li", {class: 'empty'}, 
@@ -99,6 +110,119 @@ $(function(){
 
     });
 
+    //* socials
+    window.Social = Backbone.Model.extend({
+	isWelcome: function() {
+	    return this.get('editor').id == 1;
+	}
+    });
+
+    window.SocialList = Backbone.Collection.extend({
+
+	model: Social,
+
+    });
+
+    window.SocialView = Backbone.View.extend({
+
+	tagName:  "li",
+	className: "story", // fixme
+
+	followTemplate: _.template($('#follow-template').html()),
+	welcomeTemplate: _.template($('#welcome-template').html()),
+
+	events: {
+	    "click .subject": 'subject',
+	    "click .object": 'object',
+	}, 
+
+	initialize: function() {
+	    var self = this;
+	    this.model.bind('change', function () { self.render() });
+	    this.model.view = this;
+	},
+
+	subject: function() {
+	    // fixme app.hashPerson(this.model.get('editor').id);
+	},
+
+	object: function() {
+	    // fixme app.hashPerson(this.model.get('judge').id);
+	},
+
+	show: function(template, data) {
+	    $(this.el).html(template(data));
+	},
+
+	render: function() {
+	    var _copy = this.model.toJSON();
+	    _copy.objectLink = app.personLinkTemplate(this.model.get('judge'));
+	    if (!this.model.isWelcome()) {
+		_copy.subjectLink = app.personLinkTemplate(this.model.get('editor'));
+	    }
+	    this.show(this.model.isWelcome() ?
+		      this.welcomeTemplate : this.followTemplate,
+		      _copy);
+	    return this;
+	},	
+    });
+
+
+    window.NetworkView = Backbone.View.extend({
+
+	events: {
+	},
+
+	tagName: 'div',
+	className: 'edition',
+
+	list: new SocialList,
+
+	initialize: function() {
+	    // fixme refactor
+	    _.bindAll(this, 'addOne', 'addAll', 'render');
+	    this.list.bind('add',     this.addOne);
+	    this.list.bind('refresh', this.addAll);
+	    this.list.bind('all', this.render);
+	    $("#main").html('');
+	    $("#main").append(this.el);
+	    $(this.el).append(this.make('ul', {'class': 'spine'}));
+	},
+
+	addOne: function(social) {
+	    var view = new SocialView({model: social});
+	    this.appendElt(view.render().el);
+	},
+
+	addAll: function() {
+	    this.list.each(this.addOne);
+	},
+
+	appendElt: function(el) {
+	    this.$('ul').append(el);	    
+	},
+
+	refresh: function(data) {
+	    this.list.refresh (
+		(_.map(data.socials,
+		       function (s) { 
+			   return new Social(s) 
+		       })));
+	},
+
+	render: function() {
+	    if (this.list.length == 0) {
+		this.appendElt(this.make("li", {class: 'empty'}, 
+					 "The network has not changed during this edition."));
+		this.appendElt(this.make("li", {class: 'empty'}, 
+					 "You have 7 hours until the next edition."));
+	    }
+	}
+
+    });
+
+
+    //* person
     window.PersonView = Backbone.View.extend({
 
 	tagName: "div",
@@ -110,6 +234,7 @@ $(function(){
 	    var self = this;
 	    this.model.bind('change', function () { self.render() });
 	    this.model.view = this;	    
+	    $("#main").html(''); // refactor
 	    $('#main').append(this.el);
 	},
 
@@ -144,10 +269,11 @@ $(function(){
 	
     });
 
+    //* login
     window.LoginView = Backbone.View.extend({
 	el: $("#login"),
 
-	user: new Backbone.Model({}),
+	user: new Backbone.Model({}), // fixme class AND rename
 
 	events: {
 	    "click a.login": "loginOrViewSelf",
@@ -189,21 +315,27 @@ $(function(){
 	render: function() {
 	    var nick = this.user.get('nickname');
 	    if (nick === undefined) {
-		this.$('a.login').text('login');
-		this.$('a.logout').text('');
+		this.$('a.login').text('[Login]');
+		this.$('a.logout').text('')
+		.css('padding-left', '0');
 	    }
 	    else {
 		this.$('a.login').text(nick);
-		this.$('a.logout').text('(logout)');
+		this.$('a.logout').text('[Logout]')
+		.css('padding-left', '5px');
 	    }
 	}
     });
 
 
-    // The Application
-    // ---------------
+
+    //* The Application
+
 
     window.App = Backbone.Controller.extend({
+
+	personLinkTemplate: _.template($('#person-link-template').html()),
+
 	routes: {
 	    // "most-recent": "mostRecent",
 	    // "editions":"editions",
@@ -211,6 +343,7 @@ $(function(){
 	    // "":"",
 	    // "":"",
 	    "edition/:ed": "edition",
+	    "network/:ed": "network",
 	    "person/:pe": "person"
 	},
 
@@ -223,23 +356,35 @@ $(function(){
 	},
 
 	initialize: function() {
-	    this.person_ = new Backbone.Model({});
+	    this.person_ = new Backbone.Model({}); // fixme make a class
 	    this.loginView = new LoginView;
 	    Backbone.history.start();
 	},
 
-	edition: function(ed) {	    
+	currentEdition: -1,
+
+	network: function(ed) {	    
+	    var self = this;
+	    var fetch = function(data) { 
+		self.setMainView(new NetworkView);
+		self.mainView.refresh(data);
+	    }
+	    doRequest({ fun: 'recentSocials', ed: ed || this.currentEdition}, fetch);
+	},
+
+	stories: function(ed) {	    
 	    var self = this;
 
-	    var refresh = function(data) { 
-		self.setMainView(new EditionView);
-		// get fresh list of models
-		self.mainView.stories.refresh
-		(_.map(data.stories,
-		       function (s) { 
-			   return new Backbone.Model(s) 
-		       }))};
-	    doRequest({ fun: 'edition', ed: ed || 0}, refresh);
+	    var fetch = function(data) { 
+		self.setMainView(new StoriesView);
+		self.mainView.refresh(data);
+	    }
+	    // thinkme trap all exceptions, period
+	    doRequest({ fun: 'edition', ed: ed || this.currentEdition}, fetch);
+	},
+
+	edition: function(ed) {	    
+	    return this.stories(ed); // fixme rename
 	},
 
 	person: function(id) {
@@ -258,17 +403,16 @@ $(function(){
 	    window.location.hash = 'person/' + id; 
 	},
 
+	hashNetwork: function(id) { 
+	    window.location.hash = 'network/' + id; 
+	},
+
 	hashEdition: function(id) {
 	    window.location.hash = 'edition/' +id;
 	},
     });
 
-    function defaultAction() {
-	if (Backbone.history.getFragment() == '') {
-	    window.app.edition(-1);
-	}
-    }
-
+    //* init
     window.initRNA();
     window.app = new App;
     defaultAction();

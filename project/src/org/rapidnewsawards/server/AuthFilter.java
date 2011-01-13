@@ -39,6 +39,10 @@ public class AuthFilter implements Filter {
 				DAO.instance.ofy().put(u);
 				d.user = u;
 			}
+			// thinkme this is for u == null and appUser is admin
+			else if (u == null) {
+				d.user = null;
+			}
 			else {
 				u.lastLogin = new Date();
 				d.user = u;
