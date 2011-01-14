@@ -33,9 +33,9 @@
       <ul id="menu"> 
 	<li> 
 	  <span class="explain"> See what we're working on. </span> 
-	  <a> Upcoming Stories </a> </li>
+	  <a id="upcoming"> Upcoming Stories </a> </li>
 	<li> 
-	  <a> Recently Published </a> </li> </ul>
+	  <a id="recently"> Recently Published </a> </li> </ul>
 
       <div id="main"></div>
 
@@ -52,6 +52,12 @@
       </form> </div>
 
     <!-- Templates -->
+
+    <script type="text/template" id="edition-header-template"> 
+      <h4 id="editionHeader">Number <%= number %></h4>
+	<a class="stories"> stories </a> | <a class="network"> network </a>
+      </script>
+
     <script type="text/template" id="story-template">
       <span class="score"> <%= score %> </span>
       <a class="story" href="<%= link.url %>"><%= link.title %></a>

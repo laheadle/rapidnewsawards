@@ -17,18 +17,71 @@ $(function(){
 
 
 
-    //* stories
-    window.Story = Backbone.Model.extend({});
+    //* edition
 
-    window.StoryList = Backbone.Collection.extend({
+    window.EditionView = Backbone.View.extend({
 
-	model: Story,
+	events: {
+	    "click .stories": 'stories',
+	    "click .network": 'network',
+	},
 
-	comparator: function(story) {
-	    return story.get('score');
-	}
+	tagName: 'div',
+	className: 'edition',
+
+	initialize: function(attrs) {
+	    this.edition = attrs.edition;
+	    this.numEditions = attrs.numEditions;
+	    this.list = attrs.list;
+	    this.itemView = attrs.itemView;
+	    // fixme refactor
+	    var self = this;
+	    this.list.bind('add',     function () { self.addOne() });
+	    this.list.bind('refresh', function () { self.addAll() });
+	    $(this.el).append(this.make('ul', {'class': 'spine large'}));
+	},
+
+	addOne: function(model) {
+	    var view = new this.list.view({model: model});
+	    this.appendElt(view.render().el);
+	},
+
+	addAll: function() {
+	    var view = this;
+	    view.list.each(function (item) { view.addOne(item) });
+	},
+
+	appendElt: function(el) {
+	    this.$('ul').append(el);
+	},
+
+	refresh: function(list) {
+	    var self = this;
+	    this.list.refresh (
+		(_.map(list,
+		       function (s) { 
+			   return new self.list.model(s) 
+		       })));
+	},
+
+	stories: function() {
+	    app.hashStories(this.edition.number);
+	},
+
+	render: function() {
+	    this.tabsTemplate =  _.template($('#edition-header-template').html());
+	    var div = this.make("div", {class: "editionTabs spine large fatBottom"});
+	    $(this.el).prepend(div);
+	    $(div).html(this.tabsTemplate({selected: 'network',
+					   number: this.edition.number}));
+	    return this;
+	},
 
     });
+
+
+    //* stories
+    window.Story = Backbone.Model.extend({});
 
     window.StoryView = Backbone.View.extend({
 
@@ -62,52 +115,38 @@ $(function(){
 	
     });
 
-    
-    window.StoriesView = Backbone.View.extend({
+    window.StoryList = Backbone.Collection.extend({
 
-	events: {
-	},
+	model: Story,
+	view: StoryView,
 
-	tagName: 'ul',
-	className: 'edition',
+	comparator: function(story) {
+	    return story.get('score');
+	}
 
-	list: new StoryList, // thinkme store in controller?
+    });
 
-	initialize: function() {
-	    _.bindAll(this, 'addOne', 'addAll', 'render');
+    window.StoriesView = EditionView.extend({
 
-	    this.list.bind('add',     this.addOne);
-	    this.list.bind('refresh', this.addAll);
-	    this.list.bind('all', this.render);
-	    $("#main").html('');
-	    $("#main").append(this.el);
-	},
-
-	addOne: function(story) {
-	    var view = new StoryView({model: story});
-	    $(this.el).append(view.render().el);
-	},
-
-	addAll: function() {
-	    this.list.each(this.addOne);
-	},
-
-	refresh: function(data) {
-	    this.list.refresh(_.map(data.stories,
-				    function (s) { 
-					return new Story(s) 
-				    }));
+	constructor: function (options) {
+	    options.list = new StoryList;
+	    // run super.initialize
+	    Backbone.View.apply(this.constructor.__super__, [options]);
+	    // bind this.render
+	    var self = this;
+	    this.list.bind('all', function () { self.render() });
 	},
 
 	render: function() {
+	    this.constructor.__super__.render();
 	    if (this.list.length == 0) {
 		$(this.el).append(this.make("li", {class: 'empty'}, 
 					    "No stories have been submitted for this edition."));
 		$(this.el).append(this.make("li", {class: 'empty'}, 
 					    "You have 7 hours until the next edition."));
 	    }
+	    return this;
 	}
-
     });
 
     //* socials
@@ -115,12 +154,6 @@ $(function(){
 	isWelcome: function() {
 	    return this.get('editor').id == 1;
 	}
-    });
-
-    window.SocialList = Backbone.Collection.extend({
-
-	model: Social,
-
     });
 
     window.SocialView = Backbone.View.extend({
@@ -167,56 +200,30 @@ $(function(){
 	},	
     });
 
+    window.SocialList = Backbone.Collection.extend({
+	model: Social,
+	view: SocialView,
+    });
 
-    window.NetworkView = Backbone.View.extend({
+    window.NetworkView = EditionView.extend({
 
-	events: {
+	constructor: function (options) {
+	    options.list = new SocialList;
+	    // run super.initialize
+	    Backbone.View.apply(this.constructor.__super__, [options]);
+	    // bind this.render
+	    var self = this;
+	    this.list.bind('all', function () { self.render() });
 	},
-
-	tagName: 'div',
-	className: 'edition',
-
-	list: new SocialList,
-
-	initialize: function() {
-	    // fixme refactor
-	    _.bindAll(this, 'addOne', 'addAll', 'render');
-	    this.list.bind('add',     this.addOne);
-	    this.list.bind('refresh', this.addAll);
-	    this.list.bind('all', this.render);
-	    $("#main").html('');
-	    $("#main").append(this.el);
-	    $(this.el).append(this.make('ul', {'class': 'spine'}));
-	},
-
-	addOne: function(social) {
-	    var view = new SocialView({model: social});
-	    this.appendElt(view.render().el);
-	},
-
-	addAll: function() {
-	    this.list.each(this.addOne);
-	},
-
-	appendElt: function(el) {
-	    this.$('ul').append(el);	    
-	},
-
-	refresh: function(data) {
-	    this.list.refresh (
-		(_.map(data.socials,
-		       function (s) { 
-			   return new Social(s) 
-		       })));
-	},
-
 	render: function() {
+	    this.constructor.__super__.render();
 	    if (this.list.length == 0) {
 		this.appendElt(this.make("li", {class: 'empty'}, 
 					 "The network has not changed during this edition."));
 		this.appendElt(this.make("li", {class: 'empty'}, 
 					 "You have 7 hours until the next edition."));
 	    }
+	    return this;
 	}
 
     });
@@ -342,17 +349,20 @@ $(function(){
 	    // "people":"people",
 	    // "":"",
 	    // "":"",
-	    "edition/:ed": "edition",
+	    "edition/:ed": "edition", //fixme rename
 	    "network/:ed": "network",
 	    "person/:pe": "person"
 	},
 
-	setMainView: function(view) {
+	setMainView: function(viewType, attrs, rawList) {
 	    if (this.mainView !== undefined) {
-		log({info: 'removing main ' + this.mainView.toString()});
+		log({info: 'removing main'});
+		$(this.mainView.el).html('');
 		this.mainView.remove();
 	    }
-	    this.mainView = view;
+	    this.mainView = new viewType(attrs);
+	    this.mainView.refresh(rawList);
+	    $('#main').append(this.mainView.el);
 	},
 
 	initialize: function() {
@@ -366,9 +376,13 @@ $(function(){
 	network: function(ed) {	    
 	    var self = this;
 	    var fetch = function(data) { 
-		self.setMainView(new NetworkView);
-		self.mainView.refresh(data);
-	    }
+		if (data) {
+		    self.setMainView(NetworkView,
+				     {edition: data.edition,
+				      numEditions: data.numEditions},
+				     data.socials);
+		}
+	    };
 	    doRequest({ fun: 'recentSocials', ed: ed || this.currentEdition}, fetch);
 	},
 
@@ -376,9 +390,13 @@ $(function(){
 	    var self = this;
 
 	    var fetch = function(data) { 
-		self.setMainView(new StoriesView);
-		self.mainView.refresh(data);
-	    }
+		if (data) {
+		    self.setMainView(StoriesView,
+				     {edition: data.edition,
+				      numEditions: data.numEditions},
+				     data.stories);
+		}
+	    };
 	    // thinkme trap all exceptions, period
 	    doRequest({ fun: 'edition', ed: ed || this.currentEdition}, fetch);
 	},
@@ -400,15 +418,15 @@ $(function(){
 	},
 
 	hashPerson: function(id) { 
-	    window.location.hash = 'person/' + id; 
+	    window.location.hash = 'person/' + (id || ''); 
 	},
 
 	hashNetwork: function(id) { 
-	    window.location.hash = 'network/' + id; 
+	    window.location.hash = 'network/' + (id || ''); 
 	},
 
-	hashEdition: function(id) {
-	    window.location.hash = 'edition/' +id;
+	hashStories: function(id) {
+	    window.location.hash = 'edition/' + (id || '');
 	},
     });
 
@@ -419,6 +437,15 @@ $(function(){
 
     $(window).bind('hashchange', function () { 
 	defaultAction();
+    });
+
+    // fixme
+    $('#upcoming').click(function (event) {
+	app.hashStories();
+    });
+
+    $('#recently').click(function (event) {
+	app.hashRecently();
     });
 
     $('#popupdiv form input[type=submit]').click(function (event) {

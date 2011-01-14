@@ -13,11 +13,18 @@
     font-size: 1.4em;
 }
 
+.fatBottom {
+    margin-bottom: .5em;
+}
 
 a { 
     color: blue; 
     cursor: pointer;
     text-decoration: none;
+}
+
+h4 {
+    margin: 0 0 0 0;
 }
 
 /* foundations */
@@ -110,9 +117,9 @@ form input { width: 200 }
     margin-left: 0;
 }
 
-.edition .spine {
+.edition ul.spine {
     position: relative;
-    margin: auto 0 auto 0;    
+    margin: auto 0 auto 0;
 }
 
 .edition li {
