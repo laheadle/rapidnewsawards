@@ -24,7 +24,7 @@
 	  <a class="logout"> </a>
 	</div> </div>
 
-      <div id="line"> </div>
+      <div id="headerLine"> </div>
 
       <div id="flash" class="spine">
 	<span class="flag large"></span>
@@ -33,9 +33,9 @@
       <ul id="menu"> 
 	<li> 
 	  <span class="explain"> See what we're working on. </span> 
-	  <a id="upcoming"> Upcoming Stories </a> </li>
+	  <a id="upcoming"> Upcoming </a> </li>
 	<li> 
-	  <a id="recently"> Recently Published </a> </li> </ul>
+	  <a id="recently"> Recent </a> </li> </ul>
 
       <div id="main"></div>
 
@@ -54,7 +54,7 @@
     <!-- Templates -->
 
     <script type="text/template" id="edition-header-template"> 
-      <h4 id="editionHeader">Number <%= number %></h4>
+      <h4 id="header">Number <%= number %></h4>
 	<a class="stories"> stories </a> | <a class="network"> network </a>
       </script>
 
@@ -74,9 +74,13 @@
       <%= objectLink %>.</script>
 
     <script type="text/template" id="person-template">
-      <div class="person">
-	<a> </a>
-      </div> </script>
+      <h4 class="header"><%= nickname %></h4>
+    </script>
+
+    <script type="text/template" id="following-template">
+      <span> following </span>
+      <input id="following" type="checkbox" 
+	     <%= following? 'checked="yes"' : '' %>> </input> </script>
 
     <script type="text/template" id="person-link-template">
       <a href="<%= '#person/' + id %>"><%= nickname %></a></script>

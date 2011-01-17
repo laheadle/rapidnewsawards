@@ -821,7 +821,7 @@ public class DAO extends DAOBase
 		Edition current = null;
 		Edition next = null;
 	
-		if (edition == null) {
+		if (edition == null || edition == -1) {
 			current = DAO.instance.getEdition(Name.AGGREGATOR_NAME, -1, null);
 			next = DAO.instance.getEdition(Name.AGGREGATOR_NAME, -2, null);
 		}

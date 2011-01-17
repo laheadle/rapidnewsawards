@@ -37,7 +37,7 @@ public class MakeDataServlet extends HttpServlet {
 		Cell<Integer> numUsers = new Cell<Integer>(null);
 		int numEditions = 5;
 		try {
-			makeData(numEditions, 1 * FIVE_MINUTES, numUsers);
+			makeData(numEditions, 8 * FIVE_MINUTES, numUsers);
 		} catch (ParseException e) {
 			e.printStackTrace(out);
 		}

@@ -47,13 +47,17 @@ public class JSONServlet extends HttpServlet {
 			catch (Exception e) {}
 			
 			// yeah, i know. very funny.
-			if (fun.equals("edition")) {
+			if (fun.equals("recentStories")) {
 				RecentStories rs = d.getTopStories(ed(edition), Name.AGGREGATOR_NAME);
 				out.println(g.toJson(rs));
 			}
 			else if (fun.equals("recentSocials")) {	
 				RecentSocials rs = d.getRecentSocials(edition);
 				out.println(g.toJson(rs));
+			}
+			else if (fun.equals("grabTitle")) {	
+				String urlStr = request.getParameter("url");
+				out.println(g.toJson(TitleGrabber.getTitle(urlStr)));
 			}
 			else if (fun.equals("voteFor")) {
 				String link = request.getParameter("link");

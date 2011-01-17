@@ -35,6 +35,11 @@ window.initRNA = function () {
 	window.flashLog({type: 'error', content: msg});
     };
 
+    // takes a string
+    window.flashInfo = function(msg) {
+	window.flashLog({type: 'info', content: msg});
+    };
+
     window.flashLog = function(msg) {
 	window.flashView.model.set(msg);
     };

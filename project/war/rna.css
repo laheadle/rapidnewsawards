@@ -59,6 +59,7 @@ h1.title {
 }
 
 #flash {
+    height: 1.2em;
     margin: 0.67em 0 0 0;
 }
 
@@ -97,8 +98,14 @@ h1.title {
 #flash span.info { color: green; }
 
 
-#line {
+#headerLine {
     border: 1px solid black;
+}
+
+#bodyLine {
+    width: 8em;
+    border: 1px solid black;
+    margin-left: 150px;
 }
 
 /* --- supporting --- */

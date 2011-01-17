@@ -94,13 +94,21 @@ $(function(){
 		    this.$('input[name=title]').attr('value', this.model.get('title'));
 
 		    var self = this;
-		    this.$('input[type=submit]').click(function (event) {
+		    this.$('input[name=submitStory]').click(function (event) {
 			event.preventDefault();
 			doRequest({fun: 'submitStory',
 				   url: self.$('input[name=url]').attr('value'),
 				   title: self.$('input[name=title]').attr('value') },
 				  function (data) {
 				      self.model.set({done: true});
+				  });
+		    });
+		    this.$('input[name=guessTitle]').click(function (event) {
+			event.preventDefault();
+			doRequest({fun: 'grabTitle',
+				   url: self.$('input[name=url]').attr('value')},
+				  function (data) {
+				      self.model.set({title: data});
 				  });
 		    });
 		    return this;

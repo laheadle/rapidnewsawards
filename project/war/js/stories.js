@@ -10,6 +10,7 @@ $(function(){
     };
 
     function defaultAction() {
+	flashInfo('');
 	if (Backbone.history.getFragment() == '') {
 	    window.app.edition();
 	}
@@ -17,7 +18,7 @@ $(function(){
 
 
 
-    //* edition
+    //* EditionView
 
     window.EditionView = Backbone.View.extend({
 
@@ -38,7 +39,8 @@ $(function(){
 	    var self = this;
 	    this.list.bind('add',     function () { self.addOne() });
 	    this.list.bind('refresh', function () { self.addAll() });
-	    $(this.el).append(this.make('ul', {'class': 'spine large'}));
+	    $(this.el).append(this.make('div', {id: 'bodyLine', class: 'fatBottom'}));
+	    $(this.el).append(this.make('ul', {class: 'spine large'}));
 	},
 
 	addOne: function(model) {
@@ -68,9 +70,13 @@ $(function(){
 	    app.hashStories(this.edition.number);
 	},
 
+	network: function() {
+	    app.hashNetwork(this.edition.number);
+	},
+
 	render: function() {
 	    this.tabsTemplate =  _.template($('#edition-header-template').html());
-	    var div = this.make("div", {class: "editionTabs spine large fatBottom"});
+	    var div = this.make("div", {class: "editionTabs spine large"});
 	    $(this.el).prepend(div);
 	    $(div).html(this.tabsTemplate({selected: 'network',
 					   number: this.edition.number}));
@@ -140,10 +146,10 @@ $(function(){
 	render: function() {
 	    this.constructor.__super__.render();
 	    if (this.list.length == 0) {
-		$(this.el).append(this.make("li", {class: 'empty'}, 
-					    "No stories have been submitted for this edition."));
-		$(this.el).append(this.make("li", {class: 'empty'}, 
-					    "You have 7 hours until the next edition."));
+		this.appendElt(this.make("li", {class: 'empty'}, 
+					 "No stories have been submitted for this edition."));
+		this.appendElt(this.make("li", {class: 'empty'}, 
+					 "You have 7 hours until the next edition."));
 	    }
 	    return this;
 	}
@@ -215,6 +221,7 @@ $(function(){
 	    var self = this;
 	    this.list.bind('all', function () { self.render() });
 	},
+
 	render: function() {
 	    this.constructor.__super__.render();
 	    if (this.list.length == 0) {
@@ -234,15 +241,16 @@ $(function(){
 
 	tagName: "div",
 	id: "person",
+	className: "person spine",
 
 	initialize: function() {
 	    this.template =  _.template($('#person-template').html());
+	    this.following_template = 
+		_.template($('#following-template').html());
 	    // assert(this.model !== undefined)
 	    var self = this;
 	    this.model.bind('change', function () { self.render() });
 	    this.model.view = this;	    
-	    $("#main").html(''); // refactor
-	    $('#main').append(this.el);
 	},
 
 	user: function() {
@@ -250,27 +258,24 @@ $(function(){
 	},
 
 	render: function() {
-	    $(this.el).html(this.template(this.model.toJSON()));
-	    this.$('a').text(this.user().email);
-	    var fol = this.model.get('following');
+	    var u = _.clone(this.user());
+	    u.following = this.model.get('following');
 	    if (isEditor()) {
-		$(this.el).append(this.make('span', {}, 'following'));
-		$(this.el).append(
-		    this.make('input', 
-			      {id: 'following', type: 'checkbox', 
-			       checked: fol}));
+		$(this.el).html(this.template(u) + this.following_template(u));
 		var self = this;
-		$('#following').click(function (event) {
+		this.$('#following').click(function (event) {
 		    var fol = $(this).is(':checked');		    
-		    doPostRequest({ fun: 'doSocial', 
-				    to: self.user().id, on: fol},
+		    doPostRequest({fun: 'doSocial', 
+				   to: self.user().id, on: fol},
 				  function(data) {
 				      flashLog({type: 'success',
 						content: data || 'I got confused'});
 				  });
 		});
 	    }
-
+	    else {
+		$(this.el).html(this.template(u));
+	    }
 	    return this;
 	},
 	
@@ -336,7 +341,7 @@ $(function(){
 
 
 
-    //* The Application
+    //* app
 
 
     window.App = Backbone.Controller.extend({
@@ -354,7 +359,7 @@ $(function(){
 	    "person/:pe": "person"
 	},
 
-	setMainView: function(viewType, attrs, rawList) {
+	setEditionView: function(viewType, attrs, rawList) {
 	    if (this.mainView !== undefined) {
 		log({info: 'removing main'});
 		$(this.mainView.el).html('');
@@ -362,6 +367,17 @@ $(function(){
 	    }
 	    this.mainView = new viewType(attrs);
 	    this.mainView.refresh(rawList);
+	    $('#main').append(this.mainView.el);
+	},
+
+	setPersonView: function(attrs, data) {
+	    if (this.mainView !== undefined) {
+		log({info: 'removing main'});
+		$(this.mainView.el).html('');
+		this.mainView.remove();
+	    }
+	    this.mainView = new PersonView(attrs);
+	    this.person_.set(data);
 	    $('#main').append(this.mainView.el);
 	},
 
@@ -377,10 +393,12 @@ $(function(){
 	    var self = this;
 	    var fetch = function(data) { 
 		if (data) {
-		    self.setMainView(NetworkView,
-				     {edition: data.edition,
-				      numEditions: data.numEditions},
-				     data.socials);
+		    // fixme main list doesn't immediately update 
+		    // with welcome message after join
+		    self.setEditionView(NetworkView,
+					{edition: data.edition,
+					 numEditions: data.numEditions},
+					data.socials);
 		}
 	    };
 	    doRequest({ fun: 'recentSocials', ed: ed || this.currentEdition}, fetch);
@@ -391,14 +409,15 @@ $(function(){
 
 	    var fetch = function(data) { 
 		if (data) {
-		    self.setMainView(StoriesView,
-				     {edition: data.edition,
-				      numEditions: data.numEditions},
-				     data.stories);
+		    self.setEditionView(StoriesView,
+					// fixme this can be null
+					{edition: data.edition,
+					 numEditions: data.numEditions},
+					data.stories);
 		}
 	    };
 	    // thinkme trap all exceptions, period
-	    doRequest({ fun: 'edition', ed: ed || this.currentEdition}, fetch);
+	    doRequest({ fun: 'recentStories', ed: ed || this.currentEdition}, fetch);
 	},
 
 	edition: function(ed) {	    
@@ -409,14 +428,14 @@ $(function(){
 	    var self = this;
 	    doRequest({ fun: 'sendRelatedUser', id: id}, 
 		      function(data) {
-			  self.setMainView(new PersonView({model: self.person_}));
-			  self.person_.set(data);
+			  self.setPersonView({model: self.person_}, data);
 		      },
 		      function (err) {
 			  flashError(err.toString());
 		      });
 	},
 
+	// fixme these don't do anything if you click them a second time
 	hashPerson: function(id) { 
 	    window.location.hash = 'person/' + (id || ''); 
 	},
@@ -446,6 +465,10 @@ $(function(){
 
     $('#recently').click(function (event) {
 	app.hashRecently();
+    });
+
+    $('a').live('click', function() {
+	flashInfo('');
     });
 
     $('#popupdiv form input[type=submit]').click(function (event) {
