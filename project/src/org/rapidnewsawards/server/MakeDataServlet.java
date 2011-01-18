@@ -37,7 +37,12 @@ public class MakeDataServlet extends HttpServlet {
 		Cell<Integer> numUsers = new Cell<Integer>(null);
 		int numEditions = 5;
 		try {
-			makeData(numEditions, 8 * FIVE_MINUTES, numUsers);
+			int minutes = 5;
+			try {
+				minutes = new Integer(request.getParameter("periodSize"));
+			}
+			catch(Exception e) {}
+			makeData(numEditions, minutes * ONE_MINUTE, numUsers);
 		} catch (ParseException e) {
 			e.printStackTrace(out);
 		}
@@ -60,9 +65,10 @@ public class MakeDataServlet extends HttpServlet {
 		makeEditor("ohthatmeg@gmail.com");
 		makeEditor("jthomas100@gmail.com");
 		makeEditor("joshuanyoung@gmail.com");
-		makeEditor("laheadle@gmail.com");		
+		User lyn = makeEditor("laheadle@gmail.com");		
 		makeEditor("steveouting@gmail.com");	
-		
+		DAO.instance.user = lyn;
+		DAO.instance.welcomeUser("lyn", 5000 * 100);
 		if (numUsers != null)
 			numUsers.value = new Integer(5);
 	}
@@ -92,6 +98,7 @@ public class MakeDataServlet extends HttpServlet {
 		
 		final Periodical p = new Periodical(Name.AGGREGATOR_NAME, new Key<Root>(Root.class, 1L));
 		Objectify o = DAO.instance.ofy();
+		p.numEditions = editionCount;
 		o.put(p);
 
 
@@ -111,7 +118,9 @@ public class MakeDataServlet extends HttpServlet {
 			// this is called repeatedly to generate new editions
 			public Edition make() { 
 				current[0] = new Date(current[0].getTime() + duration); 
-				return new Edition(current[0], number[0]++, p.getKey()); 
+				Edition e = new Edition(current[0], number[0]++, p.getKey()); 
+				e.revenue = p.balance / p.numEditions;
+				return e;
 			}
 		}
 

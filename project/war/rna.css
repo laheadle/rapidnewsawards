@@ -17,6 +17,10 @@
     margin-bottom: .5em;
 }
 
+.hugeBottom {
+    margin-bottom: 1em;
+}
+
 a { 
     color: blue; 
     cursor: pointer;
@@ -111,10 +115,8 @@ h1.title {
 /* --- supporting --- */
 
 
-form input { width: 200 }
-
 #main {
-    min-width: 100%;
+    max-width: 80%;
 }
 
 #main ul.edition {
@@ -138,6 +140,9 @@ form input { width: 200 }
 }
 
 
+.edition span.submitter {
+    display: block;
+}
 
 /* ----- dead */
 

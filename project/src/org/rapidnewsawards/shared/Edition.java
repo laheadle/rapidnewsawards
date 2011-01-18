@@ -24,6 +24,8 @@ public class Edition implements IsSerializable, Comparable<Edition> {
 
 	public int totalSpend;
 	
+	public int numFundedLinks;
+	
 	public Edition() {}
 
 	public Edition(Date end, int number, Key<Periodical> periodical) {

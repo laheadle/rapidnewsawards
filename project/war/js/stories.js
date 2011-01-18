@@ -39,7 +39,7 @@ $(function(){
 	    var self = this;
 	    this.list.bind('add',     function () { self.addOne() });
 	    this.list.bind('refresh', function () { self.addAll() });
-	    $(this.el).append(this.make('div', {id: 'bodyLine', class: 'fatBottom'}));
+	    $(this.el).append(this.make('div', {id: 'bodyLine', class: 'hugeBottom'}));
 	    $(this.el).append(this.make('ul', {class: 'spine large'}));
 	},
 
@@ -79,6 +79,7 @@ $(function(){
 	    var div = this.make("div", {class: "editionTabs spine large"});
 	    $(this.el).prepend(div);
 	    $(div).html(this.tabsTemplate({selected: 'network',
+					   revenue: this.edition.revenue,
 					   number: this.edition.number}));
 	    return this;
 	},
@@ -112,9 +113,9 @@ $(function(){
 	},
 
 	render: function() {
-	    $(this.el).html(this.template(this.model.toJSON()));
-	    this.$('.score').text(this.model.get('score'));
-	    this.$('a.story').text(this.model.get('link').title);
+	    var _copy = this.model.toJSON();
+	    _copy.revenue = '' +_copy.revenue / 100
+	    $(this.el).html(this.template(_copy));
 	    return this;
 	},
 
@@ -141,13 +142,14 @@ $(function(){
 	    // bind this.render
 	    var self = this;
 	    this.list.bind('all', function () { self.render() });
+	    this.refresh(options.data);
 	},
 
 	render: function() {
 	    this.constructor.__super__.render();
 	    if (this.list.length == 0) {
 		this.appendElt(this.make("li", {class: 'empty'}, 
-					 "No stories have been submitted for this edition."));
+					 "No stories have been funded for this edition."));
 		this.appendElt(this.make("li", {class: 'empty'}, 
 					 "You have 7 hours until the next edition."));
 	    }
@@ -220,6 +222,7 @@ $(function(){
 	    // bind this.render
 	    var self = this;
 	    this.list.bind('all', function () { self.render() });
+	    this.refresh(options.data);
 	},
 
 	render: function() {
@@ -248,6 +251,7 @@ $(function(){
 	    this.following_template = 
 		_.template($('#following-template').html());
 	    // assert(this.model !== undefined)
+	    this.model._assert = true
 	    var self = this;
 	    this.model.bind('change', function () { self.render() });
 	    this.model.view = this;	    
@@ -359,25 +363,24 @@ $(function(){
 	    "person/:pe": "person"
 	},
 
-	setEditionView: function(viewType, attrs, rawList) {
+	clearMainView: function () {
 	    if (this.mainView !== undefined) {
 		log({info: 'removing main'});
 		$(this.mainView.el).html('');
 		this.mainView.remove();
 	    }
+	},
+
+	setEditionView: function(viewType, attrs) {
+	    this.clearMainView();
 	    this.mainView = new viewType(attrs);
-	    this.mainView.refresh(rawList);
 	    $('#main').append(this.mainView.el);
 	},
 
 	setPersonView: function(attrs, data) {
-	    if (this.mainView !== undefined) {
-		log({info: 'removing main'});
-		$(this.mainView.el).html('');
-		this.mainView.remove();
-	    }
+	    this.clearMainView();
 	    this.mainView = new PersonView(attrs);
-	    this.person_.set(data);
+	    this.person_.set(data); // fixme put in view
 	    $('#main').append(this.mainView.el);
 	},
 
@@ -397,8 +400,8 @@ $(function(){
 		    // with welcome message after join
 		    self.setEditionView(NetworkView,
 					{edition: data.edition,
-					 numEditions: data.numEditions},
-					data.socials);
+					 numEditions: data.numEditions,
+					 data: data.socials});
 		}
 	    };
 	    doRequest({ fun: 'recentSocials', ed: ed || this.currentEdition}, fetch);
@@ -412,8 +415,8 @@ $(function(){
 		    self.setEditionView(StoriesView,
 					// fixme this can be null
 					{edition: data.edition,
-					 numEditions: data.numEditions},
-					data.stories);
+					 numEditions: data.numEditions,
+					 data: data.stories});
 		}
 	    };
 	    // thinkme trap all exceptions, period

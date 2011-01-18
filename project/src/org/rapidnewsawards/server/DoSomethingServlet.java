@@ -85,7 +85,7 @@ public class DoSomethingServlet extends HttpServlet {
 			d.socialTransition(next);
 		}
 		d.setEditionRevenue();
-		d.fund(current.getKey());		
+		d.fund(current);		
 
 		out.println("tally done");
 		

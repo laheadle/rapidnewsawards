@@ -36,7 +36,7 @@ public abstract class RNATest extends TestCase {
 		d.transitionEdition(Name.AGGREGATOR_NAME);
 		d.socialTransition(next);
 		d.setEditionRevenue();
-		d.fund(current.getKey());
+		d.fund(current);
 	}
 
 

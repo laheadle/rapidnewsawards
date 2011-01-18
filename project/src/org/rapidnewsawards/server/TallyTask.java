@@ -24,14 +24,18 @@ public class TallyTask  extends HttpServlet {
 	//private static final Logger log = Logger.getLogger(TallyTask.class.getName());
 	private static DAO d = DAO.instance;
 
+	public static void scheduleImmediately() {
+		// immediately tally all votes
+		Queue queue = QueueFactory.getDefaultQueue();
+		queue.add(null, url("/tasks/tally").method(TaskOptions.Method.GET));
+	}
+	
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
 		Edition current = d.getCurrentEdition(Name.AGGREGATOR_NAME);
 		if (current != null) {
-			d.tally(current.getKey());
-			Queue queue = QueueFactory.getDefaultQueue();
-			queue.add(url("/tasks/tally").etaMillis(new Date().getTime() + 2 * MakeDataServlet.ONE_MINUTE).method(TaskOptions.Method.GET));
+			d.fund(current);
 		}
 	}
 

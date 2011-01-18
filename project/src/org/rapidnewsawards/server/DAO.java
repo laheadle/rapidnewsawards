@@ -43,6 +43,7 @@ import com.googlecode.objectify.helper.DAOBase;
 
 import com.google.appengine.api.labs.taskqueue.Queue;
 import com.google.appengine.api.labs.taskqueue.QueueFactory;
+import com.google.appengine.api.labs.taskqueue.TaskOptions;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.JsonElement;
@@ -277,9 +278,9 @@ public class DAO extends DAOBase
 			}
 
 			int authority = ofy().query(Follow.class).filter("judge", u.getKey()).countAll();
-
 			ofy().put(new Vote(u.getKey(), e.getKey(), l.getKey(), new Date(), authority));
-
+			TallyTask.scheduleImmediately();
+			
 			log.info(u + " " + authority + " -> " + l.url);
 
 			// release lock
@@ -295,6 +296,9 @@ public class DAO extends DAOBase
 			}
 			else {
 				ofy().delete(v);
+				TallyTask.scheduleImmediately();
+				// release lock
+				lp.transaction.getTxn().commit();
 				return Return.SUCCESS;
 			}
 		}
@@ -438,8 +442,7 @@ public class DAO extends DAOBase
 	}
 	
 	public int getNumEditions(Periodical p) {		
-		int result = ofy().query(Edition.class).filter("periodical", p.getKey()).countAll();
-		return result;
+		return p.numEditions;
 	}
 	
 	public RecentVotes getRecentVotes(int edition, Name name) {
@@ -543,6 +546,7 @@ public class DAO extends DAOBase
 		ArrayList<Key<User>> judges = new ArrayList<Key<User>>();
 		ArrayList<Boolean> bools = new ArrayList<Boolean>();
 		// think - does this show everything we want?
+		// todo ignore welcomes on eds and donors
 		Query<SocialEvent> q = ofy().query(SocialEvent.class).filter("edition", e.getKey()).order("-time");
 		
 		for (SocialEvent event : q) {
@@ -882,7 +886,7 @@ public class DAO extends DAOBase
 		log.info(p.name + ": New current Edition:" + nextNum);
 	}
 	
-	public Periodical tally(Key<Edition> e) {
+	public Periodical tally(Edition e) {
 		
 		LockedPeriodical lp = lockPeriodical();
 
@@ -892,19 +896,20 @@ public class DAO extends DAOBase
 
 		Map<Key<Link>, ScoredLink> links = new HashMap<Key<Link>, ScoredLink>();
 		
-		for (Vote v : ofy().query(Vote.class).filter("edition", e)) {
+		for (Vote v : ofy().query(Vote.class).filter("edition", e)
+					.filter("authority >", 0)) {
 			if (links.containsKey(v.link)) {
 				ScoredLink sl = links.get(v.link);
 				sl.score += v.authority;
-				// links.put(v.link, sl);
 			}
 			else {
-				links.put(v.link, new ScoredLink(e, v.link, v.authority, 0));
+				links.put(v.link, new ScoredLink(e.getKey(), v.link, v.authority, 0));
 			}
 		}
 		
-		clearTally(e);
+		clearTally(e.getKey());
 		if (links.size() > 0) {
+			e.numFundedLinks = links.size();
 			ofy().put(links.values());
 		}				
 		
@@ -916,7 +921,13 @@ public class DAO extends DAOBase
 		return (int) (score / (double) totalScore * editionFunds);
 	}
 	
-	public void fund(Key<Edition> ek) {
+	public void fund(Edition e) {
+		
+		if (e == null) {
+			log.warning("cannot fund null edition");
+			throw new IllegalArgumentException("Edition is null");			
+		}
+		
 		LockedPeriodical lp = lockPeriodical();
 
 		if (lp == null) {
@@ -925,8 +936,6 @@ public class DAO extends DAOBase
 		}
 		
 		Map<Key<Link>, ScoredLink> links = new HashMap<Key<Link>, ScoredLink>();
-
-		Edition e = ofy().find(ek);
 		
 		if (e == null) {
 			log.severe("No edition");
@@ -936,7 +945,10 @@ public class DAO extends DAOBase
 		int totalScore = 0;
 		int numLinks = 0;
 		
-		for (Vote v : ofy().query(Vote.class).filter("edition", e.getKey())) {
+		Query<Vote> q = ofy().query(Vote.class).filter("edition", e.getKey())
+			.filter("authority >", 0);
+		
+		for (Vote v : q) {
 			numLinks++;
 			totalScore += v.authority;
 		}
@@ -947,7 +959,7 @@ public class DAO extends DAOBase
 		}
 		
 		int totalSpend = 0;
-		for (Vote v : ofy().query(Vote.class).filter("edition", e.getKey())) {
+		for (Vote v : q) {
 			if (links.containsKey(v.link)) {
 				ScoredLink sl = links.get(v.link);
 				sl.score += v.authority;
@@ -963,12 +975,13 @@ public class DAO extends DAOBase
 			}
 		}
 		
-		e.totalSpend = totalSpend;
-		
 		clearTally(e.getKey());
 
 		if (links.size() > 0) {
 			ofy().put(links.values());
+			e.totalSpend = totalSpend;
+			e.numFundedLinks = links.size();
+			ofy().put(e);
 		}
 
 		lp.transaction.getTxn().commit();

@@ -54,14 +54,14 @@
     <!-- Templates -->
 
     <script type="text/template" id="edition-header-template"> 
-      <h4 id="header">Number <%= number %></h4>
+      <h4 id="header">Number <%= number %> will award $<%= revenue / 100 %> on 3/4/76 at 11am </h4>
 	<a class="stories"> stories </a> | <a class="network"> network </a>
       </script>
 
     <script type="text/template" id="story-template">
-      <span class="score"> <%= score %> </span>
+      <span class="score"> $<%= revenue %> </span>
       <a class="story" href="<%= link.url %>"><%= link.title %></a>
-      <span class="submitter"> submitted by 
+      <span class="submitter fatBottom"> submitted by 
 	<a class="link"> <%= submitter.nickname %> </a> </span></script>
 
     <script type="text/template" id="follow-template">

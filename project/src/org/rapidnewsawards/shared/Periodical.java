@@ -30,6 +30,8 @@ public class Periodical {
 
 	public int balance;
 
+	public int numEditions;
+	
 	/*
 	 * only called when intializing the db
 	 */
