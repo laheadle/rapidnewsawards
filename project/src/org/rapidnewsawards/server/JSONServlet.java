@@ -49,6 +49,9 @@ public class JSONServlet extends HttpServlet {
 			// yeah, i know. very funny.
 			if (fun.equals("recentStories")) {
 				RecentStories rs = d.getTopStories(ed(edition), Name.AGGREGATOR_NAME);
+				if (rs.edition == null) {
+					rs = d.getTopStories(rs.numEditions - 1, Name.AGGREGATOR_NAME);
+				}
 				out.println(g.toJson(rs));
 			}
 			else if (fun.equals("recentSocials")) {	

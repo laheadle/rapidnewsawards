@@ -322,7 +322,7 @@ $(function(){
 	view: CollapsedEditionView,
 
 	comparator: function(edition) {
-	    return edition.get('number');
+	    return - edition.get('number');
 	}
 
     });
@@ -344,7 +344,9 @@ $(function(){
 	    var self = this;
 	    this.list.bind('add',     function () { self.addOne() });
 	    this.list.bind('refresh', function () { self.addAll() });
+	    $(this.el).append(this.make('div', {class: 'editionTabs spine large'}));
 	    $(this.el).append(this.make('ul', {class: 'spine large'}));
+	    this.list.bind('all', function () { self.render() });
 	    this.refresh(attrs.data);
 	},
 
@@ -372,7 +374,11 @@ $(function(){
 	},
 
 	render: function() {
-	    $(this.el).html(this.template({published: 8, remaining: 4}));
+	    var total = this.list.length - 1, 
+		published = this.current? this.current.number : total
+		remaining = total - published;
+
+	    this.$('div').html(this.template({published: published, remaining: remaining}));
 	    return this;
 	},
 
@@ -507,6 +513,7 @@ $(function(){
 	    doRequest({ fun: 'recentSocials', ed: ed || this.currentEdition}, fetch);
 	},
 
+	// fixme this is broken at the end of a volume
 	stories: function(ed) {	    
 	    var self = this;
 
