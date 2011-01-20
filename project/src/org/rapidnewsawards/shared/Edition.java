@@ -35,6 +35,7 @@ public class Edition implements IsSerializable, Comparable<Edition> {
 		this.number = number;
 		this.revenue = 0;
 		this.totalSpend = 0;
+		this.numFundedLinks = 0;
 	}
 		
 	@Override

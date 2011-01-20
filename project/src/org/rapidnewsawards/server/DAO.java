@@ -10,6 +10,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.logging.Logger;
 
+import org.rapidnewsawards.shared.AllEditions;
 import org.rapidnewsawards.shared.Donation;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.RecentStories;
@@ -388,12 +389,24 @@ public class DAO extends DAOBase
 	}
 
 
+	public AllEditions getAllEditions() {
+		LinkedList<Edition> ll = new LinkedList<Edition>();
+		for (Edition e : ofy().query(Edition.class)) {
+			ll.add(e);
+		}
+		Edition c = getCurrentEdition(Name.AGGREGATOR_NAME);
+		AllEditions ae = new AllEditions(ll, c);
+		return ae;
+	}
 	
 	/*
 	 * Just get the requested edition
 	 * @param number the edition number requested, or -1 for current, or -2 for next
 	 */
 	public Edition getEdition(Name periodicalName, int number, Objectify o) {
+		if (periodicalName == null)
+			periodicalName = Name.AGGREGATOR_NAME;
+		
 		if (o == null)
 			o = ofy();
 		

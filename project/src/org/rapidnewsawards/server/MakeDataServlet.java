@@ -140,8 +140,6 @@ public class MakeDataServlet extends HttpServlet {
 						.etaMillis(e.end.getTime()).method(TaskOptions.Method.GET));
 			}
 			
-			// adds itself again every few minutes
-			queue.add(url("/tasks/tally").etaMillis(new Date().getTime() + 2 * ONE_MINUTE).method(TaskOptions.Method.GET));
 		}
 		
 		p.setcurrentEditionKey(editions.get(0).getKey());

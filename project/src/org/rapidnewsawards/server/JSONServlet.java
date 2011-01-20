@@ -55,6 +55,9 @@ public class JSONServlet extends HttpServlet {
 				RecentSocials rs = d.getRecentSocials(edition);
 				out.println(g.toJson(rs));
 			}
+			else if (fun.equals("allEditions")) {	
+				out.println(g.toJson(d.getAllEditions()));
+			}
 			else if (fun.equals("grabTitle")) {	
 				String urlStr = request.getParameter("url");
 				out.println(g.toJson(TitleGrabber.getTitle(urlStr)));
@@ -99,7 +102,7 @@ public class JSONServlet extends HttpServlet {
 			else if (fun.equals("sendUserInfo")) {
 				out.println(g.toJson(d.user));
 			}
-			else if (fun.equals("sendRelatedUser")) {
+			else if (fun.equals("relatedUser")) {
 				long userId = new Long(request.getParameter("id"));
 				out.println(g.toJson(
 						d.getRelatedUserInfo(Name.AGGREGATOR_NAME, d.user, 

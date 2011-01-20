@@ -35,7 +35,7 @@
 	  <span class="explain"> See what we're working on. </span> 
 	  <a id="upcoming"> Upcoming </a> </li>
 	<li> 
-	  <a id="recently"> Recent </a> </li> </ul>
+	  <a id="recent"> Recent </a> </li> </ul>
 
       <div id="main"></div>
 
@@ -63,6 +63,12 @@
       <a class="story" href="<%= link.url %>"><%= link.title %></a>
       <span class="submitter fatBottom"> submitted by 
 	<a class="link"> <%= submitter.nickname %> </a> </span></script>
+
+    <script type="text/template" id="collapsed-edition-template">
+      <span> an edition </span> </script>
+
+    <script type="text/template" id="volume-template">
+      <span> <%= published %> editions published, <%= remaining %> remaining. </span> </script>
 
     <script type="text/template" id="follow-template">
       <%= subjectLink %>

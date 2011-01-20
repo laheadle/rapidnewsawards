@@ -285,6 +285,99 @@ $(function(){
 	
     });
 
+    //* VolumeView
+
+    window.Edition = Backbone.Model.extend({});
+
+    window.CollapsedEditionView = Backbone.View.extend({
+
+	tagName:  "li",
+	className: "collapsedEdition",
+
+	// Cache the template function for a single story.
+	template: _.template($('#collapsed-edition-template').html()),
+
+	events: {
+
+	},
+
+	initialize: function() {
+	    var self = this;
+	    this.model.bind('change', function () { self.render() });
+	    this.model.view = this;
+	},
+
+	render: function() {
+	    var _copy = this.model.toJSON();
+	    $(this.el).html(this.template(_copy));
+	    return this;
+	},
+	
+    });
+
+
+    window.EditionList = Backbone.Collection.extend({
+
+	model: Edition,
+	view: CollapsedEditionView,
+
+	comparator: function(edition) {
+	    return edition.get('number');
+	}
+
+    });
+
+    window.VolumeView = Backbone.View.extend({
+
+	events: {
+	},
+
+	tagName: 'div',
+	className: 'volume',
+	
+	template: _.template($('#volume-template').html()),
+
+	initialize: function(attrs) {
+	    this.current = attrs.current;
+	    this.list = new EditionList;
+	    // fixme refactor
+	    var self = this;
+	    this.list.bind('add',     function () { self.addOne() });
+	    this.list.bind('refresh', function () { self.addAll() });
+	    $(this.el).append(this.make('ul', {class: 'spine large'}));
+	    this.refresh(attrs.data);
+	},
+
+	addOne: function(model) {
+	    var view = new this.list.view({model: model});
+	    this.appendElt(view.render().el);
+	},
+
+	addAll: function() {
+	    var view = this;
+	    view.list.each(function (item) { view.addOne(item) });
+	},
+
+	appendElt: function(el) {
+	    this.$('ul').append(el);
+	},
+
+	refresh: function(list) {
+	    var self = this;
+	    this.list.refresh (
+		(_.map(list,
+		       function (s) { 
+			   return new self.list.model(s) 
+		       })));
+	},
+
+	render: function() {
+	    $(this.el).html(this.template({published: 8, remaining: 4}));
+	    return this;
+	},
+
+    });
+
     //* login
     window.LoginView = Backbone.View.extend({
 	el: $("#login"),
@@ -360,7 +453,8 @@ $(function(){
 	    // "":"",
 	    "edition/:ed": "edition", //fixme rename
 	    "network/:ed": "network",
-	    "person/:pe": "person"
+	    "person/:pe": "person",
+	    "volume": "volume",
 	},
 
 	clearMainView: function () {
@@ -381,6 +475,12 @@ $(function(){
 	    this.clearMainView();
 	    this.mainView = new PersonView(attrs);
 	    this.person_.set(data); // fixme put in view
+	    $('#main').append(this.mainView.el);
+	},
+
+	setVolumeView: function(attrs, data) {
+	    this.clearMainView();
+	    this.mainView = new VolumeView(attrs);
 	    $('#main').append(this.mainView.el);
 	},
 
@@ -429,9 +529,21 @@ $(function(){
 
 	person: function(id) {
 	    var self = this;
-	    doRequest({ fun: 'sendRelatedUser', id: id}, 
+	    doRequest({ fun: 'relatedUser', id: id}, 
 		      function(data) {
 			  self.setPersonView({model: self.person_}, data);
+		      },
+		      function (err) {
+			  flashError(err.toString());
+		      });
+	},
+
+	volume: function() {
+	    var self = this;
+	    doRequest({ fun: 'allEditions'}, 
+		      function(data) {
+			  self.setVolumeView({current: data.current, 
+					      data: data.editions});
 		      },
 		      function (err) {
 			  flashError(err.toString());
@@ -450,6 +562,10 @@ $(function(){
 	hashStories: function(id) {
 	    window.location.hash = 'edition/' + (id || '');
 	},
+
+	hashRecent: function() {
+	    window.location.hash = 'volume';
+	},
     });
 
     //* init
@@ -466,8 +582,8 @@ $(function(){
 	app.hashStories();
     });
 
-    $('#recently').click(function (event) {
-	app.hashRecently();
+    $('#recent').click(function (event) {
+	app.hashRecent();
     });
 
     $('a').live('click', function() {
