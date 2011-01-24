@@ -29,7 +29,10 @@ import static com.google.appengine.api.labs.taskqueue.TaskOptions.Builder.*;
 
 public class MakeDataServlet extends HttpServlet {
 	public static PrintWriter out;
-
+	public static boolean doFollow = false;
+	public static boolean doTransition = false;	
+	public static DAO d = DAO.instance;
+	
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
@@ -37,12 +40,26 @@ public class MakeDataServlet extends HttpServlet {
 		Cell<Integer> numUsers = new Cell<Integer>(null);
 		int numEditions = 5;
 		try {
+			try {
+				doFollow = new Boolean(request.getParameter("doFollow"));
+			}
+			catch(Exception e) {}
+
 			int minutes = 5;
 			try {
 				minutes = new Integer(request.getParameter("periodSize"));
 			}
 			catch(Exception e) {}
+			try {
+				doTransition = new Boolean(request.getParameter("doTransition"));
+			}
+			catch(Exception e) {}
+
 			makeData(numEditions, minutes * ONE_MINUTE, numUsers);
+
+			if (doTransition) {
+				DAO.instance.doTransition(Name.AGGREGATOR_NAME, 0, null);
+			}
 		} catch (ParseException e) {
 			e.printStackTrace(out);
 		}
@@ -57,20 +74,33 @@ public class MakeDataServlet extends HttpServlet {
 	public final static long ONE_HOUR = 60 * ONE_MINUTE; 		
 	public final static long FIVE_MINUTES = 5 * ONE_MINUTE; 
 
+	public static void welcome(User u, String nickname, int donation) {
+		User olduser = d.user;
+		d.user = u;
+		d.welcomeUser(nickname, donation * 100);		
+		d.user = olduser;
+	}
 	public static void makeData (int editionCount, long periodSize, Cell<Integer> numUsers) throws ParseException {		
 		// add users to first edition
 		makeEditions(editionCount, periodSize);
 
 		makeRNAEditor();
-		makeEditor("ohthatmeg@gmail.com");
 		makeEditor("jthomas100@gmail.com");
 		makeEditor("joshuanyoung@gmail.com");
+		makeEditor("ohthatmeg@gmail.com");
+		User jq = makeJudge("johnqpublic@gmail.com");
 		User lyn = makeEditor("laheadle@gmail.com");		
-		makeEditor("steveouting@gmail.com");	
-		DAO.instance.user = lyn;
-		DAO.instance.welcomeUser("lyn", 5000 * 100);
+		makeEditor("steveouting@gmail.com");
+		welcome(lyn, "lyn", 5000);
+		welcome(jq, "john q public", 5000);
+
 		if (numUsers != null)
-			numUsers.value = new Integer(5);
+			numUsers.value = new Integer(6);
+		
+		if (doFollow) {
+			d.user = lyn;
+			d.doSocial(jq, true);
+		}
 	}
 
 
@@ -81,13 +111,21 @@ public class MakeDataServlet extends HttpServlet {
 	}
 
 
-	public static User makeEditor(String email) {
+	public static User makeUser(String email, boolean isEditor) {
 		Objectify txn = DAO.instance.fact().beginTransaction();
-		User u = new User(email, "gmail.com", true);
+		User u = new User(email, "gmail.com", isEditor);
 		txn.put(u);
 		//DAO.instance.doSocial(u.getKey(), u.getKey(), e, txn, true);
 		txn.getTxn().commit();
-		return u;
+		return u;		
+	}
+
+	public static User makeEditor(String email) {
+		return makeUser(email, true);
+	}
+
+	public static User makeJudge(String email) {
+		return makeUser(email, false);
 	}
 
 	 
@@ -136,6 +174,9 @@ public class MakeDataServlet extends HttpServlet {
 		if (!testing) {
 			Queue queue = QueueFactory.getDefaultQueue();
 			for (Edition e : editions) {
+				if (e.number == 0 && doTransition) {
+					continue;
+				}
 				queue.add(url("/tasks/transition").param("fromEdition", e.id)
 						.etaMillis(e.end.getTime()).method(TaskOptions.Method.GET));
 			}

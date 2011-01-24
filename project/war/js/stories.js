@@ -34,6 +34,7 @@ $(function(){
 	    this.edition = attrs.edition;
 	    this.numEditions = attrs.numEditions;
 	    this.list = attrs.list;
+	    this.getAttrs = attrs.getAttrs;
 	    this.itemView = attrs.itemView;
 	    // fixme refactor
 	    var self = this;
@@ -62,7 +63,7 @@ $(function(){
 	    this.list.refresh (
 		(_.map(list,
 		       function (s) { 
-			   return new self.list.model(s) 
+			   return new self.list.model(self.getAttrs? self.getAttrs(s) : s); 
 		       })));
 	},
 
@@ -78,9 +79,9 @@ $(function(){
 	    this.tabsTemplate =  _.template($('#edition-header-template').html());
 	    var div = this.make("div", {class: "editionTabs spine large"});
 	    $(this.el).prepend(div);
-	    $(div).html(this.tabsTemplate({selected: 'network',
-					   revenue: this.edition.revenue,
-					   number: this.edition.number}));
+	    var e = _.clone(this.edition);
+	    e.selected = 'network';
+	    $(div).html(this.tabsTemplate(e));
 	    return this;
 	},
 
@@ -148,16 +149,21 @@ $(function(){
 	render: function() {
 	    this.constructor.__super__.render();
 	    if (this.list.length == 0) {
+		this.$('.orderBy').html('');
 		this.appendElt(this.make("li", {class: 'empty'}, 
 					 "No stories have been funded for this edition."));
 		this.appendElt(this.make("li", {class: 'empty'}, 
 					 "You have 7 hours until the next edition."));
 	    }
+	    else {
+		this.$('.orderBy').html('top funded | recent');
+	    }
 	    return this;
 	}
     });
 
-    //* socials
+    //* Social Network
+
     window.Social = Backbone.Model.extend({
 	isWelcome: function() {
 	    return this.get('editor').id == 1;
@@ -213,25 +219,96 @@ $(function(){
 	view: SocialView,
     });
 
+    window.Authority = Backbone.Model.extend({
+
+    });
+
+    window.AuthorityView = Backbone.View.extend({
+
+	tagName:  "li",
+	className: "story", // fixme
+
+	events: {
+	    "click a": 'person'
+	}, 
+
+	initialize: function() {
+	    var self = this;
+	    this.model.bind('change', function () { self.render() });
+	    this.model.view = this;
+	},
+
+	person: function() {
+	    app.hashPerson(this.model.id);
+	},
+
+	render: function() {
+	    $(this.el).html(rMake('#authority-template', this.model.toJSON()));
+	    return this;
+	},	
+    });
+
+    window.AuthoritiesList = Backbone.Collection.extend({
+	model: Authority,
+	view: AuthorityView,
+
+	comparator: function(model) {
+	    return model.get('authority');
+	}
+
+    });
+
     window.NetworkView = EditionView.extend({
 
+	bindEvents: function () {
+	    var self = this;
+	    this.$("a.top").click(function(event) {
+		self.topAuthorities();
+	    });
+	    this.$("a.recent").click(function(event) {
+		self.recentSocials();
+	    });
+	},
+
+	orderTabTemplate: _.template($("#network-order-tab-template").html()),
+
 	constructor: function (options) {
-	    options.list = new SocialList;
+	    options.list = (options.order == 'top'? 
+			    new AuthoritiesList : new SocialList);
+	    this.order = options.order;
 	    // run super.initialize
 	    Backbone.View.apply(this.constructor.__super__, [options]);
 	    // bind this.render
 	    var self = this;
 	    this.list.bind('all', function () { self.render() });
 	    this.refresh(options.data);
+	    this.bindEvents();
+	},
+
+	topAuthorities: function() {
+	    window.app.hashTopAuthorities(this.edition.number);
+	},
+
+	recentSocials: function() {
+	    window.app.hashRecentSocials(this.edition.number);
 	},
 
 	render: function() {
 	    this.constructor.__super__.render();
+	    var args = 
+		{topSelected: this.order == 'top'? 'selected' : 'unselected',
+		 recentSelected: this.order == 'recent'? 'selected' : 'unselected'};
+	    this.$('.orderBy').html(this.orderTabTemplate(args));
+
 	    if (this.list.length == 0) {
-		this.appendElt(this.make("li", {class: 'empty'}, 
-					 "The network has not changed during this edition."));
-		this.appendElt(this.make("li", {class: 'empty'}, 
-					 "You have 7 hours until the next edition."));
+		if (this.order == 'top') {
+		    // fixme display 0 judges if there's nothing else.
+		    this.appendElt(rMake('#none-followed-template'));
+		}
+		else {
+		    this.appendElt(this.make("li", {class: 'empty'}, 
+					     "The network has not changed during this edition."));
+		}
 	    }
 	    return this;
 	}
@@ -459,6 +536,8 @@ $(function(){
 	    // "":"",
 	    "edition/:ed": "edition", //fixme rename
 	    "network/:ed": "network",
+	    "recentSocials/:ed": "recentSocials",
+	    "topAuthorities/:ed": "topAuthorities",
 	    "person/:pe": "person",
 	    "volume": "volume",
 	},
@@ -498,19 +577,41 @@ $(function(){
 
 	currentEdition: -1,
 
-	network: function(ed) {	    
+	_network: function(ed, fun, order, getAttrs) {	    
 	    var self = this;
 	    var fetch = function(data) { 
 		if (data) {
 		    // fixme main list doesn't immediately update 
 		    // with welcome message after join
 		    self.setEditionView(NetworkView,
-					{edition: data.edition,
+					{order: order,
+					 edition: data.edition,
 					 numEditions: data.numEditions,
-					 data: data.socials});
+					 getAttrs: getAttrs,
+					 data: data.list});
 		}
 	    };
-	    doRequest({ fun: 'recentSocials', ed: ed || this.currentEdition}, fetch);
+	    doRequest({ fun: fun, 
+			ed: ed || this.currentEdition}, 
+		      fetch);
+	},
+
+	topAuthorities: function(ed) {
+	    this._network(ed, 'topJudges', 'top',
+			  function (userAuth) {
+			      var a = _.clone(userAuth.user);
+			      a.authority = userAuth.authority;
+			      return a;
+			  });
+	},
+
+	recentSocials: function(ed) {
+	    this._network(ed, 'recentSocials', 'recent');
+	},
+
+	// default network view
+	network: function(ed) {
+	    this._network(ed, 'recentSocials', 'recent');
 	},
 
 	// fixme this is broken at the end of a volume
@@ -527,7 +628,7 @@ $(function(){
 		}
 	    };
 	    // thinkme trap all exceptions, period
-	    doRequest({ fun: 'recentStories', ed: ed || this.currentEdition}, fetch);
+	    doRequest({ fun: 'topStories', ed: ed || this.currentEdition}, fetch);
 	},
 
 	edition: function(ed) {	    
@@ -562,13 +663,23 @@ $(function(){
 	    window.location.hash = 'person/' + (id || ''); 
 	},
 
-	hashNetwork: function(id) { 
-	    window.location.hash = 'network/' + (id || ''); 
+	hashNetwork: function(ed) { 
+	    window.location.hash = 'network/' + (ed || ''); 
 	},
 
-	hashStories: function(id) {
-	    window.location.hash = 'edition/' + (id || '');
+	hashStories: function(ed) {
+	    window.location.hash = 'edition/' + (ed || '');
 	},
+
+	hashTopAuthorities: function(ed) {
+	    window.location.hash = 'topAuthorities/' + (ed || '');
+	},
+
+	hashRecentSocials: function(ed) {
+	    window.location.hash = 'recentSocials/' + (ed || '');
+	},
+
+	hashUpcoming: function() {}, // fixme
 
 	hashRecent: function() {
 	    window.location.hash = 'volume';

@@ -86,7 +86,7 @@ window.initRNA = function () {
 		      }
 		  }
 	     }]);
-    }
+    };
 
     window.doRequest = function(attrs, success, err) {
 	_doRequest($.get, attrs, success, err);
@@ -95,7 +95,7 @@ window.initRNA = function () {
 
     window.doPostRequest = function(attrs, success, err) {
 	_doRequest($.post, attrs, success, err);
-    }
+    };
 
     window.changeURL = function(command) {
 	doRequest({ fun: command,
@@ -110,5 +110,8 @@ window.initRNA = function () {
 		  });
     };
 
+    window.rMake = function (templateSelector, args) {
+	return _.template($(templateSelector).html())(args || {});
+    };
 
 }

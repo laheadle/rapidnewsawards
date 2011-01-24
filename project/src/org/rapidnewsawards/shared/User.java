@@ -27,6 +27,8 @@ public class User implements IsSerializable {
 	
 	public boolean isEditor;
 	
+	public int authority;
+	
 	public User() {}
 	
 	public User(String email, String domain, boolean isEditor) {
@@ -35,10 +37,11 @@ public class User implements IsSerializable {
 		
 		this.email = email.toLowerCase();
 		this.domain = domain.toLowerCase();
-		this.nickname = "user from " + this.domain;
+		this.nickname = "??";
 		this.isInitialized = false;
 		this.isEditor = isEditor;
 		this.lastLogin = new Date();
+		this.authority = 0;
 	}
 
 	/*

@@ -54,9 +54,22 @@
     <!-- Templates -->
 
     <script type="text/template" id="edition-header-template"> 
-      <h4 id="header">Number <%= number %> will award $<%= revenue / 100 %> on 3/4/76 at 11am </h4>
-	<a class="stories"> stories </a> | <a class="network"> network </a>
-      </script>
+      <span id="header">Number <%= number %>: Awarding $<%= revenue / 100 %> 
+	on <%= end %> </span>
+      <a class="stories"> stories </a> | <a class="network"> network </a>
+      <div class="orderBy"> </div> </script>
+
+    <script type="text/template" id="network-order-tab-template">
+      <a class="top <%= topSelected %>"> top Authorities </a> | 
+      <a class="recent <%= recentSelected %>"> Recent </a> </script>
+    
+    <script type="text/template" id="authority-template">
+      <%= authority %> <a> <%= nickname %> </a> </script>
+    
+    <script type="text/template" id="none-followed-template">
+	<li class="empty"> 
+	  No judges have been followed. Please invite or follow one. 
+	</li> </script>
 
     <script type="text/template" id="story-template">
       <span class="score"> $<%= revenue %> </span>

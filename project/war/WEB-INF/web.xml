@@ -6,11 +6,6 @@
 <web-app>
 
 	<servlet>
-		<servlet-name>rnaServlet</servlet-name>
-		<servlet-class>org.rapidnewsawards.server.RNAServiceImpl</servlet-class>
-	</servlet>
-
-	<servlet>
 		<servlet-name>JSONServlet</servlet-name>
 		<servlet-class>org.rapidnewsawards.server.JSONServlet</servlet-class>
 	</servlet>
@@ -56,18 +51,6 @@
 		<servlet-name>tallyTask</servlet-name>
 		<url-pattern>/tasks/tally</url-pattern>
 	</servlet-mapping>
-
-	<servlet-mapping>
-		<servlet-name>rnaServlet</servlet-name>
-		<url-pattern>/rapid_news_awards/rna</url-pattern>
-	</servlet-mapping>
-
-
-	<servlet-mapping>
-		<servlet-name>rnaServlet</servlet-name>
-		<url-pattern>/Vote/rna</url-pattern>
-	</servlet-mapping>
-
 
 	<servlet-mapping>
 		<servlet-name>apiServlet</servlet-name>

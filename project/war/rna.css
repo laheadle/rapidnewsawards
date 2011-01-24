@@ -21,6 +21,14 @@
     margin-bottom: 1em;
 }
 
+.unselected {
+    color: blue;
+}
+
+.selected {
+    color: black;
+}
+
 a { 
     color: blue; 
     cursor: pointer;
@@ -107,7 +115,7 @@ h1.title {
 }
 
 #bodyLine {
-    width: 8em;
+    width: 11.5em;
     border: 1px solid black;
     margin-left: 150px;
 }

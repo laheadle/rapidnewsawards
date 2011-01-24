@@ -13,7 +13,7 @@ import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.RecentSocials;
-import org.rapidnewsawards.shared.RecentStories;
+import org.rapidnewsawards.shared.TopStories;
 import org.rapidnewsawards.shared.RecentVotes;
 import org.rapidnewsawards.shared.RelatedUserInfo;
 import org.rapidnewsawards.shared.Return;
@@ -47,8 +47,8 @@ public class JSONServlet extends HttpServlet {
 			catch (Exception e) {}
 			
 			// yeah, i know. very funny.
-			if (fun.equals("recentStories")) {
-				RecentStories rs = d.getTopStories(ed(edition), Name.AGGREGATOR_NAME);
+			if (fun.equals("topStories")) {
+				TopStories rs = d.getTopStories(ed(edition), Name.AGGREGATOR_NAME);
 				if (rs.edition == null) {
 					rs = d.getTopStories(rs.numEditions - 1, Name.AGGREGATOR_NAME);
 				}
@@ -56,10 +56,16 @@ public class JSONServlet extends HttpServlet {
 			}
 			else if (fun.equals("recentSocials")) {	
 				RecentSocials rs = d.getRecentSocials(edition);
+				if (rs.edition == null) {
+					rs = d.getRecentSocials(rs.numEditions - 1);
+				}
 				out.println(g.toJson(rs));
 			}
 			else if (fun.equals("allEditions")) {	
 				out.println(g.toJson(d.getAllEditions()));
+			}
+			else if (fun.equals("topJudges")) {	
+				out.println(g.toJson(d.getTopJudges(edition)));
 			}
 			else if (fun.equals("grabTitle")) {	
 				String urlStr = request.getParameter("url");
@@ -85,12 +91,6 @@ public class JSONServlet extends HttpServlet {
 				Edition ed = d.getCurrentEdition(Name.AGGREGATOR_NAME);
 				VoteResult vr = d.submitStory(url, title, ed);
 				out.println(g.toJson(vr));
-			}
-			else if (fun.equals("recentVotes")) {
-				Integer id = new Integer(request.getParameter("id"));
-				RelatedUserInfo ru =
-						d.getRelatedUserInfo(Name.AGGREGATOR_NAME, d.user, new Key<User>(User.class, id));
-				out.println(g.toJson(ru));
 			}
 			else if (fun.equals("doSocial")) {
 				String _to = request.getParameter("to");

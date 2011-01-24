@@ -20,31 +20,7 @@ public class TransitionTask  extends HttpServlet {
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
-
 		String _from = request.getParameter("fromEdition");
-		Edition from = d.getEdition(Name.AGGREGATOR_NAME, new Integer(_from), null);
-
-		Edition current = d.getCurrentEdition(Name.AGGREGATOR_NAME);
-		Edition next = d.getNextEdition(Name.AGGREGATOR_NAME);
-		
-		if (from == null) {
-			log.severe("Edition " + _from + " does not exist");
-			return;
-		}
-		if (!from.equals(current)) {
-			log.warning("edition 1 not current (2 is): " + from + ", " + current);
-		}
-		
-		if (next == null) {
-			d.finishPeriodical(Name.AGGREGATOR_NAME);
-			log.info("End of periodical; last edition is" + current);
-		}
-		else {
-			d.transitionEdition(Name.AGGREGATOR_NAME);
-			d.socialTransition(next);
-		}
-		d.setEditionRevenue();
-		d.fund(current);		
-	}
-	
+		d.doTransition(Name.AGGREGATOR_NAME, new Integer(_from), null);
+	}	
 }
