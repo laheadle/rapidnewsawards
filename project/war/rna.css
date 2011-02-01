@@ -27,6 +27,7 @@
 
 .selected {
     color: black;
+    font-weight: bold;
 }
 
 a { 

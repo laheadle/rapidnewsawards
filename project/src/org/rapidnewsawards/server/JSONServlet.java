@@ -98,7 +98,7 @@ public class JSONServlet extends HttpServlet {
 				Boolean on  = new Boolean(request.getParameter("on"));
 				out.println(g.toJson(d.doSocial(to, on).s));
 			}
-			else if (fun.equals("recentVotes")) {
+			else if (fun.equals("recentFundings")) {
 				RecentVotes rv = d.getRecentVotes(ed(edition), Name.AGGREGATOR_NAME);
 				out.println(g.toJson(rv));
 			}

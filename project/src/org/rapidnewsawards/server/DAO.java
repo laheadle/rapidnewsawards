@@ -468,7 +468,7 @@ public class DAO extends DAOBase
 		s.numEditions = getNumEditions(name);
 		if (e == null)
 			return s;
-		s.votes = getLatestUser_Vote_Links(e);
+		s.list = getLatestUser_Vote_Links(e);
 		return s;
 	}
 
@@ -542,7 +542,7 @@ public class DAO extends DAOBase
 		TopStories result = new TopStories();
 		result.edition = e;
 		result.numEditions = getNumEditions(name);
-		result.stories = stories;
+		result.list = stories;
 		
 		return result;
 	}

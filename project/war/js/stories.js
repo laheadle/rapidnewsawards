@@ -12,13 +12,13 @@ $(function(){
     function defaultAction() {
 	flashInfo('');
 	if (Backbone.history.getFragment() == '') {
-	    window.app.edition();
+	    window.app.topStories();
 	}
     }
 
 
 
-    //* EditionView
+    //* EditionView - Base Class
 
     window.EditionView = Backbone.View.extend({
 
@@ -36,6 +36,8 @@ $(function(){
 	    this.list = attrs.list;
 	    this.getAttrs = attrs.getAttrs;
 	    this.itemView = attrs.itemView;
+	    this.networkSelected = attrs.networkSelected;
+	    this.storiesSelected = attrs.storiesSelected;
 	    // fixme refactor
 	    var self = this;
 	    this.list.bind('add',     function () { self.addOne() });
@@ -68,7 +70,7 @@ $(function(){
 	},
 
 	stories: function() {
-	    app.hashStories(this.edition.number);
+	    app.hashTopStories(this.edition.number);
 	},
 
 	network: function() {
@@ -76,19 +78,21 @@ $(function(){
 	},
 
 	render: function() {
-	    this.tabsTemplate =  _.template($('#edition-header-template').html());
+	    // these go above the edition list, so they are prepended
+	    // fixme change to a table
 	    var div = this.make("div", {class: "editionTabs spine large"});
+	    $(div).html(rMake('#edition-tabs-template', 
+			      {storiesSelected: this.storiesSelected,
+			       networkSelected: this.networkSelected}));
 	    $(this.el).prepend(div);
-	    var e = _.clone(this.edition);
-	    e.selected = 'network';
-	    $(div).html(this.tabsTemplate(e));
+	    $(this.el).prepend(rMake('#edition-header-template', 
+				     this.edition));
 	    return this;
 	},
 
     });
 
-
-    //* stories
+    //* Stories - Top or Recent
     window.Story = Backbone.Model.extend({});
 
     window.StoryView = Backbone.View.extend({
@@ -123,7 +127,7 @@ $(function(){
 	
     });
 
-    window.StoryList = Backbone.Collection.extend({
+    window.StoriesList = Backbone.Collection.extend({
 
 	model: Story,
 	view: StoryView,
@@ -134,35 +138,98 @@ $(function(){
 
     });
 
+    window.Funding = Backbone.Model.extend({
+
+    });
+
+    window.FundingView = Backbone.View.extend({
+
+	tagName:  "li",
+	className: "story", // fixme
+
+	events: {
+	    "click a": 'person'
+	}, 
+
+	initialize: function() {
+	    var self = this;
+	    this.model.bind('change', function () { self.render() });
+	    this.model.view = this;
+	},
+
+	person: function() {
+	    app.hashPerson(this.model.get('id'));
+	},
+
+	render: function() {
+	    $(this.el).html(rMake('#funding-template', this.model.toJSON()));
+	    return this;
+	},	
+    });
+
+    window.FundingsList = Backbone.Collection.extend({
+	model: Funding,
+	view: FundingView,
+
+	comparator: function(model) {
+	    return - model.get('vote').time;
+	}
+
+    });
+
+
     window.StoriesView = EditionView.extend({
 
 	constructor: function (options) {
-	    options.list = new StoryList;
+	    options.list = (options.order == 'top'? 
+			    new StoriesList : new FundingsList);
+	    this.order = options.order;
 	    // run super.initialize
 	    Backbone.View.apply(this.constructor.__super__, [options]);
 	    // bind this.render
 	    var self = this;
 	    this.list.bind('all', function () { self.render() });
 	    this.refresh(options.data);
+	    this.bindEvents();
+	},
+
+	
+	bindEvents: function () {
+	    var self = this;
+	    this.$("a.top").click(function(event) {
+		self.topStories();
+	    });
+	    this.$("a.recent").click(function(event) {
+		self.recentFundings();
+	    });
+	},
+
+	topStories: function() {
+	    window.app.hashTopStories(this.edition.number);
+	},
+
+	recentFundings: function() {
+	    window.app.hashRecentFundings(this.edition.number);
 	},
 
 	render: function() {
 	    this.constructor.__super__.render();
+	    var args = 
+		{topSelected: this.order == 'top'? 'selected' : 'unselected',
+		 recentSelected: this.order == 'recent'? 'selected' : 'unselected'};
+	    this.$('#editionTabsMinor').html(rMake('#stories-order-tab-template', args));
+
 	    if (this.list.length == 0) {
-		this.$('.orderBy').html('');
 		this.appendElt(this.make("li", {class: 'empty'}, 
 					 "No stories have been funded for this edition."));
 		this.appendElt(this.make("li", {class: 'empty'}, 
 					 "You have 7 hours until the next edition."));
 	    }
-	    else {
-		this.$('.orderBy').html('top funded | recent');
-	    }
 	    return this;
 	}
     });
 
-    //* Social Network
+    //* Social Network  - Top or Recent
 
     window.Social = Backbone.Model.extend({
 	isWelcome: function() {
@@ -239,7 +306,7 @@ $(function(){
 	},
 
 	person: function() {
-	    app.hashPerson(this.model.id);
+	    app.hashPerson(this.model.get('id'));
 	},
 
 	render: function() {
@@ -270,8 +337,6 @@ $(function(){
 	    });
 	},
 
-	orderTabTemplate: _.template($("#network-order-tab-template").html()),
-
 	constructor: function (options) {
 	    options.list = (options.order == 'top'? 
 			    new AuthoritiesList : new SocialList);
@@ -298,7 +363,7 @@ $(function(){
 	    var args = 
 		{topSelected: this.order == 'top'? 'selected' : 'unselected',
 		 recentSelected: this.order == 'recent'? 'selected' : 'unselected'};
-	    this.$('.orderBy').html(this.orderTabTemplate(args));
+	    this.$('#editionTabsMinor').html(rMake('#network-order-tab-template', args));
 
 	    if (this.list.length == 0) {
 		if (this.order == 'top') {
@@ -316,7 +381,7 @@ $(function(){
     });
 
 
-    //* person
+    //* Person
     window.PersonView = Backbone.View.extend({
 
 	tagName: "div",
@@ -534,10 +599,11 @@ $(function(){
 	    // "people":"people",
 	    // "":"",
 	    // "":"",
-	    "edition/:ed": "edition", //fixme rename
 	    "network/:ed": "network",
 	    "recentSocials/:ed": "recentSocials",
 	    "topAuthorities/:ed": "topAuthorities",
+	    "recentFundings/:ed": "recentFundings",
+	    "topStories/:ed": "topStories",
 	    "person/:pe": "person",
 	    "volume": "volume",
 	},
@@ -577,27 +643,31 @@ $(function(){
 
 	currentEdition: -1,
 
-	_network: function(ed, fun, order, getAttrs) {	    
+	_edition: function(edNum, fun, order, view, getAttrs) {	    
 	    var self = this;
 	    var fetch = function(data) { 
 		if (data) {
 		    // fixme main list doesn't immediately update 
 		    // with welcome message after join
-		    self.setEditionView(NetworkView,
+		    self.setEditionView(view,
 					{order: order,
 					 edition: data.edition,
 					 numEditions: data.numEditions,
+					 storiesSelected: view === StoriesView ?
+ 					 'selected' : 'unselected',
+					 networkSelected: view === NetworkView ?
+					 'selected' : 'unselected',
 					 getAttrs: getAttrs,
 					 data: data.list});
 		}
 	    };
 	    doRequest({ fun: fun, 
-			ed: ed || this.currentEdition}, 
+			ed: edNum || this.currentEdition}, 
 		      fetch);
 	},
 
-	topAuthorities: function(ed) {
-	    this._network(ed, 'topJudges', 'top',
+	topAuthorities: function(edNum) {
+	    this._edition(edNum, 'topJudges', 'top', NetworkView,
 			  function (userAuth) {
 			      var a = _.clone(userAuth.user);
 			      a.authority = userAuth.authority;
@@ -605,34 +675,27 @@ $(function(){
 			  });
 	},
 
-	recentSocials: function(ed) {
-	    this._network(ed, 'recentSocials', 'recent');
+	recentSocials: function(edNum) {
+	    this._edition(edNum, 'recentSocials', 'recent', NetworkView);
+	},
+
+	topStories: function(edNum) {
+	    this._edition(edNum, 'topStories', 'top', StoriesView);
+	},
+
+	recentFundings: function(edNum) {
+	    this._edition(edNum, 'recentFundings', 'recent', StoriesView);
 	},
 
 	// default network view
-	network: function(ed) {
-	    this._network(ed, 'recentSocials', 'recent');
+	network: function(edNum) {
+	    this.recentSocials(edNum);
 	},
 
 	// fixme this is broken at the end of a volume
-	stories: function(ed) {	    
-	    var self = this;
-
-	    var fetch = function(data) { 
-		if (data) {
-		    self.setEditionView(StoriesView,
-					// fixme this can be null
-					{edition: data.edition,
-					 numEditions: data.numEditions,
-					 data: data.stories});
-		}
-	    };
-	    // thinkme trap all exceptions, period
-	    doRequest({ fun: 'topStories', ed: ed || this.currentEdition}, fetch);
-	},
-
-	edition: function(ed) {	    
-	    return this.stories(ed); // fixme rename
+	// default view for edition
+	edition: function(edNum) {	    
+	    return this.topStories(edNum);
 	},
 
 	person: function(id) {
@@ -667,8 +730,8 @@ $(function(){
 	    window.location.hash = 'network/' + (ed || ''); 
 	},
 
-	hashStories: function(ed) {
-	    window.location.hash = 'edition/' + (ed || '');
+	hashTopStories: function(ed) {
+	    window.location.hash = 'topStories/' + (ed || '');
 	},
 
 	hashTopAuthorities: function(ed) {
@@ -677,6 +740,10 @@ $(function(){
 
 	hashRecentSocials: function(ed) {
 	    window.location.hash = 'recentSocials/' + (ed || '');
+	},
+
+	hashRecentFundings: function(ed) {
+	    window.location.hash = 'recentFundings/' + (ed || '');
 	},
 
 	hashUpcoming: function() {}, // fixme
@@ -697,7 +764,7 @@ $(function(){
 
     // fixme
     $('#upcoming').click(function (event) {
-	app.hashStories();
+	app.hashTopStories();
     });
 
     $('#recent').click(function (event) {

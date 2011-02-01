@@ -54,13 +54,22 @@
     <!-- Templates -->
 
     <script type="text/template" id="edition-header-template"> 
-      <span id="header">Number <%= number %>: Awarding $<%= revenue / 100 %> 
-	on <%= end %> </span>
-      <a class="stories"> stories </a> | <a class="network"> network </a>
-      <div class="orderBy"> </div> </script>
+      <span id="header" class="spine">Number <%= number %>: Awarding $<%= revenue / 100 %> 
+	on <%= end %> </span> </script>
+
+    <script type="text/template" id="edition-tabs-template"> 
+      <span id="editionTabsMajor"> 
+	<a class="stories <%= storiesSelected %>"> Stories </a> | 
+	<a class="network <%= networkSelected %>"> Network </a> </span>
+      <!-- fixme change to a TR -->
+      <div id="editionTabsMinor" class="orderBy"> </div> </script>
 
     <script type="text/template" id="network-order-tab-template">
-      <a class="top <%= topSelected %>"> top Authorities </a> | 
+      <a class="top <%= topSelected %>">Top</a> | 
+      <a class="recent <%= recentSelected %>"> Recent </a> </script>
+    
+    <script type="text/template" id="stories-order-tab-template">
+      <a class="top <%= topSelected %>"> Top </a> | 
       <a class="recent <%= recentSelected %>"> Recent </a> </script>
     
     <script type="text/template" id="authority-template">
@@ -69,6 +78,13 @@
     <script type="text/template" id="none-followed-template">
 	<li class="empty"> 
 	  No judges have been followed. Please invite or follow one. 
+	</li> </script>
+
+    <script type="text/template" id="funding-template">
+	<li> 
+	  <%= rMake('#person-link-template', user) %>
+	  funded 
+	  <a href="<%= link.url %>"> <%= link.title %> </a>
 	</li> </script>
 
     <script type="text/template" id="story-template">
