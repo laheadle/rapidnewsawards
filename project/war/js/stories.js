@@ -229,6 +229,35 @@ $(function(){
 	}
     });
 
+    var GenList = function(attrs) {
+	this.list = attrs.list;
+	this.parent = attrs.parent;
+	this.newModel = attrs.newModel;
+	var self = this;
+	this.list.bind('all', function () { self.parent.render() });
+	this.list.bind('refresh', function () { self.addAll(); });
+
+	this.refresh = function(list) {
+	    var self = this;
+	    this.list.refresh (
+		(_.map(list,
+		       function (s) { 
+			   return new self.list.model(s) 
+		       })));
+	};
+
+	this.addOne = function(model) {
+	    var view = new this.list.view({model: model});
+	    attrs.appendElt(view.render().el);
+	};
+
+	this.addAll = function() {
+	    var self = this;
+	    self.list.each(function (item) { self.addOne(self.newModel(item)) });
+	};
+
+    };
+
     //* Social Network  - Top or Recent
 
     window.Social = Backbone.Model.extend({
@@ -391,45 +420,22 @@ $(function(){
 	    var self = this;
 	    this.model.bind('change', function () { self.render() });
 	    this.model.view = this;	    
-
 	    // add fundings list
-	    this.list = new FundingsList;
+	    this.list = 
+		new GenList({parent: this, 
+			     list: new FundingsList,
+			     newModel: function(item) {
+				 // model is just a VoteLink, add the user
+				 return new Backbone.Model(
+				     _.extend(item.toJSON(),
+					      {user: _.clone(self.user())}))
+			     },
+			     appendElt: function(el) {
+				 self.$('ul').append(el);
+			     }});
 	    // fixme refactor
-	    var self = this;
-	    this.list.bind('all', function () { self.render() });
-	    this.list.bind('refresh', function () { self.addAll(); });
-	    //$(this.el).append(this.make('div', {id: 'bodyLine', class: 'hugeBottom'}));
 	    $(this.el).append(this.make('ul', {class: 'spine large'}));
-	    this.refresh(this.model.get('userInfo').votes);
-	},
-
-	// fixme refactor
-	addOne: function(model) {
-	    // model is just a VoteLink, add the user
-	    var _model = 
-		new Backbone.Model(_.extend(model.toJSON(),
-					    {user: _.clone(this.user())}));
-	    var view = 
-		new this.list.view({model: _model});
-	    this.appendElt(view.render().el);
-	},
-
-	addAll: function() {
-	    var view = this;
-	    view.list.each(function (item) { view.addOne(item) });
-	},
-
-	appendElt: function(el) {
-	    this.$('ul').append(el);
-	},
-
-	refresh: function(list) {
-	    var self = this;
-	    this.list.refresh (
-		(_.map(list,
-		       function (s) { 
-			   return new self.list.model(s) 
-		       })));
+	    this.list.refresh(this.model.get('userInfo').votes);
 	},
 
 	user: function() {
@@ -447,7 +453,6 @@ $(function(){
 			      });
 	    });
 	},
-
 
 	render: function() {
 	    var u = _.clone(this.user());
