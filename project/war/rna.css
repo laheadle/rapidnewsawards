@@ -140,7 +140,7 @@ h1.title {
     margin: auto 0 auto 0;
 }
 
-.edition li {
+.edition li, #person li {
     display: block;
 }
 

@@ -60,6 +60,7 @@ $(function(){
 	    this.$('ul').append(el);
 	},
 
+	/* Called by constructor in subclass */
 	refresh: function(list) {
 	    var self = this;
 	    this.list.refresh (
@@ -91,7 +92,6 @@ $(function(){
 	},
 
     });
-
     //* Stories - Top or Recent
     window.Story = Backbone.Model.extend({});
 
@@ -386,41 +386,79 @@ $(function(){
 
 	tagName: "div",
 	id: "person",
-	className: "person spine",
 
 	initialize: function() {
-	    this.template =  _.template($('#person-template').html());
-	    this.following_template = 
-		_.template($('#following-template').html());
-	    // assert(this.model !== undefined)
-	    this.model._assert = true
 	    var self = this;
 	    this.model.bind('change', function () { self.render() });
 	    this.model.view = this;	    
+
+	    // add fundings list
+	    this.list = new FundingsList;
+	    // fixme refactor
+	    var self = this;
+	    this.list.bind('all', function () { self.render() });
+	    this.list.bind('refresh', function () { self.addAll(); });
+	    //$(this.el).append(this.make('div', {id: 'bodyLine', class: 'hugeBottom'}));
+	    $(this.el).append(this.make('ul', {class: 'spine large'}));
+	    this.refresh(this.model.get('userInfo').votes);
+	},
+
+	// fixme refactor
+	addOne: function(model) {
+	    // model is just a VoteLink, add the user
+	    var _model = 
+		new Backbone.Model(_.extend(model.toJSON(),
+					    {user: _.clone(this.user())}));
+	    var view = 
+		new this.list.view({model: _model});
+	    this.appendElt(view.render().el);
+	},
+
+	addAll: function() {
+	    var view = this;
+	    view.list.each(function (item) { view.addOne(item) });
+	},
+
+	appendElt: function(el) {
+	    this.$('ul').append(el);
+	},
+
+	refresh: function(list) {
+	    var self = this;
+	    this.list.refresh (
+		(_.map(list,
+		       function (s) { 
+			   return new self.list.model(s) 
+		       })));
 	},
 
 	user: function() {
 	    return this.model.get('userInfo').user;
 	},
 
+	bindEvents: function(self) {
+	    this.$('#following').click(function (event) {
+		var fol = $(this).is(':checked');		    
+		doPostRequest({fun: 'doSocial', 
+			       to: self.user().id, on: fol},
+			      function(data) {
+				  flashLog({type: 'success',
+					    content: data || 'I got confused'});
+			      });
+	    });
+	},
+
+
 	render: function() {
 	    var u = _.clone(this.user());
 	    u.following = this.model.get('following');
 	    if (isEditor()) {
-		$(this.el).html(this.template(u) + this.following_template(u));
-		var self = this;
-		this.$('#following').click(function (event) {
-		    var fol = $(this).is(':checked');		    
-		    doPostRequest({fun: 'doSocial', 
-				   to: self.user().id, on: fol},
-				  function(data) {
-				      flashLog({type: 'success',
-						content: data || 'I got confused'});
-				  });
-		});
+		$(this.el).prepend(rMake('#person-template', u) +
+				   rMake('#following-template', u))
+		this.bindEvents(this);
 	    }
 	    else {
-		$(this.el).html(this.template(u));
+		$(this.el).prepend(rMake('#person-template', u));
 	    }
 	    return this;
 	},
@@ -622,10 +660,9 @@ $(function(){
 	    $('#main').append(this.mainView.el);
 	},
 
-	setPersonView: function(attrs, data) {
+	setPersonView: function(data) {
 	    this.clearMainView();
-	    this.mainView = new PersonView(attrs);
-	    this.person_.set(data); // fixme put in view
+	    this.mainView = new PersonView({model: new Backbone.Model(data)});
 	    $('#main').append(this.mainView.el);
 	},
 
@@ -636,7 +673,6 @@ $(function(){
 	},
 
 	initialize: function() {
-	    this.person_ = new Backbone.Model({}); // fixme make a class
 	    this.loginView = new LoginView;
 	    Backbone.history.start();
 	},
@@ -702,7 +738,7 @@ $(function(){
 	    var self = this;
 	    doRequest({ fun: 'relatedUser', id: id}, 
 		      function(data) {
-			  self.setPersonView({model: self.person_}, data);
+			  self.setPersonView(data);
 		      },
 		      function (err) {
 			  flashError(err.toString());
