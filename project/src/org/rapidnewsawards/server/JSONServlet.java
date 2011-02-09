@@ -64,6 +64,10 @@ public class JSONServlet extends HttpServlet {
 			else if (fun.equals("allEditions")) {	
 				out.println(g.toJson(d.getAllEditions()));
 			}
+			else if (fun.equals("story")) {		
+				Long link = new Long(request.getParameter("linkId"));
+				out.println(g.toJson(d.getStory(edition, link)));
+			}
 			else if (fun.equals("topJudges")) {	
 				out.println(g.toJson(d.getTopJudges(edition)));
 			}

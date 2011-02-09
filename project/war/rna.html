@@ -18,7 +18,7 @@
     <div id="rna-app">
 
       <div id="header">
-        <h1 class="spine title">The Craft of News: A Journal</h1>
+        <h1 class="spine title">newskraft.org</h1>
 	<div id="login" class="huge">
 	  <a class="login"> </a>
 	  <a class="logout"> </a>
@@ -87,11 +87,22 @@
 	  <a href="<%= link.url %>"> <%= link.title %> </a>
 	</li> </script>
 
+    <script type="text/template" id="story-funding-template">
+	<li> 
+	  funded by <%= rMake('#person-link-template', user) %>
+	  (authority: <%= authority %>)
+	</li> </script>
+
+    <script type="text/template" id="full-story-template">
+      <h4 class="spine"> 
+	<a href="<%= link.url %>"> <%= link.title %> </a> </h4> </script>
+
     <script type="text/template" id="story-template">
       <span class="score"> $<%= revenue %> </span>
       <a class="story" href="<%= link.url %>"><%= link.title %></a>
-      <span class="submitter fatBottom"> submitted by 
-	<a class="link"> <%= submitter.nickname %> </a> </span></script>
+      <span class="submitter"> submitted by 
+	<a class="link"> <%= submitter.nickname %> </a> </span> 
+      <a href="<%= href %>" class="fundingLink fatBottom"> view funding </a>   </script>
 
     <script type="text/template" id="collapsed-edition-template">
       <span> Number <%= number %> awarded $<%= revenue / 100 %> to 
@@ -110,7 +121,7 @@
       <%= objectLink %>.</script>
 
     <script type="text/template" id="person-template">
-      <h4 class="header spine"><%= nickname %></h4>
+      <h4 class="spine"><%= nickname %></h4>
     </script>
 
     <script type="text/template" id="following-template">

@@ -140,7 +140,7 @@ h1.title {
     margin: auto 0 auto 0;
 }
 
-.edition li, #person li {
+.edition li, #person li, #fullStory li {
     display: block;
 }
 
@@ -150,6 +150,10 @@ h1.title {
 
 
 .edition span.submitter {
+    display: block;
+}
+
+.fundingLink {
     display: block;
 }
 

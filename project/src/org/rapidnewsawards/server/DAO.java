@@ -14,6 +14,7 @@ import org.rapidnewsawards.shared.AllEditions;
 import org.rapidnewsawards.shared.Donation;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.EditionUserAuthority;
+import org.rapidnewsawards.shared.FullStoryInfo;
 import org.rapidnewsawards.shared.TopJudges;
 import org.rapidnewsawards.shared.TopStories;
 import org.rapidnewsawards.shared.Root;
@@ -534,6 +535,7 @@ public class DAO extends DAOBase
 			StoryInfo si = new StoryInfo();
 			si.link = linkMap.get(sl.link);
 			si.score = sl.score;
+			si.editionId = e.id;
 			si.submitter = userMap.get(si.link.submitter);
 			si.revenue = sl.revenue;
 			stories.add(si);
@@ -640,13 +642,13 @@ public class DAO extends DAOBase
 		return result;
 	}
 
-	public LinkedList<User_Authority> getVoters(Link l, Edition e) {
+	public LinkedList<User_Authority> getVoters(Key<Link> l, Key<Edition> e) {
 		LinkedList<User_Authority> result = new LinkedList<User_Authority>();
 
 		Map<Key<User>, Integer> authorities = new HashMap<Key<User>, Integer>();
 		ArrayList<Key<User>> voters = new ArrayList<Key<User>>();
 
-		for (Vote v : ofy().query(Vote.class).filter("link", l.getKey()).filter("edition", e.getKey())) {
+		for (Vote v : ofy().query(Vote.class).filter("link", l).filter("edition", e)) {
 			authorities.put(v.voter, v.authority);
 			voters.add(v.voter);
 		}
@@ -1083,6 +1085,10 @@ public class DAO extends DAOBase
 		return result;
 	}
 
+	public ScoredLink getScoredLink(Key<Edition> e, Key<Link> l) {
+		return ofy().query(ScoredLink.class).filter("edition", e).filter("link", l).get();
+	}
+
 	public Link createLink(String url, String title, Key<User> submitter) {
     	if (submitter == null) {
     		log.warning("tried to create link without submitter: " + url);
@@ -1144,6 +1150,30 @@ public class DAO extends DAOBase
 		}
 		setEditionRevenue();
 		fund(current);		
+	}
+
+	public FullStoryInfo getStory(Integer editionNum, Long linkId) {
+		Key<Link> linkKey = new Key<Link>(Link.class, linkId);
+		Key<Edition> editionKey = new Key<Edition>(Edition.class, ""+editionNum);
+		
+		//Edition e = getEdition(Name.AGGREGATOR_NAME, editionNum, null);
+		ScoredLink sl = 
+			getScoredLink(editionKey, 
+						  linkKey);
+
+		Link link = ofy().get(linkKey);
+		
+		StoryInfo si = new StoryInfo();
+		si.link = link;
+		si.score = sl.score;
+		si.editionId = ""+editionNum;
+		si.submitter = ofy().get(link.submitter);
+		si.revenue = sl.revenue;
+
+		FullStoryInfo fsi = new FullStoryInfo();
+		fsi.info = si;
+		fsi.funds = getVoters(linkKey, editionKey);
+		return fsi;
 	}
 
 

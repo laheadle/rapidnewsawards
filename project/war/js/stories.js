@@ -92,6 +92,8 @@ $(function(){
 	},
 
     });
+    
+
     //* Stories - Top or Recent
     window.Story = Backbone.Model.extend({});
 
@@ -119,7 +121,8 @@ $(function(){
 
 	render: function() {
 	    var _copy = this.model.toJSON();
-	    _copy.revenue = '' +_copy.revenue / 100
+	    _copy.revenue = '' +_copy.revenue / 100;
+	    _copy.href= '#story/' + _copy.editionId + '/' + _copy.link.id;
 	    $(this.el).html(this.template(_copy));
 	    return this;
 	},
@@ -470,6 +473,80 @@ $(function(){
 	
     });
 
+
+    //* FullStoryView
+
+    window.StoryFundingView = Backbone.View.extend({
+
+	tagName:  "li",
+	className: "story", // fixme
+
+	events: {
+	    "click a": 'person'
+	}, 
+
+	initialize: function() {
+	    var self = this;
+	    this.model.bind('change', function () { self.render() });
+	    this.model.view = this;
+	},
+
+	person: function() {
+	    app.hashPerson(this.model.get('user').id);
+	},
+
+	render: function() {
+	    $(this.el).html(rMake('#story-funding-template', 
+				  this.model.toJSON()));
+	    return this;
+	},	
+    });
+
+
+    window.StoryFundingsList = Backbone.Collection.extend({
+	model: Backbone.Model,
+	view: StoryFundingView,
+
+	comparator: function(model) {
+	    return - model.get('authority');
+	}
+
+    });
+
+
+
+    window.FullStoryView = Backbone.View.extend({
+
+	tagName: "div",
+	id: "fullStory",
+
+	initialize: function() {
+	    var self = this;
+	    this.model.bind('change', function () { self.render() });
+	    this.model.view = this;	    
+	    // add StoryFundingsList
+	    this.list = 
+		new GenList({parent: this, 
+			     list: new StoryFundingsList,
+			     newModel: function(item) {
+				 return new Backbone.Model(item.toJSON());
+			     },
+			     appendElt: function(el) {
+				 self.$('ul').append(el);
+			     }});
+	    // fixme refactor
+	    $(this.el).append(this.make('ul', {class: 'spine large'}));
+	    this.list.refresh(this.model.get('funds'));
+	},
+
+	render: function() {
+	    $(this.el).prepend(rMake('#full-story-template', 
+				     // story info
+				     _.clone(this.model.get('info'))));
+	}
+    });
+
+
     //* VolumeView
 
     window.Edition = Backbone.Model.extend({});
@@ -649,6 +726,7 @@ $(function(){
 	    "topStories/:ed": "topStories",
 	    "person/:pe": "person",
 	    "volume": "volume",
+	    "story/:ed/:id": "story",
 	},
 
 	clearMainView: function () {
@@ -665,9 +743,9 @@ $(function(){
 	    $('#main').append(this.mainView.el);
 	},
 
-	setPersonView: function(data) {
+	setMainView: function(type, data) {
 	    this.clearMainView();
-	    this.mainView = new PersonView({model: new Backbone.Model(data)});
+	    this.mainView = new type({model: new Backbone.Model(data)});
 	    $('#main').append(this.mainView.el);
 	},
 
@@ -739,11 +817,24 @@ $(function(){
 	    return this.topStories(edNum);
 	},
 
+	story: function(edNum, linkId) {
+	    var self = this;
+	    doRequest({fun: 'story', 
+		       ed: edNum, 
+		       linkId: linkId}, 
+		      function(data) {
+			  self.setMainView(FullStoryView, data);
+		      },
+		      function (err) {
+			  flashError(err.toString());
+		      });
+	},
+
 	person: function(id) {
 	    var self = this;
 	    doRequest({ fun: 'relatedUser', id: id}, 
 		      function(data) {
-			  self.setPersonView(data);
+			  self.setMainView(PersonView, data);
 		      },
 		      function (err) {
 			  flashError(err.toString());
@@ -765,6 +856,10 @@ $(function(){
 	// fixme these don't do anything if you click them a second time
 	hashPerson: function(id) { 
 	    window.location.hash = 'person/' + (id || ''); 
+	},
+
+	hashStory: function(edition, story) { 
+	    window.location.hash = 'story/' + edition + '/' + story;
 	},
 
 	hashNetwork: function(ed) { 
