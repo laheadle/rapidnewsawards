@@ -57,7 +57,7 @@ $(function(){
 	},
 
 	appendElt: function(el) {
-	    this.$('ul').append(el);
+	    this.parent.$('ul').append(el);
 	},
 
 	/* Called by constructor in subclass */
@@ -235,10 +235,36 @@ $(function(){
     var GenList = function(attrs) {
 	this.list = attrs.list;
 	this.parent = attrs.parent;
-	this.newModel = attrs.newModel;
+	this.newModel = attrs.newModel == undefined?
+	    function (item) { return item; } : attrs.newModel;
+
 	var self = this;
 	this.list.bind('all', function () { self.parent.render() });
 	this.list.bind('refresh', function () { self.addAll(); });
+
+	this.appendElt = attrs.appendElt == undefined? 
+	    function(el) {
+		this.parent.$('ul').append(el);
+	    }
+	: attrs.appendElt;
+
+
+	this.newModel = attrs.newModel == undefined? 
+	    function(item) {
+		return new Backbone.Model(item.toJSON());
+	    }
+	: attrs.newModel;
+
+
+	this.addOne = function(model) {
+	    var view = new this.list.view({model: model});
+	    this.appendElt(view.render().el);
+	};
+
+	this.addAll = function() {
+	    var self = this;
+	    this.list.each(function (item) { self.addOne(self.newModel(item)) });
+	};
 
 	this.refresh = function(list) {
 	    var self = this;
@@ -248,17 +274,6 @@ $(function(){
 			   return new self.list.model(s) 
 		       })));
 	};
-
-	this.addOne = function(model) {
-	    var view = new this.list.view({model: model});
-	    attrs.appendElt(view.render().el);
-	};
-
-	this.addAll = function() {
-	    var self = this;
-	    self.list.each(function (item) { self.addOne(self.newModel(item)) });
-	};
-
     };
 
     //* Social Network  - Top or Recent
@@ -422,7 +437,9 @@ $(function(){
 	initialize: function() {
 	    var self = this;
 	    this.model.bind('change', function () { self.render() });
-	    this.model.view = this;	    
+	    this.model.view = this;
+	    // fixme refactor
+	    $(this.el).append(this.make('ul', {class: 'spine large'}));
 	    // add fundings list
 	    this.list = 
 		new GenList({parent: this, 
@@ -434,10 +451,8 @@ $(function(){
 					      {user: _.clone(self.user())}))
 			     },
 			     appendElt: function(el) {
-				 self.$('ul').append(el);
+				 this.parent.$('ul').append(el);
 			     }});
-	    // fixme refactor
-	    $(this.el).append(this.make('ul', {class: 'spine large'}));
 	    this.list.refresh(this.model.get('userInfo').votes);
 	},
 
@@ -513,8 +528,6 @@ $(function(){
 
     });
 
-
-
     window.FullStoryView = Backbone.View.extend({
 
 	tagName: "div",
@@ -524,18 +537,12 @@ $(function(){
 	    var self = this;
 	    this.model.bind('change', function () { self.render() });
 	    this.model.view = this;	    
+	    // fixme refactor
+	    $(this.el).append(this.make('ul', {class: 'spine large'}));
 	    // add StoryFundingsList
 	    this.list = 
 		new GenList({parent: this, 
-			     list: new StoryFundingsList,
-			     newModel: function(item) {
-				 return new Backbone.Model(item.toJSON());
-			     },
-			     appendElt: function(el) {
-				 self.$('ul').append(el);
-			     }});
-	    // fixme refactor
-	    $(this.el).append(this.make('ul', {class: 'spine large'}));
+			     list: new StoryFundingsList});
 	    this.list.refresh(this.model.get('funds'));
 	},
 
@@ -601,42 +608,17 @@ $(function(){
 
 	initialize: function(attrs) {
 	    this.current = attrs.current;
-	    this.list = new EditionList;
 	    // fixme refactor
-	    var self = this;
-	    this.list.bind('add',     function () { self.addOne() });
-	    this.list.bind('refresh', function () { self.addAll() });
 	    $(this.el).append(this.make('div', {class: 'editionTabs spine large'}));
 	    $(this.el).append(this.make('ul', {class: 'spine large'}));
-	    this.list.bind('all', function () { self.render() });
-	    this.refresh(attrs.data);
-	},
-
-	addOne: function(model) {
-	    var view = new this.list.view({model: model});
-	    this.appendElt(view.render().el);
-	},
-
-	addAll: function() {
-	    var view = this;
-	    view.list.each(function (item) { view.addOne(item) });
-	},
-
-	appendElt: function(el) {
-	    this.$('ul').append(el);
-	},
-
-	refresh: function(list) {
-	    var self = this;
-	    this.list.refresh (
-		(_.map(list,
-		       function (s) { 
-			   return new self.list.model(s) 
-		       })));
+	    this.glist = 
+		new GenList({parent: this, 
+			     list: new EditionList});
+	    this.glist.refresh(attrs.data);
 	},
 
 	render: function() {
-	    var total = this.list.length - 1, 
+	    var total = this.glist.list.length - 1, 
 		published = this.current? this.current.number : total
 		remaining = total - published;
 
