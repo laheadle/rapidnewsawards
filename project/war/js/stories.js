@@ -644,10 +644,8 @@ $(function(){
 	},
 
 	tagName: 'div',
-	className: 'volume',
+	id: 'volume',
 	
-	template: _.template($('#volume-template').html()),
-
 	initialize: function(attrs) {
 	    this.current = attrs.current;
 	    // fixme refactor
@@ -656,15 +654,26 @@ $(function(){
 	    this.glist = 
 		new GenList({parent: this, 
 			     list: new EditionList});
+	    this.total = attrs.data.length;
+	    if (this.current) {
+		// chop off unpublished editions
+		attrs.data.splice(this.current.number, 
+				  this.total - this.current.number + 1);
+	    }
+	    // chop off warmup edition
+	    attrs.data.splice(0,1);
 	    this.glist.refresh(attrs.data);
 	},
 
 	render: function() {
-	    var total = this.glist.list.length - 1, 
-		published = this.current? this.current.number : total
-		remaining = total - published;
+	    var published = this.current? this.current.number - 1: this.total -1;
+	    if (published < 0) {
+		published = 0;
+	    }
+	    var remaining = this.total - 1 - published;
 
-	    this.$('div').html(this.template({published: published, remaining: remaining}));
+	    this.$('div').html(rMake('#volume-template',
+				     {published: published, remaining: remaining}));
 	    return this;
 	},
 
@@ -917,11 +926,22 @@ $(function(){
 	},
 
 	volume: function() {
+
+	    var parseDate = function(edition) {
+		var _edition = _.clone(edition);
+		var d = new Date(edition.end + ' UTC');
+		_edition.endStr = '' + (d.getMonth() + 1) + '/' +
+		    d.getDate() + ' at ' + (d.toLocaleTimeString())
+		.replace(/:[0-9][0-9]$/, '');
+		return _edition;
+	    };
+
 	    var self = this;
 	    doRequest({ fun: 'allEditions'}, 
 		      function(data) {
 			  self.setVolumeView({current: data.current, 
-					      data: data.editions});
+					      data: _.map(data.editions,
+							  parseDate)});
 		      },
 		      function (err) {
 			  flashError(err.toString());

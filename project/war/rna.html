@@ -104,11 +104,14 @@
       <a href="<%= href %>" class="fundingLink fatBottom"> view funding </a>   </script>
 
     <script type="text/template" id="collapsed-edition-template">
-      <span> Number <%= number %> awarded $<%= revenue / 100 %> to 
-	<%= numFundedLinks %> stories </span> </script>
+      <span> <a href="#topStories/<%= number %>"> Number 
+	  <%= number %> </a> awarded $<%= revenue / 100 %> to 
+	<%= numFundedLinks %> stories on <%= endStr %> </span> </script>
 
     <script type="text/template" id="volume-template">
-      <span> <%= published %> editions published, <%= remaining %> remaining. </span> </script>
+      <span> <%= published %> 
+	<%= published == 1? 'edition' : 'editions' %> 
+	published, <%= remaining %> remaining. </span> </script>
 
     <script type="text/template" id="follow-template">
       <%= subjectLink %>

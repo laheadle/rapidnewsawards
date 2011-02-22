@@ -141,7 +141,7 @@ h1.title {
     margin: auto 0 auto 0;
 }
 
-.edition li, #person li, #fullStory li {
+.edition li, #volume li, #person li, #fullStory li {
     display: block;
 }
 
