@@ -6,7 +6,7 @@ $(function(){
     //* globals
 
     var isEditor = function () {
-	return app.loginView.user.get('isEditor');
+	return app.loginView.model.get('isEditor');
     };
 
     function defaultAction() {
@@ -57,7 +57,7 @@ $(function(){
 	},
 
 	appendElt: function(el) {
-	    this.parent.$('ul').append(el);
+	    this.$('ul').append(el);
 	},
 
 	/* Called by constructor in subclass */
@@ -488,6 +488,48 @@ $(function(){
 	
     });
 
+    //* CreateAccountView
+
+    window.CreateAccountView = Backbone.View.extend({
+
+	tagName: "div",
+	id: "createAccount",
+
+	initialize: function(attrs) {
+	    var self = this;
+	    this.andThen = attrs.andThen;
+	    this.render();
+	},
+
+	bindEvents: function(self) {
+	    var self = this;
+	    this.$('form input[type=submit]').click(function (event) {
+		event.preventDefault();
+		var nickname = self.$('form input[name=nickname]').attr('value');
+		var webpage = self.$('form input[name=webpage]').attr('value');
+		doRequest({ fun: 'welcomeUser', nickname: nickname}, 
+			  function(data) {
+			      if (data) {
+				  app.loginView.model.set(data);
+				  window.app.setLocation(self.andThen);
+			      }
+			      else {
+				  flashError('failed to create account');
+			      }
+			  },
+			  function (err) {
+			      flashError(err.toString());
+			  });	
+	    });
+	},
+
+	render: function() {
+	    $(this.el).append(rMake('#create-account-template'));
+	    this.bindEvents(this);
+	    return this;
+	},
+	
+    });
 
     //* FullStoryView
 
@@ -629,59 +671,76 @@ $(function(){
     });
 
     //* login
+
     window.LoginView = Backbone.View.extend({
 	el: $("#login"),
 
-	user: new Backbone.Model({}), // fixme class AND rename
+	model: new Backbone.Model({}),
 
 	events: {
 	    "click a.login": "loginOrViewSelf",
 	    "click a.logout": "logout"
 	},
 
-	initialize: function() {
-	    var self = this;
-	    this.user.bind('change', function () { self.render() });
-	    this.user.view = this;
+	loggedIn: function() {
+	    return this.model.get('email') != undefined;
+	},
 
-	    doRequest({ fun: 'sendUserInfo' },
+	isCreatingAccount: function() {
+	    return this.model.get('isInitialized') == false;
+	},
+
+	initialize: function() {
+	    var self = this.model.view = this;
+
+	    this.model.bind('change', function () { 
+		self.render();
+	    });
+
+	    self.stillWaiting = true; // this has to coordinate with createAccount
+	    doRequest({ fun: 'sendUser' },
 		      function(data) {
+			  self.stillWaiting = false;
+			  console.log('data ' + data);
 			  if (data) {
-			      self.user.set(data);
-			      if (!data.isInitialized) {
-				  popup('popupdiv')
-			      }
+			      self.model.set(data);
 			  }
 			  else {
-			      self.user.set({cid: 'guest'});
+			      self.model.set({cid: 'guest'});
 			  }			      
 		      });
 	},
 
 	logout: function() { 
-	    changeURL('sendLogoutURL'); 
+	    redirectForLogout('sendLogoutURL'); 
 	},
-
+	
 	loginOrViewSelf: function() { 
-	    if (this.user.get('nickname') == undefined) {
-		changeURL('sendLoginURL');
+	    if (!this.loggedIn()) {
+		redirectForLogin('sendLoginURL');
 	    }
 	    else {
-		window.app.hashPerson(this.user.get('id'));
+		window.app.hashPerson(this.model.get('id'));
 	    }
 	},
 
 	render: function() {
-	    var nick = this.user.get('nickname');
-	    if (nick === undefined) {
+	    if (this.loggedIn()) {
+		var nick = this.model.get('nickname');
+		this.$('a.login').text(nick);
+		this.$('a.logout').text('[Logout]')
+		.css('padding-left', '5px');
+	    }
+	    else {
 		this.$('a.login').text('[Login]');
 		this.$('a.logout').text('')
 		.css('padding-left', '0');
 	    }
-	    else {
-		this.$('a.login').text(nick);
-		this.$('a.logout').text('[Logout]')
-		.css('padding-left', '5px');
+
+	    if (this.isCreatingAccount()) {
+		flashLog({type: 'notice',
+			  content: 
+			  "You have not finished registering your account. Please go HERE."});
 	    }
 	}
     });
@@ -702,6 +761,7 @@ $(function(){
 	    // "":"",
 	    // "":"",
 	    "network/:ed": "network",
+	    "createAccount/:andThen": "createAccount",
 	    "recentSocials/:ed": "recentSocials",
 	    "topAuthorities/:ed": "topAuthorities",
 	    "recentFundings/:ed": "recentFundings",
@@ -727,7 +787,12 @@ $(function(){
 
 	setMainView: function(type, data) {
 	    this.clearMainView();
-	    this.mainView = new type({model: new Backbone.Model(data)});
+	    if (data) {
+		this.mainView = new type({model: new Backbone.Model(data)});
+	    }
+	    else {
+		this.mainView = type;
+	    }
 	    $('#main').append(this.mainView.el);
 	},
 
@@ -823,6 +888,34 @@ $(function(){
 		      });
 	},
 
+	createAccount: function(andThen) {
+	    var andThen = decodeURIComponent(andThen);
+	    var self = this;
+	    if (this.loginView.stillWaiting) {
+		window.requester.state = {
+		    interrupted: true,
+
+		    supercede: function(success, arg) {
+			// clear Wait state
+			console.log('success');
+			success(arg);
+			// recurse (no longer waiting)
+			self.createAccount(andThen);
+			return {interrupted: false};
+		    }
+		}
+		return;
+	    }
+	    if (this.loginView.isCreatingAccount()) {
+		console.log('creating');
+		this.setMainView(new CreateAccountView({andThen: andThen}));
+	    }
+	    else {
+		console.log('not creating');
+		window.location = andThen;
+	    }
+	},
+
 	volume: function() {
 	    var self = this;
 	    doRequest({ fun: 'allEditions'}, 
@@ -835,39 +928,52 @@ $(function(){
 		      });
 	},
 
+	setLocation: function(loc) {
+	    window.location = loc;
+	},
+
+	setHash: function(hash) {
+	    console.log('setHash: ' + hash);
+	    window.location.hash = hash;
+	},
+	
 	// fixme these don't do anything if you click them a second time
 	hashPerson: function(id) { 
-	    window.location.hash = 'person/' + (id || ''); 
+	    this.setHash('person/' + (id || ''));
 	},
 
 	hashStory: function(edition, story) { 
-	    window.location.hash = 'story/' + edition + '/' + story;
+	    this.setHash( 'story/' + edition + '/' + story);
 	},
 
 	hashNetwork: function(ed) { 
-	    window.location.hash = 'network/' + (ed || ''); 
+	    this.setHash( 'network/' + (ed || '')); 
 	},
 
 	hashTopStories: function(ed) {
-	    window.location.hash = 'topStories/' + (ed || '');
+	    this.setHash( 'topStories/' + (ed || ''));
 	},
 
 	hashTopAuthorities: function(ed) {
-	    window.location.hash = 'topAuthorities/' + (ed || '');
+	    this.setHash( 'topAuthorities/' + (ed || ''));
 	},
 
 	hashRecentSocials: function(ed) {
-	    window.location.hash = 'recentSocials/' + (ed || '');
+	    this.setHash( 'recentSocials/' + (ed || ''));
 	},
 
 	hashRecentFundings: function(ed) {
-	    window.location.hash = 'recentFundings/' + (ed || '');
+	    this.setHash('recentFundings/' + (ed || ''));
+	},
+
+	hashCreateAccount: function() {
+	    this.setHash('createAccount/');
 	},
 
 	hashUpcoming: function() {}, // fixme
 
 	hashRecent: function() {
-	    window.location.hash = 'volume';
+	    this.setHash('volume');
 	},
     });
 
@@ -891,25 +997,6 @@ $(function(){
 
     $('a').live('click', function() {
 	flashInfo('');
-    });
-
-    $('#popupdiv form input[type=submit]').click(function (event) {
-	event.preventDefault();
-	popup('popupdiv');
-	var nickname = $('#popupdiv form input[name=nickname]').attr('value');
-	var webpage = $('#popupdiv form input[name=nickname]').attr('webpage');
-	doRequest({ fun: 'welcomeUser', nickname: nickname}, 
-		  function(data) {
-		      if (data) {
-			  app.loginView.user.set(data);
-		      }
-		      else {
-			  flashError('no such user');
-		      }
-		  },
-		  function (err) {
-		      flashError(err.toString());
-		  });	
     });
 
     log({info: 'loaded'});

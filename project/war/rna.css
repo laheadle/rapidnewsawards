@@ -99,6 +99,7 @@ h1.title {
 
 
 #flash span.error { color: red }
+#flash span.notice { color: green }
 
 #flash span.success { 
     padding-right: .4em;

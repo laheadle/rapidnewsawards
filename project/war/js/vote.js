@@ -51,7 +51,7 @@ $(function(){
 		}
 	    };
 
-	    doRequest({ fun: 'sendUserInfo' },
+	    doRequest({ fun: 'sendUser' },
 		     setUser);
 	},	
 

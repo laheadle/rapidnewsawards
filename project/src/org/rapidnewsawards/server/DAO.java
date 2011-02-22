@@ -818,7 +818,6 @@ public class DAO extends DAOBase
 	}
 
 	public User welcomeUser(String nickname, Integer donation) {
-		log.info("welcome: " + user + ": " + Periodical.moneyPrint(donation));
 
 		LockedPeriodical lp = lockPeriodical();
 
@@ -830,6 +829,8 @@ public class DAO extends DAOBase
 		Donation don = new Donation(user.getKey(), donation);
 		
 		ofy().put(don);
+
+		log.info("welcome: " + user + ": " + Periodical.moneyPrint(donation));
 
 		Edition next = getNextEdition(Name.AGGREGATOR_NAME);
 		

@@ -106,7 +106,7 @@ public class JSONServlet extends HttpServlet {
 				RecentVotes rv = d.getRecentVotes(ed(edition), Name.AGGREGATOR_NAME);
 				out.println(g.toJson(rv));
 			}
-			else if (fun.equals("sendUserInfo")) {
+			else if (fun.equals("sendUser")) {
 				out.println(g.toJson(d.user));
 			}
 			else if (fun.equals("relatedUser")) {

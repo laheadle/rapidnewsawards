@@ -13,12 +13,13 @@ window.initRNA = function () {
 	flag: function(type) {
 	    var text = {
 		error: 'Error',
+		notice: 'Notice',
 		success: 'Ok',
 		info: '',
 	    }
 	    
 	    var span = this.$('span.flag');
-	    span.removeClass('error success info').addClass(type);
+	    span.removeClass('error success info notice').addClass(type);
 	    span.text(text[type]);
 	},
 
@@ -60,46 +61,79 @@ window.initRNA = function () {
 	}
     };
 
-    // ajax call where method is either $.get or $.post
-    var _doRequest = function (method, attrs, success, err) {
+    var Requester = function() {
+	this.state = {
+	    interrupted: false
+	};
+    };
+    
+    Requester.prototype.request = function (method, attrs, success, err) {
 	log({info: 'doRequest: ' + JSON.stringify(attrs)});
-	method.apply
-	($, ['JSONrpc', attrs, 
-	     function (data) { 
-		  var empty = !data || data == "" || data.match(/^[ \t\r\n]+/$)
-		  log(attrs.fun + ' returned ' + 
-		      (empty? 'null' : JSON.stringify(data)));
-		  try {
-		      if (empty) {
-			  success(undefined);
-		      }
-		      else {
-			  success(JSON.parse(data));
-		      }
-		  }
-		  catch (e) {
-		      if (err) {
-			  err(e);
-		      }
-		      else {
-			  flashError(e.toString());
-		      }
-		  }
-	     }]);
+	var self = this;
+	var reactTo = function (data) { 
+	    var empty = !data || data == "" || data.match(/^[ \t\r\n]+/$);
+	    log(attrs.fun + ' returned ' + 
+		(empty? 'null' : JSON.stringify(data)));
+	    try {
+		var arg = empty? undefined : JSON.parse(data);
+		if (!self.state.interrupted) {
+		    self.state = function () { 
+			var s = success(arg, self.state);
+			if (s == undefined) {
+			    return self.state;
+			}
+			return s;
+		    }(); // ensure state
+		}
+		else {
+		    self.state = self.state.supercede(success, arg);
+		}
+
+	    }
+	    catch (e) {
+		if (err) {
+		    err(e);
+		}
+		else {
+		    flashError(e.toString());
+		}
+	    }
+	};
+	method.apply($, ['JSONrpc', attrs, reactTo]);
     };
 
+    // ajax call where method is either $.get or $.post
+    window.requester = new Requester;
+
     window.doRequest = function(attrs, success, err) {
-	_doRequest($.get, attrs, success, err);
+	requester.request($.get, attrs, success, err);
     };
 
 
     window.doPostRequest = function(attrs, success, err) {
-	_doRequest($.post, attrs, success, err);
+	requester.request($.post, attrs, success, err);
     };
 
-    window.changeURL = function(command) {
+    window.redirectForLogin = function(command) {
+	var newUrl = window.location.href.replace(/html(#.*)?/,
+	    'html#createAccount/' 
+	    + encodeURIComponent(window.location.href));
 	doRequest({ fun: command,
-		    url: window.location.href }, 
+		    url: newUrl }, 
+		  function(data) { 
+		      if (data) {
+			  window.location = data;
+		      }
+		      else {
+			  log({error: 'could not change window location'});
+		      }
+		  });
+    };
+
+    window.redirectForLogout = function(command) {
+	var newUrl = window.location.href;
+	doRequest({ fun: command,
+		    url: newUrl }, 
 		  function(data) { 
 		      if (data) {
 			  window.location = data;
