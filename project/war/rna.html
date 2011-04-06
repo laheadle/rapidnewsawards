@@ -35,7 +35,7 @@
 	  <span class="explain"> See what we're working on. </span> 
 	  <a id="upcoming"> Upcoming </a> </li>
 	<li> 
-	  <a id="recent"> Recent </a> </li> </ul>
+	  <a id="recent"> Previousb </a> </li> </ul>
 
       <div id="main"></div>
 
@@ -53,22 +53,27 @@
     <!-- Templates -->
 
     <script type="text/template" id="edition-header-template"> 
-      <span id="header" class="spine">Number <%= number %>: Awarding $<%= revenue / 100 %> 
-	on <%= end %> </span> </script>
+      <span id="edition-header"> <span class="number"> Number 
+	<%= number %>: </span> Awarding $<%= revenue / 100 %> 
+	on <%= endStr %> </span> </script>
+
+    <script type="text/template" id="signup-round-template"> 
+      <span id="edition-header"> <span class="signup"> Signup round: </span> ends
+	on <%= endStr %> </span> </script>
 
     <script type="text/template" id="edition-tabs-template"> 
       <span id="editionTabsMajor"> 
-	<a class="stories <%= storiesSelected %>"> Stories </a> | 
+	<a class="stories <%= storiesSelected %>"> Stories </a>
 	<a class="network <%= networkSelected %>"> Network </a> </span>
       <!-- fixme change to a TR -->
       <div id="editionTabsMinor" class="orderBy"> </div> </script>
 
     <script type="text/template" id="network-order-tab-template">
-      <a class="top <%= topSelected %>">Top</a> | 
+      <a class="top <%= topSelected %>">Top</a>
       <a class="recent <%= recentSelected %>"> Recent </a> </script>
     
     <script type="text/template" id="stories-order-tab-template">
-      <a class="top <%= topSelected %>"> Top </a> | 
+      <a class="top <%= topSelected %>"> Top </a>
       <a class="recent <%= recentSelected %>"> Recent </a> </script>
     
     <script type="text/template" id="authority-template">

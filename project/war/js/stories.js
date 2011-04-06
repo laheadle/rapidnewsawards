@@ -86,8 +86,14 @@ $(function(){
 			      {storiesSelected: this.storiesSelected,
 			       networkSelected: this.networkSelected}));
 	    $(this.el).prepend(div);
-	    $(this.el).prepend(rMake('#edition-header-template', 
-				     this.edition));
+	    if (this.edition.number == 0) {
+		$(this.el).prepend(rMake('#signup-round-template', 
+					 this.edition));		
+	    }
+	    else {
+		$(this.el).prepend(rMake('#edition-header-template', 
+					 this.edition));
+	    }
 	    return this;
 	},
 
@@ -824,6 +830,7 @@ $(function(){
 		if (data) {
 		    // fixme main list doesn't immediately update 
 		    // with welcome message after join
+		    data.edition = window.Utils.makeDisplayEnd(data.edition);
 		    self.setEditionView(view,
 					{order: order,
 					 edition: data.edition,
@@ -926,22 +933,13 @@ $(function(){
 	},
 
 	volume: function() {
-
-	    var parseDate = function(edition) {
-		var _edition = _.clone(edition);
-		var d = new Date(edition.end + ' UTC');
-		_edition.endStr = '' + (d.getMonth() + 1) + '/' +
-		    d.getDate() + ' at ' + (d.toLocaleTimeString())
-		.replace(/:[0-9][0-9]$/, '');
-		return _edition;
-	    };
-
 	    var self = this;
+
 	    doRequest({ fun: 'allEditions'}, 
 		      function(data) {
 			  self.setVolumeView({current: data.current, 
 					      data: _.map(data.editions,
-							  parseDate)});
+							  window.Utils.makeDisplayEnd)});
 		      },
 		      function (err) {
 			  flashError(err.toString());

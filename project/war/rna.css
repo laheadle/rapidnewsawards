@@ -67,8 +67,14 @@ h1.title {
 #rna-app {
 }
 
-#header, #main, #login, #flash, h1.title {
+#edition-header, #main, #login, #flash, h1.title {
     position: relative;
+}
+
+#edition-header {
+    font-size: 1.2em;
+    background-color: #F0F0F0;
+    margin-left: 150px;
 }
 
 #flash {
@@ -117,16 +123,21 @@ h1.title {
 }
 
 #bodyLine {
-    width: 11.5em;
-    border: 1px solid black;
-    margin-left: 150px;
+
 }
 
 /* --- supporting --- */
 
+.number {
+    color: green;
+}
+
+.signup {
+    color: green;
+}
 
 #main {
-    max-width: 80%;
+    width: 80%;
 }
 
 #main ul.edition {
@@ -156,6 +167,11 @@ h1.title {
 
 .fundingLink {
     display: block;
+}
+
+.stories, .top {
+    float: left;
+    width: 4.2em;
 }
 
 /* ----- dead */
