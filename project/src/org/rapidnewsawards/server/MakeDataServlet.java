@@ -37,7 +37,6 @@ public class MakeDataServlet extends HttpServlet {
 	public static boolean doTransition = false;	
 	public static DAO d = DAO.instance;
 	private static Integer numLinks = 0;
-	public static User jq = null;
 	
 	// don't set up tasks if testing (set by test case)
 	public static boolean testing = false;
@@ -91,15 +90,15 @@ public class MakeDataServlet extends HttpServlet {
 
 	private void makeLinks() {
 		Edition current = d.getEdition(Name.AGGREGATOR_NAME, 1, null);
-		User old = d.user;
+		User jq = d.findUserByLogin("johnqpublic@gmail.com", "gmail.com");
 		for (int i = 0;i < numLinks;i++) {
-			d.user = jq;
-			VoteResult vr = d.submitStory("http://www.example.com", "example story", current);
+			VoteResult vr = d.submitStory("http://www.example" + i + ".com", 
+					"example story", current, jq);
 			if (!vr.returnVal.s.equals(Return.SUCCESS.s)) {
 				DAO.log.warning(vr.returnVal.toString());
 			}
 		}
-		d.user = old;
+		TallyTask.scheduleImmediately();
 	}
 
 	public static void welcome(User u, String nickname, int donation) {
@@ -116,7 +115,7 @@ public class MakeDataServlet extends HttpServlet {
 		makeEditor("jthomas100@gmail.com");
 		makeEditor("joshuanyoung@gmail.com");
 		makeEditor("ohthatmeg@gmail.com");
-		jq = makeJudge("johnqpublic@gmail.com");
+		User jq = makeJudge("johnqpublic@gmail.com");
 		User lyn = makeEditor("laheadle@gmail.com");		
 		makeEditor("steveouting@gmail.com");
 		welcome(lyn, "lyn", 5000);

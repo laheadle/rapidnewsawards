@@ -82,7 +82,7 @@ $(function(){
 	render: function() {
 	    // these go above the edition list, so they are prepended
 	    // fixme change to a table
-	    var div = this.make("div", {class: "editionTabs spine large"});
+	    var div = this.make("div", {class: "editionTabs large"});
 	    $(div).html(rMake('#edition-tabs-template', 
 			      {storiesSelected: this.storiesSelected,
 			       networkSelected: this.networkSelected}));
@@ -231,7 +231,7 @@ $(function(){
 
 	    if (this.list.length == 0) {
 		this.appendElt(this.make("li", {class: 'empty'}, 
-					 "No stories have been funded for this edition."));
+					 "The judges have not funded this edition."));
 	    }
 	    return this;
 	}
@@ -654,7 +654,7 @@ $(function(){
 	initialize: function(attrs) {
 	    this.current = attrs.current;
 	    // fixme refactor
-	    $(this.el).append(this.make('div', {class: 'editionTabs spine large'}));
+	    $(this.el).append(this.make('div', {class: 'volumeHeader large'}));
 	    $(this.el).append(this.make('ul', {class: 'spine large'}));
 	    this.glist = 
 		new GenList({parent: this, 

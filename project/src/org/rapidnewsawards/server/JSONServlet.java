@@ -81,6 +81,7 @@ public class JSONServlet extends HttpServlet {
 				Edition ed = d.getCurrentEdition(Name.AGGREGATOR_NAME);
 				Boolean on = new Boolean(request.getParameter("on"));
 				VoteResult vr = d.voteFor(link, fullLink, ed, on);				
+				TallyTask.scheduleImmediately();
 				out.println(g.toJson(vr));
 			}
 			else if (fun.equals("welcomeUser")) {
@@ -93,7 +94,8 @@ public class JSONServlet extends HttpServlet {
 				String url = request.getParameter("url");
 				String title = request.getParameter("title"); 
 				Edition ed = d.getCurrentEdition(Name.AGGREGATOR_NAME);
-				VoteResult vr = d.submitStory(url, title, ed);
+				VoteResult vr = d.submitStory(url, title, ed, d.user);
+				TallyTask.scheduleImmediately();
 				out.println(g.toJson(vr));
 			}
 			else if (fun.equals("doSocial")) {

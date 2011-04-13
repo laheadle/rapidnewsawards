@@ -61,9 +61,9 @@
 	on <%= endStr %> </span> </script>
 
     <script type="text/template" id="edition-tabs-template"> 
-      <span id="editionTabsMajor"> 
+      <div id="editionTabsMajor"> 
 	<a class="stories <%= storiesSelected %>"> Stories </a>
-	<a class="network <%= networkSelected %>"> Network </a> </span>
+	<a class="network <%= networkSelected %>"> Network </a> </div>
       <!-- fixme change to a TR -->
       <div id="editionTabsMinor" class="orderBy"> </div> </script>
 
@@ -89,7 +89,6 @@
 
     <script type="text/template" id="funding-template">
 	<li> 
-	  <%= rMake('#person-link-template', user) %>
 	  funded 
 	  <a href="<%= link.url %>"> <%= link.title %> </a>
 	</li> </script>
@@ -108,7 +107,7 @@
      <div class="fatBottom">
       <a class="revenue" href="<%= href %>"> $<%= revenue %>...</a>
       <br>
-      <a class="story" href="<%= link.url %>"> <%= link.title %></a> 
+      <a class="indented-story" href="<%= link.url %>"> <%= link.title %></a> 
       <div></script>
 
     <script type="text/template" id="collapsed-edition-template">
@@ -123,7 +122,7 @@
 
     <script type="text/template" id="follow-template">
       <%= subjectLink %>
-      <span> <%= on? 'is about to follow' : 'is about to unfollow' %> </span>
+      <span> <%= on? 'decided to follow' : 'decided to unfollow' %> </span>
       <%= objectLink %>.</script>
 
     <script type="text/template" id="welcome-template">

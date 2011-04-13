@@ -283,7 +283,6 @@ public class DAO extends DAOBase
 			}
 
 			ofy().put(new Vote(u.getKey(), e.getKey(), l.getKey(), new Date(), u.authority));
-			TallyTask.scheduleImmediately();
 			
 			log.info(u + " " + u.authority + " -> " + l.url);
 
@@ -876,24 +875,27 @@ public class DAO extends DAOBase
 		return vr;
 	}
 
-	public VoteResult submitStory(String url, String title, Edition edition) {
+	public VoteResult submitStory(String url, String title, Edition edition, User submitter) {
 		VoteResult vr = new VoteResult();
 		
-		if (user == null) {
+		if (submitter == null) {
 			vr.returnVal = Return.NOT_LOGGED_IN;
 			vr.authUrl = null; // userService.createLoginURL(fullLink);
 			return vr;
 		}
 
 		// TODO broken on some complex hrefs
-    	Link l = createLink(url, title, user.getKey());
+    	Link l = createLink(url, title, submitter.getKey());
 
     	if (l == null) {
     		return null;
     	}
     	
     	else {
-    		vr.returnVal = voteFor(user, edition == null? getCurrentEdition(Name.AGGREGATOR_NAME) : edition, l, true);
+    		vr.returnVal = voteFor(submitter, 
+    					edition == null? getCurrentEdition(Name.AGGREGATOR_NAME) : edition, 
+    						l, 
+    						true);
     		vr.authUrl = null; // userService.createLogoutURL(home);    		
     	}
 		return vr;
@@ -930,7 +932,7 @@ public class DAO extends DAOBase
 		}
 
 		if (!p.live) {
-			log.warning("tried to publish edition of a dead periodical");
+			log.warning("tried to transition a dead periodical");
 			return;
 		}
 
