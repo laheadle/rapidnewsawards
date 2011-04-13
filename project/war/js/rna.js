@@ -26,7 +26,7 @@ window.initRNA = function () {
 	render: function() {
 	    var type = this.model.get('type');
 	    this.flag(type);
-	    this.$('span.content').text(this.model.get('content') || "");
+	    this.$('span.content').html(this.model.get('content') || "");
 	}
     });
 
@@ -46,7 +46,7 @@ window.initRNA = function () {
     };
 
     window.flashClear = function() {
-	window.flashView.model.clear();
+	window.flashLog({type: 'info', content: ''});
     };
 
     window.flashView = new FlashView;
@@ -150,7 +150,7 @@ window.initRNA = function () {
 
     window.Utils = {
 
-	makeDisplayEnd: function(edition) {
+	processEdition: function(edition) {
 	    var _edition = _.clone(edition);
 	    _edition.endStr = window.Utils.displayDate(edition.end);
 	    return _edition;

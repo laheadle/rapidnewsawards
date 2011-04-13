@@ -37,7 +37,7 @@ public class User implements IsSerializable {
 		
 		this.email = email.toLowerCase();
 		this.domain = domain.toLowerCase();
-		this.nickname = "??";
+		this.nickname = "";
 		this.isInitialized = false;
 		this.isEditor = isEditor;
 		this.lastLogin = new Date();

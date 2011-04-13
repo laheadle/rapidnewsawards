@@ -72,7 +72,6 @@ h1.title {
 }
 
 #edition-header {
-    font-size: 1.2em;
     background-color: #F0F0F0;
     margin-left: 150px;
 }
@@ -128,6 +127,10 @@ h1.title {
 
 /* --- supporting --- */
 
+#createAccount {
+    padding-left: 150px;
+}
+
 .number {
     color: green;
 }
@@ -165,15 +168,28 @@ h1.title {
     display: block;
 }
 
-.fundingLink {
-    display: block;
-}
-
 .stories, .top {
     float: left;
     width: 4.2em;
 }
 
+.story {
+    padding: 0 0 0 10px;
+    color: black;
+    font-size: 1.1em;
+}
+
+.social {
+    color: black;
+    font-size: 1.1em;
+    margin-bottom: .1em;
+}
+
+.revenue {
+    padding: 3px;
+    font-size: .7em;
+    background-color:  #F0F0F0;
+}
 /* ----- dead */
 
 

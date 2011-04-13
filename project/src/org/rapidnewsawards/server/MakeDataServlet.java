@@ -2,9 +2,7 @@ package org.rapidnewsawards.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
-import java.text.DateFormat;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 
@@ -17,8 +15,10 @@ import org.rapidnewsawards.shared.Cell;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.Periodical;
+import org.rapidnewsawards.shared.Return;
 import org.rapidnewsawards.shared.Root;
 import org.rapidnewsawards.shared.User;
+import org.rapidnewsawards.shared.VoteResult;
 
 import com.google.appengine.api.labs.taskqueue.Queue;
 import com.google.appengine.api.labs.taskqueue.QueueFactory;
@@ -28,11 +28,25 @@ import com.googlecode.objectify.Objectify;
 import static com.google.appengine.api.labs.taskqueue.TaskOptions.Builder.*;
 
 public class MakeDataServlet extends HttpServlet {
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
 	public static PrintWriter out;
 	public static boolean doFollow = false;
 	public static boolean doTransition = false;	
 	public static DAO d = DAO.instance;
+	private static Integer numLinks = 0;
+	public static User jq = null;
 	
+	// don't set up tasks if testing (set by test case)
+	public static boolean testing = false;
+	
+	public final static long ONE_SECOND = 1000; 
+	public final static long ONE_MINUTE = 60 * 1000; 	
+	public final static long ONE_HOUR = 60 * ONE_MINUTE; 		
+	public final static long FIVE_MINUTES = 5 * ONE_MINUTE; 
+
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
@@ -54,11 +68,19 @@ public class MakeDataServlet extends HttpServlet {
 				doTransition = new Boolean(request.getParameter("doTransition"));
 			}
 			catch(Exception e) {}
+			try {
+				numLinks = new Integer(request.getParameter("numLinks"));
+			}
+			catch(Exception e) {}
 
 			makeData(numEditions, minutes * ONE_MINUTE, numUsers);
 
 			if (doTransition) {
 				DAO.instance.doTransition(Name.AGGREGATOR_NAME, 0, null);
+			}
+			
+			if (numLinks > 0) {
+				makeLinks();
 			}
 		} catch (ParseException e) {
 			e.printStackTrace(out);
@@ -67,12 +89,18 @@ public class MakeDataServlet extends HttpServlet {
 		out.println("created " + numEditions + " editions");
 	}
 
-	public static boolean testing = false;
-	
-	public final static long ONE_SECOND = 1000; 
-	public final static long ONE_MINUTE = 60 * 1000; 	
-	public final static long ONE_HOUR = 60 * ONE_MINUTE; 		
-	public final static long FIVE_MINUTES = 5 * ONE_MINUTE; 
+	private void makeLinks() {
+		Edition current = d.getEdition(Name.AGGREGATOR_NAME, 1, null);
+		User old = d.user;
+		for (int i = 0;i < numLinks;i++) {
+			d.user = jq;
+			VoteResult vr = d.submitStory("http://www.example.com", "example story", current);
+			if (!vr.returnVal.s.equals(Return.SUCCESS.s)) {
+				DAO.log.warning(vr.returnVal.toString());
+			}
+		}
+		d.user = old;
+	}
 
 	public static void welcome(User u, String nickname, int donation) {
 		User olduser = d.user;
@@ -88,7 +116,7 @@ public class MakeDataServlet extends HttpServlet {
 		makeEditor("jthomas100@gmail.com");
 		makeEditor("joshuanyoung@gmail.com");
 		makeEditor("ohthatmeg@gmail.com");
-		User jq = makeJudge("johnqpublic@gmail.com");
+		jq = makeJudge("johnqpublic@gmail.com");
 		User lyn = makeEditor("laheadle@gmail.com");		
 		makeEditor("steveouting@gmail.com");
 		welcome(lyn, "lyn", 5000);

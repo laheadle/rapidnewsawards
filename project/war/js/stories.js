@@ -14,6 +14,7 @@ $(function(){
 	if (Backbone.history.getFragment() == '') {
 	    window.app.topStories();
 	}
+	app.loginView.checkCreatingAccount();
     }
 
 
@@ -231,8 +232,6 @@ $(function(){
 	    if (this.list.length == 0) {
 		this.appendElt(this.make("li", {class: 'empty'}, 
 					 "No stories have been funded for this edition."));
-		this.appendElt(this.make("li", {class: 'empty'}, 
-					 "You have 7 hours until the next edition."));
 	    }
 	    return this;
 	}
@@ -293,7 +292,7 @@ $(function(){
     window.SocialView = Backbone.View.extend({
 
 	tagName:  "li",
-	className: "story", // fixme
+	className: "social", 
 
 	followTemplate: _.template($('#follow-template').html()),
 	welcomeTemplate: _.template($('#welcome-template').html()),
@@ -481,7 +480,7 @@ $(function(){
 	render: function() {
 	    var u = _.clone(this.user());
 	    u.following = this.model.get('following');
-	    if (isEditor()) {
+	    if (isEditor() && !app.loginView.isCurrentUser(u)) {
 		$(this.el).prepend(rMake('#person-template', u) +
 				   rMake('#following-template', u))
 		this.bindEvents(this);
@@ -672,6 +671,11 @@ $(function(){
 	},
 
 	render: function() {
+	    if (this.total == 0) {
+		this.$('div').html(rMake('#volume-template',
+					 {published: 0, remaining: 0}));
+		return this;
+	    }
 	    var published = this.current? this.current.number - 1: this.total -1;
 	    if (published < 0) {
 		published = 0;
@@ -701,8 +705,19 @@ $(function(){
 	    return this.model.get('email') != undefined;
 	},
 
+	isCurrentUser: function(user) {
+	    return this.loggedIn() && this.model.get('email') == user.email;
+	},
+
 	isCreatingAccount: function() {
 	    return this.model.get('isInitialized') == false;
+	},
+
+	checkCreatingAccount: function() {
+	    if (this.isCreatingAccount() && !window.location.hash.match(/#createAccount/)) {
+		flashLog({type: 'notice',
+			  content: rMake('#please-finish-registering')});
+	    }
 	},
 
 	initialize: function() {
@@ -751,12 +766,7 @@ $(function(){
 		this.$('a.logout').text('')
 		.css('padding-left', '0');
 	    }
-
-	    if (this.isCreatingAccount()) {
-		flashLog({type: 'notice',
-			  content: 
-			  "You have not finished registering your account. Please go HERE."});
-	    }
+	    this.checkCreatingAccount();
 	}
     });
 
@@ -827,10 +837,10 @@ $(function(){
 	_edition: function(edNum, fun, order, view, getAttrs) {	    
 	    var self = this;
 	    var fetch = function(data) { 
-		if (data) {
+		if (data && data.edition) {
 		    // fixme main list doesn't immediately update 
 		    // with welcome message after join
-		    data.edition = window.Utils.makeDisplayEnd(data.edition);
+		    data.edition = window.Utils.processEdition(data.edition);
 		    self.setEditionView(view,
 					{order: order,
 					 edition: data.edition,
@@ -924,6 +934,7 @@ $(function(){
 	    }
 	    if (this.loginView.isCreatingAccount()) {
 		console.log('creating');
+		flashClear();
 		this.setMainView(new CreateAccountView({andThen: andThen}));
 	    }
 	    else {
@@ -937,9 +948,9 @@ $(function(){
 
 	    doRequest({ fun: 'allEditions'}, 
 		      function(data) {
-			  self.setVolumeView({current: data.current, 
-					      data: _.map(data.editions,
-							  window.Utils.makeDisplayEnd)});
+			      self.setVolumeView({current: data.current, 
+						  data: _.map(data.editions,
+							  window.Utils.processEdition)});
 		      },
 		      function (err) {
 			  flashError(err.toString());

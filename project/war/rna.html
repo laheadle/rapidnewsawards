@@ -35,16 +35,15 @@
 	  <span class="explain"> See what we're working on. </span> 
 	  <a id="upcoming"> Upcoming </a> </li>
 	<li> 
-	  <a id="recent"> Previousb </a> </li> </ul>
+	  <a id="recent"> Previous </a> </li> </ul>
 
       <div id="main"></div>
 
     </div>
 
     <script type="text/template" id="create-account-template"> 
-      <span> Welcome.  Please tell us about yourself. </span><br>
+      <div class="fatBottom"> Welcome.  Please tell us about yourself. </div><br>
       <form>
-	Email: FIXME <br>
 	Nickname <input type="text" name="nickname"/> <br>
 	Web Page <input type="text" name="webpage"/> <br>
 	<input type="submit" value="submit information" />
@@ -67,6 +66,10 @@
 	<a class="network <%= networkSelected %>"> Network </a> </span>
       <!-- fixme change to a TR -->
       <div id="editionTabsMinor" class="orderBy"> </div> </script>
+
+    <script type="text/template" id="please-finish-registering">
+      You have not finished registering your account. 
+      <a href="#createAccount/"> Please do so. </a> </script>
 
     <script type="text/template" id="network-order-tab-template">
       <a class="top <%= topSelected %>">Top</a>
@@ -102,15 +105,15 @@
 	<a href="<%= link.url %>"> <%= link.title %> </a> </h4> </script>
 
     <script type="text/template" id="story-template">
-      <span class="score"> $<%= revenue %> </span>
-      <a class="story" href="<%= link.url %>"><%= link.title %></a>
-      <span class="submitter"> submitted by 
-	<a class="link"> <%= submitter.nickname %> </a> </span> 
-      <a href="<%= href %>" class="fundingLink fatBottom"> view funding </a>   </script>
+     <div class="fatBottom">
+      <a class="revenue" href="<%= href %>"> $<%= revenue %>...</a>
+      <br>
+      <a class="story" href="<%= link.url %>"> <%= link.title %></a> 
+      <div></script>
 
     <script type="text/template" id="collapsed-edition-template">
       <span> <a href="#topStories/<%= number %>"> Number 
-	  <%= number %> </a> awarded $<%= revenue / 100 %> to 
+	  <%= number %> </a> awarded $<%= totalSpend / 100 %> to 
 	<%= numFundedLinks %> stories on <%= endStr %> </span> </script>
 
     <script type="text/template" id="volume-template">
@@ -121,18 +124,18 @@
     <script type="text/template" id="follow-template">
       <%= subjectLink %>
       <span> <%= on? 'is about to follow' : 'is about to unfollow' %> </span>
-      <%= objectLink %></script>
+      <%= objectLink %>.</script>
 
     <script type="text/template" id="welcome-template">
       <span>Welcome, </span> 
       <%= objectLink %>.</script>
 
     <script type="text/template" id="person-template">
-      <h4 class="spine"><%= nickname %></h4>
+      <h4 class="spine fatBottom"><%= nickname %></h4>
     </script>
 
     <script type="text/template" id="following-template">
-      <span> following </span>
+      <span class="spine"> following </span>
       <input id="following" type="checkbox" 
 	     <%= following? 'checked="yes"' : '' %>> </input> </script>
 
