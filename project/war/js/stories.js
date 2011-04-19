@@ -5,10 +5,6 @@ $(function(){
 
     //* globals
 
-    var isEditor = function () {
-	return app.loginView.model.get('isEditor');
-    };
-
     function defaultAction() {
 	flashInfo('');
 	if (Backbone.history.getFragment() == '') {
@@ -230,8 +226,11 @@ $(function(){
 	    this.$('#editionTabsMinor').html(rMake('#stories-order-tab-template', args));
 
 	    if (this.list.length == 0) {
+		var message = this.edition.number > 0 ?
+		    "The judges have not funded this edition." :
+		    "Funding will begin after the signup round.";
 		this.appendElt(this.make("li", {class: 'empty'}, 
-					 "The judges have not funded this edition."));
+					 message));
 	    }
 	    return this;
 	}
@@ -450,10 +449,10 @@ $(function(){
 		new GenList({parent: this, 
 			     list: new FundingsList,
 			     newModel: function(item) {
-				 // model is just a VoteLink, add the user
+				 // don't display a (redundant) user for personView's Fundings
 				 return new Backbone.Model(
 				     _.extend(item.toJSON(),
-					      {user: _.clone(self.user())}))
+					      {user: null}))
 			     },
 			     appendElt: function(el) {
 				 this.parent.$('ul').append(el);
@@ -466,7 +465,7 @@ $(function(){
 	},
 
 	bindEvents: function(self) {
-	    this.$('#following').click(function (event) {
+	    this.$('#is-following').click(function (event) {
 		var fol = $(this).is(':checked');		    
 		doPostRequest({fun: 'doSocial', 
 			       to: self.user().id, on: fol},
@@ -479,15 +478,30 @@ $(function(){
 
 	render: function() {
 	    var u = _.clone(this.user());
-	    u.following = this.model.get('following');
-	    if (isEditor() && !app.loginView.isCurrentUser(u)) {
-		$(this.el).prepend(rMake('#person-template', u) +
-				   rMake('#following-template', u))
-		this.bindEvents(this);
+	    u.isFollowing = this.model.get('isFollowing');
+	    var html = rMake('#person-template', u);
+
+	    // isFollowing checkBox
+	    if (app.loginView.canFollow(u)) {
+		html += rMake('#is-following-template', u);
+	    }
+	    if (this.user().isEditor) {
+		// follows
+		var follows = this.model.get('userInfo').follows;
+		if (follows) {
+		    html += rMake('#follows-template', {follows: follows});
+		}
 	    }
 	    else {
-		$(this.el).prepend(rMake('#person-template', u));
+		// followers
+		var followers = this.model.get('userInfo').followers;
+		if (followers) {
+		    html += rMake('#followers-template', {followers: followers});
+		}
 	    }
+
+	    $(this.el).prepend(html);
+	    this.bindEvents(this);
 	    return this;
 	},
 	
@@ -704,6 +718,15 @@ $(function(){
 	loggedIn: function() {
 	    return this.model.get('email') != undefined;
 	},
+
+	isEditor: function () {
+	    return this.model.get('isEditor');
+	},
+
+	canFollow: function(user) {
+	    return this.isEditor() && !this.isCurrentUser(user);
+	},
+
 
 	isCurrentUser: function(user) {
 	    return this.loggedIn() && this.model.get('email') == user.email;

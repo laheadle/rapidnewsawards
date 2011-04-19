@@ -117,6 +117,10 @@ public class JSONServlet extends HttpServlet {
 						d.getRelatedUserInfo(Name.AGGREGATOR_NAME, d.user, 
 								new Key<User>(User.class, userId))));
 			}
+			else if (fun.equals("getFollowers")) {
+				long userId = new Long(request.getParameter("id"));
+				out.println(g.toJson(d.getFollowers(new Key<User>(User.class, userId))));
+			}
 
 			else if (fun.equals("sendLogoutURL")) {
 		        UserService userService = UserServiceFactory.getUserService();

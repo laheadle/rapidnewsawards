@@ -7,4 +7,6 @@ import com.google.gwt.user.client.rpc.IsSerializable;
 public class UserInfo implements IsSerializable {
 	public User user;
 	public LinkedList<Vote_Link> votes;
+	public LinkedList<User> followers;
+	public LinkedList<User> follows;
 }

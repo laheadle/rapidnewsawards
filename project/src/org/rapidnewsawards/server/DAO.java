@@ -37,7 +37,6 @@ import org.rapidnewsawards.shared.User_Vote_Link;
 import org.rapidnewsawards.shared.Vote;
 import org.rapidnewsawards.shared.VoteResult;
 import org.rapidnewsawards.shared.Vote_Link;
-import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.NotFoundException;
 import com.googlecode.objectify.Objectify;
@@ -45,14 +44,8 @@ import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.Query;
 import com.googlecode.objectify.helper.DAOBase;
 
-import com.google.appengine.api.labs.taskqueue.Queue;
-import com.google.appengine.api.labs.taskqueue.QueueFactory;
-import com.google.appengine.api.labs.taskqueue.TaskOptions;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
-import com.google.gson.JsonElement;
-
-import static com.google.appengine.api.labs.taskqueue.TaskOptions.Builder.*;
 
 public class DAO extends DAOBase
 {
@@ -156,7 +149,7 @@ public class DAO extends DAOBase
 				r = Return.ALREADY_ABOUT_TO_FOLLOW;				
 			}
 			else if (following != null) {
-				log.warning("Already following: [" + from + ", " + to + "]");
+				log.warning("Already isFollowing: [" + from + ", " + to + "]");
 				r = Return.ALREADY_FOLLOWING;
 			}
 			else if (!isEditor(from)) {
@@ -181,7 +174,7 @@ public class DAO extends DAOBase
 			r = Return.PENDING_FOLLOW_CANCELLED;
 		}
 		else {
-			log.warning("Can't unfollow unless following: " + from + ", " + to + ", " + e);
+			log.warning("Can't unfollow unless isFollowing: " + from + ", " + to + ", " + e);
 			r = Return.NOT_FOLLOWING;
 		}
 		
@@ -342,7 +335,7 @@ public class DAO extends DAOBase
 
 			if (s.on == false) {
 				if (old == null) {
-					log.warning("Permitted unfollow when not following" + s);
+					log.warning("Permitted unfollow when not isFollowing" + s);
 				}
 				else {
 					o.delete(old);
@@ -351,7 +344,7 @@ public class DAO extends DAOBase
 			}
 			else {
 				if (old != null) {
-					log.warning("Permitted follow when already following" + s);
+					log.warning("Permitted follow when already isFollowing" + s);
 				}
 				else {
 					// put new follow into effect
@@ -505,6 +498,31 @@ public class DAO extends DAOBase
 		return result;
 	}
 
+
+	public LinkedList<User> getFollowers(Key<User> judge) {
+		LinkedList<Key<User>> keys = new LinkedList<Key<User>>();
+		for (Follow f : ofy().query(Follow.class).filter("judge", judge)) {
+			keys.push(f.editor);
+		}
+		LinkedList<User> editors = new LinkedList<User>();
+		for (User ed : ofy().get(keys).values()) {
+			editors.push(ed);
+		}
+		return editors;
+	}
+	
+	public LinkedList<User> getFollows(Key<User> editor) {
+		LinkedList<Key<User>> keys = new LinkedList<Key<User>>();
+
+		for (Follow f : ofy().query(Follow.class).ancestor(editor)) {
+			keys.push(f.judge);
+		}
+		LinkedList<User> judges = new LinkedList<User>();
+		for (User judge : ofy().get(keys).values()) {
+			judges.push(judge);
+		}
+		return judges;
+	}
 
 	public TopStories getTopStories(int editionNum, Name name) {
 		// TODO error checking
@@ -671,9 +689,19 @@ public class DAO extends DAOBase
 		UserInfo ui = new UserInfo();
 		try {
 			ui.user = ofy().get(user);
-			ui.votes = getLatestVote_Links(user);
+			if (ui.user.isEditor) {
+				ui.follows = getFollows(user);				
+				ui.followers = new LinkedList<User>();
+				ui.votes = new LinkedList<Vote_Link>();
+			}
+			else {
+				ui.votes = getLatestVote_Links(user);
+				ui.followers = getFollowers(user);		
+				ui.follows = new LinkedList<User>();
+			}
 			return ui;
 		} catch (NotFoundException e1) {
+			log.warning("Bad user info: " + user);
 			return null;
 		}
 	}
@@ -703,7 +731,7 @@ public class DAO extends DAOBase
 		UserInfo ui = getUserInfo(periodical, to);
 		RelatedUserInfo rui = new RelatedUserInfo();
 		rui.userInfo = ui;
-		rui.following = from != null? isFollowingOrAboutToFollow(from.getKey(), to) : false;
+		rui.isFollowing = from != null? isFollowingOrAboutToFollow(from.getKey(), to) : false;
 		return rui;
 	}
 
@@ -966,6 +994,7 @@ public class DAO extends DAOBase
 		log.info(p.name + ": New current Edition:" + nextNum);
 	}
 	
+
 	public Periodical tally(Edition e) {
 		
 		LockedPeriodical lp = lockPeriodical();

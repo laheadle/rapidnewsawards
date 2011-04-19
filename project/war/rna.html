@@ -84,14 +84,42 @@
     
     <script type="text/template" id="none-followed-template">
 	<li class="empty"> 
-	  No judges have been followed. Please invite or follow one. 
+	  No judges have been fully authorized yet.  Please invite or follow judges.
 	</li> </script>
 
     <script type="text/template" id="funding-template">
 	<li> 
+	  <!-- don't redisplay the username for personview -->
+	  <%= user ? rMake('#person-link-template', user) : "" %>
 	  funded 
 	  <a href="<%= link.url %>"> <%= link.title %> </a>
 	</li> </script>
+
+    <script type="text/template" id="followers-template">
+      <div class="social-links spine">
+        followed by: 
+          <% if (followers.length == 0) { %>
+  	    <%= 'nobody' %>
+  	  <% } else {
+  	     _.each(followers, function(f) { %> 
+  	      <%= rMake('#person-link-template', f) %> 
+            <% });
+  	  } %>
+      </div>
+    </script>
+
+    <script type="text/template" id="follows-template">
+      <div class="social-links spine">
+        follows: 
+          <% if (follows.length == 0) { %>
+  	    <%= 'nobody' %>
+  	  <% } else {
+  	     _.each(follows, function(f) { %> 
+  	      <%= rMake('#person-link-template', f) %> 
+            <% });
+  	  } %>
+      </div>
+    </script>
 
     <script type="text/template" id="story-funding-template">
 	<li> 
@@ -130,13 +158,14 @@
       <%= objectLink %>.</script>
 
     <script type="text/template" id="person-template">
-      <h4 class="spine fatBottom"><%= nickname %></h4>
+      <h4 class="spine fatBottom"><%= nickname %>: 
+	<%= isEditor? 'editor' : 'judge' %> </h4>
     </script>
 
-    <script type="text/template" id="following-template">
+    <script type="text/template" id="is-following-template">
       <span class="spine"> following </span>
-      <input id="following" type="checkbox" 
-	     <%= following? 'checked="yes"' : '' %>> </input> </script>
+      <input id="is-following" type="checkbox" 
+	     <%= isFollowing? 'checked="yes"' : '' %>> </input> </script>
 
     <script type="text/template" id="person-link-template">
       <a href="<%= '#person/' + id %>"><%= nickname %></a></script>
