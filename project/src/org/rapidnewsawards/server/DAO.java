@@ -604,6 +604,7 @@ public class DAO extends DAOBase
 		Edition e = getCurrentEdition(Name.AGGREGATOR_NAME);
 		LinkedList<User> users = new LinkedList<User>();
 		LinkedList<EditionUserAuthority> eaus = new LinkedList<EditionUserAuthority>();
+		// TODO careful: this could return hundreds of judges
 		for (User u : ofy().query(User.class).filter("isEditor", false)) {
 			int tmp = ofy().query(Follow.class).filter("judge", u.getKey()).countAll();
 			u.authority = tmp;
@@ -742,7 +743,7 @@ public class DAO extends DAOBase
 		LockedPeriodical locked = lockPeriodical();
 
 		if (locked == null) {
-			log.warning("publish failed");
+			log.severe("publish failed");
 			return false;
 		}
 		
@@ -755,7 +756,7 @@ public class DAO extends DAOBase
 		LockedPeriodical lp = lockPeriodical();
 
 		if (lp == null) {
-			log.warning("failed");
+			log.severe("finish failed");
 			return;
 		}
 		

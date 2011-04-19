@@ -624,9 +624,6 @@ $(function(){
 	tagName:  "li",
 	className: "collapsedEdition",
 
-	// Cache the template function for a single story.
-	template: _.template($('#collapsed-edition-template').html()),
-
 	events: {
 
 	},
@@ -639,7 +636,12 @@ $(function(){
 
 	render: function() {
 	    var _copy = this.model.toJSON();
-	    $(this.el).html(this.template(_copy));
+	    if (this.model.get('number') == 0) {
+		$(this.el).html(rMake('#collapsed-signup-round-template', _copy));
+	    }
+	    else {
+		$(this.el).html(rMake('#collapsed-edition-template' , _copy));
+	    }
 	    return this;
 	},
 	
@@ -679,8 +681,6 @@ $(function(){
 		attrs.data.splice(this.current.number, 
 				  this.total - this.current.number + 1);
 	    }
-	    // chop off warmup edition
-	    attrs.data.splice(0,1);
 	    this.glist.refresh(attrs.data);
 	},
 

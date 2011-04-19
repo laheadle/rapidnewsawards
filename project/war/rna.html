@@ -143,6 +143,10 @@
 	  <%= number %> </a> awarded $<%= totalSpend / 100 %> to 
 	<%= numFundedLinks %> stories on <%= endStr %> </span> </script>
 
+    <script type="text/template" id="collapsed-signup-round-template">
+      <span> <a href="#recentSocials/<%= number %>"> Signup round </a> 
+	ended on <%= endStr %> </span> </script>
+
     <script type="text/template" id="volume-template">
       <span> <%= published %> 
 	<%= published == 1? 'edition' : 'editions' %> 
