@@ -10,7 +10,7 @@ window.initRNA = function () {
 	    this.model.view = this;
 	},
 
-	flag: function(type) {
+	flag: function(type, header) {
 	    var text = {
 		error: 'Error',
 		notice: 'Notice',
@@ -20,12 +20,13 @@ window.initRNA = function () {
 	    
 	    var span = this.$('span.flag');
 	    span.removeClass('error success info notice').addClass(type);
-	    span.text(text[type]);
+	    span.text(header || text[type]);
 	},
 
 	render: function() {
 	    var type = this.model.get('type');
-	    this.flag(type);
+	    var header = this.model.get('header');
+	    this.flag(type, header);
 	    this.$('span.content').html(this.model.get('content') || "");
 	}
     });

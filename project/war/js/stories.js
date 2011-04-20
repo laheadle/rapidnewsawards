@@ -481,6 +481,14 @@ $(function(){
 	    u.isFollowing = this.model.get('isFollowing');
 	    var html = rMake('#person-template', u);
 
+	    // Bookmarklet
+	    if (app.loginView.isCurrentUser(u) && !this.user().isEditor) {
+		var link = '<a href="javascript:(function(){window.open(\'http://localhost:8888/vote2.html?href=\'+document.location.href)})()"> RNA Submit </a>';
+		flashLog({type: 'notice', 
+			  header: 'To Submit Links:',
+			  content: 'Drag this: ' + link + ' to your bookmarks toolbar now.'});
+	    }
+
 	    // isFollowing checkBox
 	    if (app.loginView.canFollow(u)) {
 		html += rMake('#is-following-template', u);
@@ -785,7 +793,7 @@ $(function(){
 		.css('padding-left', '5px');
 	    }
 	    else {
-		this.$('a.login').text('[Login]');
+		this.$('a.login').text('[Login / Join]');
 		this.$('a.logout').text('')
 		.css('padding-left', '0');
 	    }
