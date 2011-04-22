@@ -123,13 +123,19 @@
 
     <script type="text/template" id="story-funding-template">
 	<li> 
-	  funded by <%= rMake('#person-link-template', user) %>
-	  (authority: <%= authority %>)
+	  $<%= dollars %>.<%= pennies %> <span class="fund-from"> from </span>
+	  <%= rMake('#person-link-template', user) %>
 	</li> </script>
 
     <script type="text/template" id="full-story-template">
-      <h4 class="spine"> 
-	<a href="<%= link.url %>"> <%= link.title %> </a> </h4> </script>
+      <div class="spine">
+      <span class="revenue"> $<%= revenue %></span>
+      <br>
+      <h3> 
+	<a href="<%= link.url %>"> <%= link.title %> </a> </h3> 
+      <span> 
+	submitted by <%= rMake('#person-link-template', submitter) %> 
+      from <%= link.domain %> </span> </div> </script>
 
     <script type="text/template" id="story-template">
      <div class="fatBottom">

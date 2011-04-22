@@ -43,6 +43,7 @@ window.initRNA = function () {
     };
 
     window.flashLog = function(msg) {
+	window.flashView.model.clear();
 	window.flashView.model.set(msg);
     };
 

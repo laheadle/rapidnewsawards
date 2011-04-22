@@ -485,8 +485,8 @@ $(function(){
 	    if (app.loginView.isCurrentUser(u) && !this.user().isEditor) {
 		var link = '<a href="javascript:(function(){window.open(\'http://localhost:8888/vote2.html?href=\'+document.location.href)})()"> RNA Submit </a>';
 		flashLog({type: 'notice', 
-			  header: 'To Submit Links:',
-			  content: 'Drag this: ' + link + ' to your bookmarks toolbar now.'});
+			  header: 'For Submitting Stories:',
+			  content: 'Drag ' + link + ' to your bookmarks toolbar now.'});
 	    }
 
 	    // isFollowing checkBox
@@ -612,13 +612,48 @@ $(function(){
 	    this.list = 
 		new GenList({parent: this, 
 			     list: new StoryFundingsList});
-	    this.list.refresh(this.model.get('funds'));
+	    var self = this;
+	    var dollars = function(storyInfo, fund) {
+		if (storyInfo.score == 0) { return 0; }
+		return (storyInfo.revenue / storyInfo.score) 
+		    * fund.authority / 100;
+	    };
+
+	    var pennies = function(storyInfo, fund) {
+		if (storyInfo.score == 0) { return 0; }
+		return (storyInfo.revenue / storyInfo.score) 
+		    * fund.authority % 100;
+	    };
+
+	    var pennyString = function(storyInfo, fund) {
+		var a = ""+ pennies(storyInfo, fund);
+		if (a.length == 1) { 
+		    return "0" + a; 
+		} else if (a.length == 2) {
+		    return a; 
+		} 
+		else { 
+		    return a.substring(0,2);
+		}
+	    };
+	    var storyFunds = 
+		_.map(this.model.get('funds'),
+		      function (fund) {
+			  var storyInfo =_.clone(self.model.get('info'));
+			  return _.extend(fund, 
+					  {dollars: dollars(storyInfo, fund),
+					   pennies: pennyString(storyInfo, fund)});
+		      });
+	this.list.refresh(storyFunds);
+
 	},
 
 	render: function() {
+	    var _copy = this.model.get('info');
+	    _copy.revenue = '' +_copy.revenue / 100;
 	    $(this.el).prepend(rMake('#full-story-template', 
 				     // story info
-				     _.clone(this.model.get('info'))));
+				     _copy));
 	}
     });
 
@@ -1056,7 +1091,7 @@ $(function(){
     });
 
     $('a').live('click', function() {
-	flashInfo('');
+	flashClear('');
     });
 
     log({info: 'loaded'});
