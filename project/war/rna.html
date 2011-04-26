@@ -97,7 +97,7 @@
 
     <script type="text/template" id="followers-template">
       <div class="social-links spine">
-        followed by: 
+        who is followed by: 
           <% if (followers.length == 0) { %>
   	    <%= 'nobody' %>
   	  <% } else {
@@ -110,7 +110,7 @@
 
     <script type="text/template" id="follows-template">
       <div class="social-links spine">
-        follows: 
+        who follows: 
           <% if (follows.length == 0) { %>
   	    <%= 'nobody' %>
   	  <% } else {
@@ -168,9 +168,10 @@
       <%= objectLink %>.</script>
 
     <script type="text/template" id="person-template">
-      <h4 class="spine fatBottom"><%= nickname %>: 
-	<%= isEditor? 'editor' : 'judge' %> </h4>
-    </script>
+      <div class="spine fatBottom"> 
+	<span class="userNickname"> <%= nickname %> </span> 
+	<span class="userType"> 
+	  is <%= isEditor? 'an editor' : 'a judge' %> </span> </div> </script>
 
     <script type="text/template" id="is-following-template">
       <span class="spine"> following </span>

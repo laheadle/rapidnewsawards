@@ -51,9 +51,9 @@ html, body {
 }
 
 body {
-    margin-left: 12%;
-    max-width: 75%;
-    min-height: 100%;
+    margin-left: 100px;
+    width: 800px;
+    height: 100%;
 }
 
 h1.title {
@@ -124,23 +124,22 @@ h1.title {
 
 }
 
-/* --- supporting --- */
+/* --- supporting id's --- */
 
-.fund-from {
-    font-size: .6em;
-    color: gray;
-}
+
 
 #createAccount {
     padding-left: 150px;
 }
 
-.number {
-    color: green;
+#editionTabsMajor {
+    width: 158px;
+    position: relative;
 }
 
-.signup {
-    color: green;
+#editionTabsMinor {
+    width: 158px;
+    position: relative;
 }
 
 #main {
@@ -153,6 +152,10 @@ h1.title {
     padding-left: 154px;
     margin-left: 0;
 }
+
+
+/* --- supporting classes --- */
+
 
 .edition ul.spine {
     position: relative;
@@ -172,38 +175,37 @@ h1.title {
     display: block;
 }
 
-.stories, .top {
-    float: left;
-    width: 4.2em;
-}
-
-#editionTabsMajor {
-    width: 158px;
-    position: relative;
-}
-
-#editionTabsMinor {
-    width: 158px;
-    position: relative;
-}
-
-.volumeHeader {
-    margin-left: 25%;
-    margin-top: 20px;
-}
-
 .editionTabs {
     border-left: 1px solid black;
     border-right: 1px solid black;
+    width: 150px;
     margin-left: 25%;
-    margin-right: 53.8%;
-    padding: 5px;
+    padding: 0 5px 0 5px;
     margin-top: 20px;
+}
+
+.fund-from {
+    font-size: .6em;
+    color: gray;
 }
 
 .indented-story {
     padding: 0 0 0 10px;
     font-size: 1.1em;
+}
+
+.number {
+    color: green;
+}
+
+.revenue {
+    padding: 3px;
+    font-size: .7em;
+    background-color:  #F0F0F0;
+}
+
+.signup {
+    color: green;
 }
 
 .social, .story {
@@ -212,8 +214,22 @@ h1.title {
     margin-bottom: .5em;
 }
 
-.revenue {
-    padding: 3px;
-    font-size: .7em;
-    background-color:  #F0F0F0;
+.stories, .top {
+    float: left;
+    width: 4.2em;
 }
+
+.userNickname {
+    font-size: 1em;
+    font-weight: bold;
+}
+
+.userType {
+    
+}
+
+.volumeHeader {
+    margin-left: 25%;
+    margin-top: 20px;
+}
+
