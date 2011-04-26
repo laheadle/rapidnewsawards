@@ -39,7 +39,7 @@ public class DAOTest extends RNATest {
 	}
 
 	void verifyEdition() {
-		Edition e = DAO.instance.getCurrentEdition(Name.AGGREGATOR_NAME);
+		Edition e = DAO.instance.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
 		assertNotNull(e);
 	}
 
@@ -71,7 +71,7 @@ public class DAOTest extends RNATest {
 	@Test
 	public void testVote() {
 		User mg = getUser(null);
-		Edition e = DAO.instance.getCurrentEdition(Name.AGGREGATOR_NAME);
+		Edition e = DAO.instance.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
 		
 		Link l = DAO.instance.createLink("http://example.com", "title", mg.getKey());
 		Link l3 = DAO.instance.createLink("http://example2.com",  "title", mg.getKey());

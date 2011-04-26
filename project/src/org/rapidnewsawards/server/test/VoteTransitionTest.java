@@ -5,12 +5,9 @@ package org.rapidnewsawards.server.test;
 import java.util.Iterator;
 
 import org.junit.Test;
-import org.rapidnewsawards.server.DAO;
-import org.rapidnewsawards.server.Perishable;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.Name;
-import org.rapidnewsawards.shared.Return;
 import org.rapidnewsawards.shared.ScoredLink;
 import org.rapidnewsawards.shared.User;
 
@@ -18,7 +15,7 @@ public class VoteTransitionTest extends RNATest {
 	
 	@Test
 	public void testVotes() {
-		Edition e1 = d.getCurrentEdition(Name.AGGREGATOR_NAME);		
+		Edition e1 = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);		
 		User mg = getUser(null);
 
 		Link l = d.createLink("http://example.com", "title", mg.getKey());
@@ -29,29 +26,29 @@ public class VoteTransitionTest extends RNATest {
 		
 		doTransition();
 		
-		Edition e2 = d.getCurrentEdition(Name.AGGREGATOR_NAME);
+		Edition e2 = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
 		
 		assertFalse(d.hasVoted(mg, e2, l));
 	}
 
 	public void testTally() {
-		d.getCurrentEdition(Name.AGGREGATOR_NAME);		
-		Edition e2 = d.getEdition(Name.AGGREGATOR_NAME, 1, null);
+		d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);		
+		Edition e2 = d.editions.getEdition(Name.AGGREGATOR_NAME, 1, null);
 
 		User mg = getUser("ohthatmeg");
 		User jny2 = getUser("joshuanyoung");
 		User steveouting = getUser("steveouting");
 
 		// megan follows josh 
-		d.doSocial(mg.getKey(), jny2.getKey(), e2, true);
+		d.social.doSocial(mg.getKey(), jny2.getKey(), e2, true);
 
 		// megan and josh follow steve
-		d.doSocial(mg.getKey(), steveouting.getKey(), e2, true);
-		d.doSocial(jny2.getKey(), steveouting.getKey(), e2, true);
+		d.social.doSocial(mg.getKey(), steveouting.getKey(), e2, true);
+		d.social.doSocial(jny2.getKey(), steveouting.getKey(), e2, true);
 
 		doTransition();
 
-		e2 = d.getCurrentEdition(Name.AGGREGATOR_NAME);
+		e2 = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
 		
 		Link l1 = d.createLink("http://example.com", "title", mg.getKey());
 		Link l2 = d.createLink("http://example2.com", "title", mg.getKey());
@@ -66,7 +63,7 @@ public class VoteTransitionTest extends RNATest {
 
 		doTransition();
 		
-		Iterator<ScoredLink> iter = d.getScoredLinks(e2).iterator();
+		Iterator<ScoredLink> iter = d.editions.getScoredLinks(e2).iterator();
 		
 		assertTrue(iter.hasNext());
 		ScoredLink sl1 = iter.next();

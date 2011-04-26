@@ -1,7 +1,6 @@
 package org.rapidnewsawards.shared;
 import java.util.Date;
 
-import javax.persistence.Entity;
 import javax.persistence.Id;
 
 import com.google.gwt.user.client.rpc.IsSerializable;

@@ -3,8 +3,6 @@ package org.rapidnewsawards.server;
 import static com.google.appengine.api.labs.taskqueue.TaskOptions.Builder.url;
 
 import java.io.IOException;
-import java.util.Date;
-import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -13,7 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Name;
-import org.rapidnewsawards.shared.Periodical;
 
 import com.google.appengine.api.labs.taskqueue.Queue;
 import com.google.appengine.api.labs.taskqueue.QueueFactory;
@@ -33,9 +30,9 @@ public class TallyTask  extends HttpServlet {
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
-		Edition current = d.getCurrentEdition(Name.AGGREGATOR_NAME);
+		Edition current = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
 		if (current != null) {
-			d.fund(current);
+			d.editions.fund(current);
 		}
 	}
 

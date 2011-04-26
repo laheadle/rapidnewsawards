@@ -1,5 +1,7 @@
 package org.rapidnewsawards.server;
 
+import static com.google.appengine.api.labs.taskqueue.TaskOptions.Builder.url;
+
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
@@ -25,7 +27,6 @@ import com.google.appengine.api.labs.taskqueue.QueueFactory;
 import com.google.appengine.api.labs.taskqueue.TaskOptions;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
-import static com.google.appengine.api.labs.taskqueue.TaskOptions.Builder.*;
 
 public class MakeDataServlet extends HttpServlet {
 	/**
@@ -75,7 +76,7 @@ public class MakeDataServlet extends HttpServlet {
 			makeData(numEditions, minutes * ONE_MINUTE, numUsers);
 
 			if (doTransition) {
-				DAO.instance.doTransition(Name.AGGREGATOR_NAME, 0, null);
+				DAO.instance.transition.doTransition(Name.AGGREGATOR_NAME, 0, null);
 			}
 			
 			if (numLinks > 0) {
@@ -89,7 +90,7 @@ public class MakeDataServlet extends HttpServlet {
 	}
 
 	private void makeLinks() {
-		Edition current = d.getEdition(Name.AGGREGATOR_NAME, 1, null);
+		Edition current = d.editions.getEdition(Name.AGGREGATOR_NAME, 1, null);
 		User jq = d.findUserByLogin("johnqpublic@gmail.com", "gmail.com");
 		for (int i = 0;i < numLinks;i++) {
 			VoteResult vr = d.submitStory("http://www.example" + i + ".com", 
@@ -126,7 +127,7 @@ public class MakeDataServlet extends HttpServlet {
 		
 		if (doFollow) {
 			d.user = lyn;
-			d.doSocial(jq, true);
+			d.social.doSocial(jq, true);
 		}
 	}
 

@@ -11,7 +11,6 @@ import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
 
-import org.mortbay.log.Log;
 import org.rapidnewsawards.shared.User;
 
 import com.google.appengine.api.users.UserService;

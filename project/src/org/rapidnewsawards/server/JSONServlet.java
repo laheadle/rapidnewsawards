@@ -10,20 +10,16 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.shared.Edition;
-import org.rapidnewsawards.shared.Link;
 import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.RecentSocials;
-import org.rapidnewsawards.shared.TopStories;
 import org.rapidnewsawards.shared.RecentVotes;
-import org.rapidnewsawards.shared.RelatedUserInfo;
-import org.rapidnewsawards.shared.Return;
+import org.rapidnewsawards.shared.TopStories;
 import org.rapidnewsawards.shared.User;
 import org.rapidnewsawards.shared.VoteResult;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
-import com.google.gson.JsonObject;
 import com.googlecode.objectify.Key;
 
 public class JSONServlet extends HttpServlet {
@@ -55,21 +51,21 @@ public class JSONServlet extends HttpServlet {
 				out.println(g.toJson(rs));
 			}
 			else if (fun.equals("recentSocials")) {	
-				RecentSocials rs = d.getRecentSocials(edition);
+				RecentSocials rs = d.social.getRecentSocials(edition);
 				if (rs.edition == null) {
-					rs = d.getRecentSocials(rs.numEditions - 1);
+					rs = d.social.getRecentSocials(rs.numEditions - 1);
 				}
 				out.println(g.toJson(rs));
 			}
 			else if (fun.equals("allEditions")) {	
-				out.println(g.toJson(d.getAllEditions()));
+				out.println(g.toJson(d.editions.getAllEditions()));
 			}
 			else if (fun.equals("story")) {		
 				Long link = new Long(request.getParameter("linkId"));
-				out.println(g.toJson(d.getStory(edition, link)));
+				out.println(g.toJson(d.editions.getStory(edition, link)));
 			}
 			else if (fun.equals("topJudges")) {	
-				out.println(g.toJson(d.getTopJudges(edition)));
+				out.println(g.toJson(d.editions.getTopJudges(edition)));
 			}
 			else if (fun.equals("grabTitle")) {	
 				String urlStr = request.getParameter("url");
@@ -78,7 +74,7 @@ public class JSONServlet extends HttpServlet {
 			else if (fun.equals("voteFor")) {
 				String link = request.getParameter("link");
 				String fullLink = request.getParameter("fullLink"); 
-				Edition ed = d.getCurrentEdition(Name.AGGREGATOR_NAME);
+				Edition ed = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
 				Boolean on = new Boolean(request.getParameter("on"));
 				VoteResult vr = d.voteFor(link, fullLink, ed, on);				
 				TallyTask.scheduleImmediately();
@@ -93,7 +89,7 @@ public class JSONServlet extends HttpServlet {
 			else if (fun.equals("submitStory")) {
 				String url = request.getParameter("url");
 				String title = request.getParameter("title"); 
-				Edition ed = d.getCurrentEdition(Name.AGGREGATOR_NAME);
+				Edition ed = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
 				VoteResult vr = d.submitStory(url, title, ed, d.user);
 				TallyTask.scheduleImmediately();
 				out.println(g.toJson(vr));
@@ -102,7 +98,7 @@ public class JSONServlet extends HttpServlet {
 				String _to = request.getParameter("to");
 				User to = d.ofy().get(User.getKey(new Long(_to)));
 				Boolean on  = new Boolean(request.getParameter("on"));
-				out.println(g.toJson(d.doSocial(to, on).s));
+				out.println(g.toJson(d.social.doSocial(to, on).s));
 			}
 			else if (fun.equals("recentFundings")) {
 				RecentVotes rv = d.getRecentVotes(ed(edition), Name.AGGREGATOR_NAME);

@@ -1,8 +1,5 @@
 package org.rapidnewsawards.server.test;
 
-import java.io.File;
-import java.util.ArrayList;
-
 import junit.framework.TestCase;
 
 import org.rapidnewsawards.server.DAO;
@@ -11,10 +8,8 @@ import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.User;
 
-import com.google.appengine.api.datastore.dev.LocalDatastoreService;
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
-import com.google.apphosting.api.ApiProxy;
 
 
 public abstract class RNATest extends TestCase {
@@ -31,12 +26,12 @@ public abstract class RNATest extends TestCase {
 	}
 
 	public void doTransition() {
-		Edition current = d.getEdition(Name.AGGREGATOR_NAME, -1, null);
-		Edition next = d.getEdition(Name.AGGREGATOR_NAME, -2, null);
-		d.transitionEdition(Name.AGGREGATOR_NAME);
-		d.socialTransition(next);
-		d.setEditionRevenue();
-		d.fund(current);
+		Edition current = d.editions.getEdition(Name.AGGREGATOR_NAME, -1, null);
+		Edition next = d.editions.getEdition(Name.AGGREGATOR_NAME, -2, null);
+		d.transition.transitionEdition(Name.AGGREGATOR_NAME);
+		d.transition.socialTransition(next);
+		d.transition.setEditionRevenue();
+		d.editions.fund(current);
 	}
 
 

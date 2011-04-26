@@ -4,7 +4,6 @@ package org.rapidnewsawards.server.test;
 
 import org.junit.Test;
 import org.rapidnewsawards.server.DAO;
-import org.rapidnewsawards.server.Perishable;
 import org.rapidnewsawards.shared.Edition;
 import org.rapidnewsawards.shared.Name;
 import org.rapidnewsawards.shared.Return;
@@ -15,22 +14,22 @@ public class FollowTransitionTest extends RNATest {
 		
 	@Test
 	public void testFollows() {
-		Edition e2 = DAO.instance.getEdition(Name.AGGREGATOR_NAME, 1, null);
+		Edition e2 = DAO.instance.editions.getEdition(Name.AGGREGATOR_NAME, 1, null);
 				
 		User mg = getUser("ohthatmeg");
 		User jny2 = getUser("Joshuanyoung");
 
-		Return r = DAO.instance.doSocial(mg.getKey(), jny2.getKey(), e2, true);
+		Return r = DAO.instance.social.doSocial(mg.getKey(), jny2.getKey(), e2, true);
 		assertEquals(r.s, Return.ABOUT_TO_FOLLOW.s);
 		
-		assertNull(DAO.instance.getFollow(mg.getKey(), jny2.getKey(), null));
-		assertNotNull("About To Follow", DAO.instance.getAboutToSocial(mg.getKey(), jny2.getKey(), e2, null));
+		assertNull(DAO.instance.social.getFollow(mg.getKey(), jny2.getKey(), null));
+		assertNotNull("About To Follow", DAO.instance.social.getAboutToSocial(mg.getKey(), jny2.getKey(), e2, null));
 
 		doTransition();
 		
-		e2 = DAO.instance.getCurrentEdition(Name.AGGREGATOR_NAME);
+		e2 = DAO.instance.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
 
-		assertNotNull(DAO.instance.getFollow(mg.getKey(), jny2.getKey(), null));
+		assertNotNull(DAO.instance.social.getFollow(mg.getKey(), jny2.getKey(), null));
 
 	}
 

@@ -1,11 +1,7 @@
 package org.rapidnewsawards.shared;
 
-import java.util.ArrayList;
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.Transient;
-
-import org.rapidnewsawards.shared.Name;
 
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Parent;
