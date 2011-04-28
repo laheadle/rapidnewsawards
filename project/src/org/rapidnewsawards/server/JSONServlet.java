@@ -40,15 +40,16 @@ public class JSONServlet extends HttpServlet {
 		PrintWriter out = resp.getWriter();
 		Gson g = new Gson();
 		log.info("json " + fun);
-		Integer edition = null;
+		int edition = -1;
 		try {
-			edition = new Integer(request.getParameter("ed"));
+			Integer _edition = new Integer(request.getParameter("ed"));
+			edition = ed(_edition);
 		} catch (Exception e) {
 		}
 
 		// TODO makes this a hash lookup of a function object
 		if (fun.equals("topStories")) {
-			TopStories rs = d.editions.getTopStories(ed(edition),
+			TopStories rs = d.editions.getTopStories(edition,
 					Name.AGGREGATOR_NAME);
 			if (rs.edition == null) {
 				rs = d.editions.getTopStories(rs.numEditions - 1,
@@ -57,6 +58,7 @@ public class JSONServlet extends HttpServlet {
 			out.println(g.toJson(rs));
 		} else if (fun.equals("recentSocials")) {
 			RecentSocials rs = d.social.getRecentSocials(edition);
+			// TODO Thinkme
 			if (rs.edition == null) {
 				rs = d.social.getRecentSocials(rs.numEditions - 1);
 			}
@@ -97,7 +99,7 @@ public class JSONServlet extends HttpServlet {
 			Boolean on = new Boolean(request.getParameter("on"));
 			out.println(g.toJson(d.social.doSocial(to, on).s));
 		} else if (fun.equals("recentFundings")) {
-			RecentVotes rv = d.editions.getRecentVotes(ed(edition),
+			RecentVotes rv = d.editions.getRecentVotes(edition,
 					Name.AGGREGATOR_NAME);
 			out.println(g.toJson(rv));
 		} else if (fun.equals("sendUser")) {

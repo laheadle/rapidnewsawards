@@ -326,7 +326,7 @@ public class DAO extends DAOBase
 			return result;
 		}
 
-		public FullStoryInfo getStory(Integer editionNum, Long linkId) {
+		public FullStoryInfo getStory(int editionNum, Long linkId) {
 			Key<Link> linkKey = new Key<Link>(Link.class, linkId);
 			Key<Edition> editionKey = new Key<Edition>(Edition.class, ""+editionNum);
 			
@@ -350,10 +350,10 @@ public class DAO extends DAOBase
 			return fsi;
 		}
 
-		public TopJudges getTopJudges(Integer edition) {	
+		public TopJudges getTopJudges(int edition) {	
 			Edition e = 
 				editions.getEdition(Name.AGGREGATOR_NAME, 
-										edition == null? -1 : edition, 
+										edition, 
 										null);
 			TopJudges tj = new TopJudges();
 			tj.edition = e;
@@ -647,11 +647,11 @@ public class DAO extends DAOBase
 			return o.query(Follow.class).ancestor(from).filter("judge", to).get();
 		}
 
-		public RecentSocials getRecentSocials(Integer edition) {	
+		public RecentSocials getRecentSocials(int edition) {	
 			Edition current = null;
 			Edition next = null;
 		
-			if (edition == null || edition == -1) {
+			if (edition == -1) {
 				current = editions.getEdition(Name.AGGREGATOR_NAME, -1, null);
 				next = editions.getEdition(Name.AGGREGATOR_NAME, -2, null);
 			}
@@ -728,7 +728,7 @@ public class DAO extends DAOBase
 			log.info(p.name + ": New current Edition:" + nextNum);
 		}
 
-		public void doTransition(Name aggregatorName, Integer editionNum, Objectify o) {
+		public void doTransition(Name aggregatorName, int editionNum, Objectify o) {
 			Edition from = editions.getEdition(aggregatorName, editionNum, o);
 
 			Edition current = editions.getCurrentEdition(Name.AGGREGATOR_NAME);
@@ -1130,7 +1130,7 @@ public class DAO extends DAOBase
 			}
 		}
 
-		public User welcomeUser(String nickname, Integer donation) {
+		public User welcomeUser(String nickname, int donation) {
 		
 			LockedPeriodical lp = lockPeriodical();
 		

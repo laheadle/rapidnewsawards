@@ -37,7 +37,7 @@ public class MakeDataServlet extends HttpServlet {
 	public static boolean doFollow = false;
 	public static boolean doTransition = false;	
 	public static DAO d = DAO.instance;
-	private static Integer numLinks = 0;
+	private static int numLinks = 0;
 	
 	// don't set up tasks if testing (set by test case)
 	public static boolean testing = false;
