@@ -15,6 +15,7 @@ public class Periodical {
 
 	@Parent public Key<Root> root;
 	
+	// TODO Make id a String.
 	@Id
 	private Long id;
 

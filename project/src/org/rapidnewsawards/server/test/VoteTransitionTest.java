@@ -18,17 +18,17 @@ public class VoteTransitionTest extends RNATest {
 		Edition e1 = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);		
 		User mg = getUser(null);
 
-		Link l = d.createLink("http://example.com", "title", mg.getKey());
-		assertEquals(d.getLatestUser_Vote_Links(e1).size(), 0);
-		d.voteFor(mg, e1, l, true);
-		assertTrue(d.hasVoted(mg, e1, l));
-		assertEquals("User_Vote_Link Exists", d.getLatestUser_Vote_Links(e1).size(), 1);
+		Link l = d.users.createLink("http://example.com", "title", mg.getKey());
+		assertEquals(d.editions.getLatestUser_Vote_Links(e1).size(), 0);
+		d.users.voteFor(mg, e1, l, true);
+		assertTrue(d.users.hasVoted(mg, e1, l));
+		assertEquals("User_Vote_Link Exists", d.editions.getLatestUser_Vote_Links(e1).size(), 1);
 		
 		doTransition();
 		
 		Edition e2 = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
 		
-		assertFalse(d.hasVoted(mg, e2, l));
+		assertFalse(d.users.hasVoted(mg, e2, l));
 	}
 
 	public void testTally() {
@@ -50,16 +50,16 @@ public class VoteTransitionTest extends RNATest {
 
 		e2 = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
 		
-		Link l1 = d.createLink("http://example.com", "title", mg.getKey());
-		Link l2 = d.createLink("http://example2.com", "title", mg.getKey());
-		Link l3 = d.createLink("http://example3.com", "title",  mg.getKey());
+		Link l1 = d.users.createLink("http://example.com", "title", mg.getKey());
+		Link l2 = d.users.createLink("http://example2.com", "title", mg.getKey());
+		Link l3 = d.users.createLink("http://example3.com", "title",  mg.getKey());
 		
-		d.voteFor(jny2, e2, l1, true);
+		d.users.voteFor(jny2, e2, l1, true);
 
-		d.voteFor(steveouting, e2, l2, true);
+		d.users.voteFor(steveouting, e2, l2, true);
 
-		d.voteFor(jny2, e2, l3, true);
-		d.voteFor(steveouting, e2, l3, true);
+		d.users.voteFor(jny2, e2, l3, true);
+		d.users.voteFor(steveouting, e2, l3, true);
 
 		doTransition();
 		

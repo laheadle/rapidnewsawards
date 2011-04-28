@@ -91,9 +91,9 @@ public class MakeDataServlet extends HttpServlet {
 
 	private void makeLinks() {
 		Edition current = d.editions.getEdition(Name.AGGREGATOR_NAME, 1, null);
-		User jq = d.findUserByLogin("johnqpublic@gmail.com", "gmail.com");
+		User jq = d.users.findUserByLogin("johnqpublic@gmail.com", "gmail.com");
 		for (int i = 0;i < numLinks;i++) {
-			VoteResult vr = d.submitStory("http://www.example" + i + ".com", 
+			VoteResult vr = d.editions.submitStory("http://www.example" + i + ".com", 
 					"example story", current, jq);
 			if (!vr.returnVal.s.equals(Return.SUCCESS.s)) {
 				DAO.log.warning(vr.returnVal.toString());
@@ -105,7 +105,7 @@ public class MakeDataServlet extends HttpServlet {
 	public static void welcome(User u, String nickname, int donation) {
 		User olduser = d.user;
 		d.user = u;
-		d.welcomeUser(nickname, donation * 100);		
+		d.users.welcomeUser(nickname, donation * 100);		
 		d.user = olduser;
 	}
 	public static void makeData (int editionCount, long periodSize, Cell<Integer> numUsers) throws ParseException {		

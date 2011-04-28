@@ -11,11 +11,6 @@
 	</servlet>
 
 	<servlet>
-		<servlet-name>apiServlet</servlet-name>
-		<servlet-class>org.rapidnewsawards.server.APIServlet</servlet-class>
-	</servlet>
-
-	<servlet>
 		<servlet-name>makeDataServlet</servlet-name>
 		<servlet-class>org.rapidnewsawards.server.MakeDataServlet</servlet-class>
 	</servlet>
@@ -51,12 +46,6 @@
 		<servlet-name>tallyTask</servlet-name>
 		<url-pattern>/tasks/tally</url-pattern>
 	</servlet-mapping>
-
-	<servlet-mapping>
-		<servlet-name>apiServlet</servlet-name>
-		<url-pattern>/1/*</url-pattern>
-	</servlet-mapping>
-
 
 	<servlet-mapping>
 		<servlet-name>doSomethingServlet</servlet-name>
@@ -100,7 +89,7 @@
 	<welcome-file-list>
 		<welcome-file>index.jsp</welcome-file>
 		<welcome-file>index.html</welcome-file>
-		<welcome-file>Rapid_News_Awards.html</welcome-file>
+		<welcome-file>rna.html</welcome-file>
 	</welcome-file-list>
 
 </web-app>

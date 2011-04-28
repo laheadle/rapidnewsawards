@@ -31,7 +31,7 @@ public class AuthFilter implements Filter {
 			d.user = null;
 		}
 		else {
-			User u = DAO.instance.findUserByLogin(appUser.getEmail(), appUser.getAuthDomain());
+			User u = DAO.instance.users.findUserByLogin(appUser.getEmail(), appUser.getAuthDomain());
 			if (u == null && !adminEmail.equals(appUser.getEmail())) {
 				// first time logging in; create new user unless this is the admin
 				u = new User(appUser.getEmail(), appUser.getAuthDomain(), false);

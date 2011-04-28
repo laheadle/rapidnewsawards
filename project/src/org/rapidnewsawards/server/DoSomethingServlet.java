@@ -29,7 +29,7 @@ public class DoSomethingServlet extends HttpServlet {
 
 	public void fixJosh() throws IOException {
 		PrintWriter out = response.getWriter();
-		User josh = DAO.instance.findUserByLogin("JoshuaNYoung@gmail.com", "gmail.com");
+		User josh = DAO.instance.users.findUserByLogin("JoshuaNYoung@gmail.com", "gmail.com");
 		if (josh.isEditor)
 			out.println("josh fixed");
 		else {
@@ -51,26 +51,26 @@ public class DoSomethingServlet extends HttpServlet {
 		
 		// insert some votes in the current edition
 		
-		User megangarber = DAO.instance.findUserByLogin("megangarber@gmail.com", "gmail.com");
-		User jny2 = DAO.instance.findUserByLogin("jny2@gmail.com", "gmail.com");
-		User steveouting = DAO.instance.findUserByLogin("steveouting@gmail.com", "gmail.com");
+		User megangarber = DAO.instance.users.findUserByLogin("megangarber@gmail.com", "gmail.com");
+		User jny2 = DAO.instance.users.findUserByLogin("jny2@gmail.com", "gmail.com");
+		User steveouting = DAO.instance.users.findUserByLogin("steveouting@gmail.com", "gmail.com");
 		
 		String url1 = "http://example.com";
 		String url2 = "http://example2.com";
 		String url3 = "http://example3.com";
 		
-		Link l1 = DAO.instance.createLink(url1, "Title A B C", megangarber.getKey());
-		Link l2 = DAO.instance.createLink(url2, "Title D E F", jny2.getKey());
-		Link l3 = DAO.instance.createLink(url3, "Title G H I", megangarber.getKey());
+		Link l1 = DAO.instance.users.createLink(url1, "Title A B C", megangarber.getKey());
+		Link l2 = DAO.instance.users.createLink(url2, "Title D E F", jny2.getKey());
+		Link l3 = DAO.instance.users.createLink(url3, "Title G H I", megangarber.getKey());
 
-		DAO.instance.voteFor(megangarber, e, l1, true);
-		DAO.instance.voteFor(jny2, e, l1, true);
-		DAO.instance.voteFor(steveouting, e, l1, true);
+		DAO.instance.users.voteFor(megangarber, e, l1, true);
+		DAO.instance.users.voteFor(jny2, e, l1, true);
+		DAO.instance.users.voteFor(steveouting, e, l1, true);
 
-		DAO.instance.voteFor(megangarber, e, l2, true);
-		DAO.instance.voteFor(steveouting, e, l2, true);
+		DAO.instance.users.voteFor(megangarber, e, l2, true);
+		DAO.instance.users.voteFor(steveouting, e, l2, true);
 
-		DAO.instance.voteFor(jny2, e, l3, true);
+		DAO.instance.users.voteFor(jny2, e, l3, true);
 		DAO d = DAO.instance;
 		
 		Edition current = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);

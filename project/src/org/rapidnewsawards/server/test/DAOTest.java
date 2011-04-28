@@ -73,15 +73,15 @@ public class DAOTest extends RNATest {
 		User mg = getUser(null);
 		Edition e = DAO.instance.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
 		
-		Link l = DAO.instance.createLink("http://example.com", "title", mg.getKey());
-		Link l3 = DAO.instance.createLink("http://example2.com",  "title", mg.getKey());
-		DAO.instance.voteFor(mg, e, l, true);
-		assertTrue(DAO.instance.hasVoted(mg, e, l));
-		DAO.instance.voteFor(mg, e, l3, true);
-		assertTrue(DAO.instance.hasVoted(mg, e, l3));
-		assertTrue(DAO.instance.hasVoted(mg, e, l));
-		Link l2 = DAO.instance.createLink("http://bad.com",  "title", mg.getKey());
-		assertFalse(DAO.instance.hasVoted(mg, e, l2));
+		Link l = DAO.instance.users.createLink("http://example.com", "title", mg.getKey());
+		Link l3 = DAO.instance.users.createLink("http://example2.com",  "title", mg.getKey());
+		DAO.instance.users.voteFor(mg, e, l, true);
+		assertTrue(DAO.instance.users.hasVoted(mg, e, l));
+		DAO.instance.users.voteFor(mg, e, l3, true);
+		assertTrue(DAO.instance.users.hasVoted(mg, e, l3));
+		assertTrue(DAO.instance.users.hasVoted(mg, e, l));
+		Link l2 = DAO.instance.users.createLink("http://bad.com",  "title", mg.getKey());
+		assertFalse(DAO.instance.users.hasVoted(mg, e, l2));
 	}
 
 

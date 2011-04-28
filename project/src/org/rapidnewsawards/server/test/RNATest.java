@@ -22,7 +22,7 @@ public abstract class RNATest extends TestCase {
 		if (name == null)
 			name = "ohthatmeg";
 		
-		return d.findUserByLogin(name + "@gmail.com", "gmail.com"); 
+		return d.users.findUserByLogin(name + "@gmail.com", "gmail.com"); 
 	}
 
 	public void doTransition() {
