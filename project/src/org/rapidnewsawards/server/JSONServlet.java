@@ -2,6 +2,8 @@ package org.rapidnewsawards.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -28,9 +30,188 @@ public class JSONServlet extends HttpServlet {
 			.getName());
 	private static DAO d = DAO.instance;
 
-	// TODO: on client side, null means current edition; on server, -1 does.
-	private int ed(Integer edition) {
-		return edition == null ? -1 : edition;
+	private static abstract class Parser {
+		public abstract Object parse(String value);
+	}
+
+	private static abstract class AbstractCommand {
+		HttpServletRequest request;
+		public static Map<String, Object> defaults = new HashMap<String, Object>();
+		private static Map<Class<?>, Parser> parsers = new HashMap<Class<?>, Parser>();
+
+		static {
+			defaults.put("edition", -1);
+			parsers.put(Integer.class, new Parser() {
+				public Object parse(String value) {
+					return Integer.decode(value);
+				}
+			});
+			parsers.put(Long.class, new Parser() {
+				public Object parse(String value) {
+					return Long.decode(value);
+				}
+			});
+		}
+
+		public <T> T get(String key, Class<T> clazz) {
+			String value = request.getParameter(key);
+			if (value == null) {
+				return clazz.cast(defaults.get(key));
+			}
+			// TODO handle null pointer returned (throws)
+			return clazz.cast(parsers.get(clazz).parse(value));
+		}
+
+		public Object perform(HttpServletRequest request) {
+			this.request = request;
+			return this.getResult();
+		}
+
+		protected abstract Object getResult();
+
+	}
+
+	public static Map<String, AbstractCommand> commandsMap;
+
+	static {
+		commandsMap = new HashMap<String, AbstractCommand>();
+
+		commandsMap.put("topStories", new AbstractCommand() {
+			public Object getResult() {
+				int edition = get("edition", Integer.class);
+				TopStories rs = d.editions.getTopStories(edition,
+						Name.AGGREGATOR_NAME);
+				if (rs.edition == null) {
+					rs = d.editions.getTopStories(rs.numEditions - 1,
+							Name.AGGREGATOR_NAME);
+				}
+				return rs;
+			}
+		});
+
+		commandsMap.put("recentSocials", new AbstractCommand() {
+			public Object getResult() {
+				int edition = get("edition", Integer.class);
+				RecentSocials rs = d.social.getRecentSocials(edition);
+				// TODO Thinkme
+				if (rs.edition == null) {
+					rs = d.social.getRecentSocials(rs.numEditions - 1);
+				}
+				return rs;
+			}
+		});
+
+		commandsMap.put("allEditions", new AbstractCommand() {
+			public Object getResult() {
+				return d.editions.getAllEditions();
+			}
+		});
+
+		commandsMap.put("story", new AbstractCommand() {
+			public Object getResult() {
+				int edition = get("edition", Integer.class);
+				long link = get("linkId", Long.class);
+				return d.editions.getStory(edition, link);
+			}
+		});
+
+		commandsMap.put("recentFundings", new AbstractCommand() {
+			public Object getResult() {
+				RecentVotes rv = d.editions.getRecentVotes(get("edition",
+						Integer.class), Name.AGGREGATOR_NAME);
+				return rv;
+			}
+		});
+
+		commandsMap.put("topJudges", new AbstractCommand() {
+			public Object getResult() {
+				return d.editions.getTopJudges(get("edition", Integer.class));
+			}
+		});
+
+		commandsMap.put("grabTitle", new AbstractCommand() {
+			public Object getResult() {
+				String urlStr = request.getParameter("url");
+				return TitleGrabber.getTitle(urlStr);
+			}
+		});
+
+		commandsMap.put("voteFor", new AbstractCommand() {
+			public Object getResult() {
+				// TODO call typed interface, standardize exceptions
+				String link = request.getParameter("link");
+				String fullLink = request.getParameter("fullLink");
+				Edition ed = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
+				Boolean on = new Boolean(request.getParameter("on"));
+				VoteResult vr = d.users.voteFor(link, fullLink, ed, on);
+				TallyTask.scheduleImmediately();
+				return vr;
+			}
+		});
+
+		commandsMap.put("welcomeUser", new AbstractCommand() {
+			public Object getResult() {
+				// TODO test
+				if (d.user == null)
+					return null;
+				String nickname = request.getParameter("nickname");
+				return d.users.welcomeUser(nickname, 0);
+			}
+		});
+
+		commandsMap.put("submitStory", new AbstractCommand() {
+			public Object getResult() {
+				String url = request.getParameter("url");
+				String title = request.getParameter("title");
+				Edition ed = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
+				VoteResult vr = d.editions.submitStory(url, title, ed, d.user);
+				TallyTask.scheduleImmediately();
+				return vr;
+			}
+		});
+		commandsMap.put("sendLogoutURL", new AbstractCommand() {
+			public Object getResult() {
+				UserService userService = UserServiceFactory.getUserService();
+				String url = request.getParameter("url");
+				return userService.createLogoutURL(url);
+			}
+		});
+		commandsMap.put("relatedUser", new AbstractCommand() {
+			public Object getResult() {
+				long userId = new Long(request.getParameter("id"));
+				return d.users.getRelatedUserInfo(Name.AGGREGATOR_NAME, d.user,
+						new Key<User>(User.class, userId));
+			}
+		});
+		commandsMap.put("getFollowers", new AbstractCommand() {
+			public Object getResult() {
+				long userId = new Long(request.getParameter("id"));
+				return d.users.getFollowers(new Key<User>(User.class, userId));
+			}
+		});
+
+		commandsMap.put("doSocial", new AbstractCommand() {
+			public Object getResult() {
+				String _to = request.getParameter("to");
+				User to = d.ofy().get(User.getKey(new Long(_to)));
+				Boolean on = new Boolean(request.getParameter("on"));
+				return d.social.doSocial(to, on).s;
+			}
+		});
+
+		commandsMap.put("sendUser", new AbstractCommand() {
+			public Object getResult() {
+				return d.user;
+			}
+		});
+
+		commandsMap.put("sendLoginURL", new AbstractCommand() {
+			public Object getResult() {
+				String url = request.getParameter("url");
+				UserService userService = UserServiceFactory.getUserService();
+				return userService.createLoginURL(url);
+			}
+		});
 	}
 
 	@Override
@@ -38,92 +219,14 @@ public class JSONServlet extends HttpServlet {
 			throws ServletException, IOException {
 		String fun = request.getParameter("fun");
 		PrintWriter out = resp.getWriter();
+		if (fun == null) {
+			out.println("invalid function");
+			return;
+		}
+		log.info("Json Function: " + fun);
 		Gson g = new Gson();
-		log.info("json " + fun);
-		int edition = -1;
-		try {
-			Integer _edition = new Integer(request.getParameter("ed"));
-			edition = ed(_edition);
-		} catch (Exception e) {
-		}
-
-		// TODO makes this a hash lookup of a function object
-		if (fun.equals("topStories")) {
-			TopStories rs = d.editions.getTopStories(edition,
-					Name.AGGREGATOR_NAME);
-			if (rs.edition == null) {
-				rs = d.editions.getTopStories(rs.numEditions - 1,
-						Name.AGGREGATOR_NAME);
-			}
-			out.println(g.toJson(rs));
-		} else if (fun.equals("recentSocials")) {
-			RecentSocials rs = d.social.getRecentSocials(edition);
-			// TODO Thinkme
-			if (rs.edition == null) {
-				rs = d.social.getRecentSocials(rs.numEditions - 1);
-			}
-			out.println(g.toJson(rs));
-		} else if (fun.equals("allEditions")) {
-			out.println(g.toJson(d.editions.getAllEditions()));
-		} else if (fun.equals("story")) {
-			Long link = new Long(request.getParameter("linkId"));
-			out.println(g.toJson(d.editions.getStory(edition, link)));
-		} else if (fun.equals("topJudges")) {
-			out.println(g.toJson(d.editions.getTopJudges(edition)));
-		} else if (fun.equals("grabTitle")) {
-			String urlStr = request.getParameter("url");
-			out.println(g.toJson(TitleGrabber.getTitle(urlStr)));
-		} else if (fun.equals("voteFor")) {
-			String link = request.getParameter("link");
-			String fullLink = request.getParameter("fullLink");
-			Edition ed = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
-			Boolean on = new Boolean(request.getParameter("on"));
-			VoteResult vr = d.users.voteFor(link, fullLink, ed, on);
-			TallyTask.scheduleImmediately();
-			out.println(g.toJson(vr));
-		} else if (fun.equals("welcomeUser")) {
-			if (d.user == null)
-				out.println(g.toJson(null));
-			String nickname = request.getParameter("nickname");
-			out.println(g.toJson(d.users.welcomeUser(nickname, 0)));
-		} else if (fun.equals("submitStory")) {
-			String url = request.getParameter("url");
-			String title = request.getParameter("title");
-			Edition ed = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
-			VoteResult vr = d.editions.submitStory(url, title, ed, d.user);
-			TallyTask.scheduleImmediately();
-			out.println(g.toJson(vr));
-		} else if (fun.equals("doSocial")) {
-			String _to = request.getParameter("to");
-			User to = d.ofy().get(User.getKey(new Long(_to)));
-			Boolean on = new Boolean(request.getParameter("on"));
-			out.println(g.toJson(d.social.doSocial(to, on).s));
-		} else if (fun.equals("recentFundings")) {
-			RecentVotes rv = d.editions.getRecentVotes(edition,
-					Name.AGGREGATOR_NAME);
-			out.println(g.toJson(rv));
-		} else if (fun.equals("sendUser")) {
-			out.println(g.toJson(d.user));
-		} else if (fun.equals("relatedUser")) {
-			long userId = new Long(request.getParameter("id"));
-			out.println(g.toJson(d.users.getRelatedUserInfo(
-					Name.AGGREGATOR_NAME, d.user, new Key<User>(User.class,
-							userId))));
-		} else if (fun.equals("getFollowers")) {
-			long userId = new Long(request.getParameter("id"));
-			out.println(g.toJson(d.users.getFollowers(new Key<User>(User.class,
-					userId))));
-		}
-
-		else if (fun.equals("sendLogoutURL")) {
-			UserService userService = UserServiceFactory.getUserService();
-			String url = request.getParameter("url");
-			out.println(g.toJson(userService.createLogoutURL(url)));
-		} else if (fun.equals("sendLoginURL")) {
-			String url = request.getParameter("url");
-			UserService userService = UserServiceFactory.getUserService();
-			out.println(g.toJson(userService.createLoginURL(url)));
-		}
+		AbstractCommand c = commandsMap.get(fun);
+		out.println(g.toJson(c.perform(request)));
 	}
 
 	public void doPost(HttpServletRequest request, HttpServletResponse response)
