@@ -1,4 +1,4 @@
-package org.rapidnewsawards.shared;
+package org.rapidnewsawards.messages;
 
 public enum Return {
 

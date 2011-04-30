@@ -1,9 +1,11 @@
-package org.rapidnewsawards.shared;
+package org.rapidnewsawards.core;
 
 import javax.persistence.Id;
 
+
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cached;
+import com.googlecode.objectify.annotation.Unindexed;
 
 @Cached
 public class ScoredLink {
@@ -11,10 +13,10 @@ public class ScoredLink {
 	public Long id;
 
 	public Key<Edition> edition;
-	public Key<Link> link;
+	@Unindexed public Key<Link> link;
 	public int score;
 
-	public int revenue;
+	@Unindexed public int revenue;
 		
 	public ScoredLink() {}
 	

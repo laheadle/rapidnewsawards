@@ -11,13 +11,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.rapidnewsawards.shared.Edition;
-import org.rapidnewsawards.shared.Name;
-import org.rapidnewsawards.shared.RecentSocials;
-import org.rapidnewsawards.shared.RecentVotes;
-import org.rapidnewsawards.shared.TopStories;
-import org.rapidnewsawards.shared.User;
-import org.rapidnewsawards.shared.VoteResult;
+import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.User;
+import org.rapidnewsawards.messages.Name;
+import org.rapidnewsawards.messages.RecentSocials;
+import org.rapidnewsawards.messages.RecentVotes;
+import org.rapidnewsawards.messages.TopStories;
+import org.rapidnewsawards.messages.VoteResult;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -92,6 +92,7 @@ public class JSONServlet extends HttpServlet {
 		commandsMap.put("recentSocials", new AbstractCommand() {
 			public Object getResult() {
 				int edition = get("edition", Integer.class);
+				// TODO BUG IN edition = 0
 				RecentSocials rs = d.social.getRecentSocials(edition);
 				// TODO Thinkme
 				if (rs.edition == null) {

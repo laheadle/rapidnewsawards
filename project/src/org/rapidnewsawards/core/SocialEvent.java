@@ -1,16 +1,19 @@
-package org.rapidnewsawards.shared;
+package org.rapidnewsawards.core;
 
 import java.util.Date;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.Cached;
 
 @Entity
 /*
  * SocialEvent Events -- Follows, Unfollows, and Joins
  */
+@Cached
 public class SocialEvent {
 	@Id
 	Long id;

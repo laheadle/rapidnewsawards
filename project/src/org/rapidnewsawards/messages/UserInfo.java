@@ -1,6 +1,8 @@
-package org.rapidnewsawards.shared;
+package org.rapidnewsawards.messages;
 
 import java.util.LinkedList;
+
+import org.rapidnewsawards.core.User;
 
 public class UserInfo {
 	public User user;

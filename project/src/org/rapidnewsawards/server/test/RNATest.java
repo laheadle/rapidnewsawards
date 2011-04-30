@@ -2,11 +2,11 @@ package org.rapidnewsawards.server.test;
 
 import junit.framework.TestCase;
 
+import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.User;
+import org.rapidnewsawards.messages.Name;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
-import org.rapidnewsawards.shared.Edition;
-import org.rapidnewsawards.shared.Name;
-import org.rapidnewsawards.shared.User;
 
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;

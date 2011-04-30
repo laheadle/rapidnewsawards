@@ -9,10 +9,10 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.rapidnewsawards.shared.Edition;
-import org.rapidnewsawards.shared.Link;
-import org.rapidnewsawards.shared.Name;
-import org.rapidnewsawards.shared.User;
+import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.Link;
+import org.rapidnewsawards.core.User;
+import org.rapidnewsawards.messages.Name;
 
 
 @SuppressWarnings("serial")

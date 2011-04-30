@@ -1,4 +1,4 @@
-package org.rapidnewsawards.shared;
+package org.rapidnewsawards.core;
 import java.util.Date;
 
 import javax.persistence.Id;

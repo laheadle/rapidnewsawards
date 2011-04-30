@@ -1,9 +1,11 @@
-package org.rapidnewsawards.shared;
+package org.rapidnewsawards.core;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
+
 import com.googlecode.objectify.Key;
+import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Parent;
 
 @Entity
@@ -11,6 +13,7 @@ import com.googlecode.objectify.annotation.Parent;
 /*
  * An Editor is Currently Following a Judge
  */
+@Cached
 public class Follow {
 	@Id
 	Long id;

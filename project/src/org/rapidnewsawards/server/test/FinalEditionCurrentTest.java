@@ -1,9 +1,9 @@
 package org.rapidnewsawards.server.test;
 
 import org.junit.Test;
+import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.messages.Name;
 import org.rapidnewsawards.server.DAO;
-import org.rapidnewsawards.shared.Edition;
-import org.rapidnewsawards.shared.Name;
 
 // Here we are testing the case of a periodical whose final edition is current.
 public class FinalEditionCurrentTest extends RNATest {

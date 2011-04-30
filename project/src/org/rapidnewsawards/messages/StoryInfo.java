@@ -1,4 +1,7 @@
-package org.rapidnewsawards.shared;
+package org.rapidnewsawards.messages;
+
+import org.rapidnewsawards.core.Link;
+import org.rapidnewsawards.core.User;
 
 
 public class StoryInfo {

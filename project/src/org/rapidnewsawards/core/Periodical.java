@@ -1,7 +1,9 @@
-package org.rapidnewsawards.shared;
+package org.rapidnewsawards.core;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
+
+import org.rapidnewsawards.messages.Name;
 
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Parent;

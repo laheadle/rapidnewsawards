@@ -9,33 +9,33 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.logging.Logger;
 
-import org.rapidnewsawards.shared.AllEditions;
-import org.rapidnewsawards.shared.Donation;
-import org.rapidnewsawards.shared.Edition;
-import org.rapidnewsawards.shared.EditionUserAuthority;
-import org.rapidnewsawards.shared.Follow;
-import org.rapidnewsawards.shared.FullStoryInfo;
-import org.rapidnewsawards.shared.Link;
-import org.rapidnewsawards.shared.Name;
-import org.rapidnewsawards.shared.Periodical;
-import org.rapidnewsawards.shared.RecentSocials;
-import org.rapidnewsawards.shared.RecentVotes;
-import org.rapidnewsawards.shared.RelatedUserInfo;
-import org.rapidnewsawards.shared.Return;
-import org.rapidnewsawards.shared.Root;
-import org.rapidnewsawards.shared.ScoredLink;
-import org.rapidnewsawards.shared.SocialEvent;
-import org.rapidnewsawards.shared.SocialInfo;
-import org.rapidnewsawards.shared.StoryInfo;
-import org.rapidnewsawards.shared.TopJudges;
-import org.rapidnewsawards.shared.TopStories;
-import org.rapidnewsawards.shared.User;
-import org.rapidnewsawards.shared.UserInfo;
-import org.rapidnewsawards.shared.User_Authority;
-import org.rapidnewsawards.shared.User_Vote_Link;
-import org.rapidnewsawards.shared.Vote;
-import org.rapidnewsawards.shared.VoteResult;
-import org.rapidnewsawards.shared.Vote_Link;
+import org.rapidnewsawards.core.Donation;
+import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.EditionUserAuthority;
+import org.rapidnewsawards.core.Follow;
+import org.rapidnewsawards.core.Link;
+import org.rapidnewsawards.core.Periodical;
+import org.rapidnewsawards.core.Root;
+import org.rapidnewsawards.core.ScoredLink;
+import org.rapidnewsawards.core.SocialEvent;
+import org.rapidnewsawards.core.User;
+import org.rapidnewsawards.core.Vote;
+import org.rapidnewsawards.messages.AllEditions;
+import org.rapidnewsawards.messages.FullStoryInfo;
+import org.rapidnewsawards.messages.Name;
+import org.rapidnewsawards.messages.RecentSocials;
+import org.rapidnewsawards.messages.RecentVotes;
+import org.rapidnewsawards.messages.RelatedUserInfo;
+import org.rapidnewsawards.messages.Return;
+import org.rapidnewsawards.messages.SocialInfo;
+import org.rapidnewsawards.messages.StoryInfo;
+import org.rapidnewsawards.messages.TopJudges;
+import org.rapidnewsawards.messages.TopStories;
+import org.rapidnewsawards.messages.UserInfo;
+import org.rapidnewsawards.messages.User_Authority;
+import org.rapidnewsawards.messages.User_Vote_Link;
+import org.rapidnewsawards.messages.VoteResult;
+import org.rapidnewsawards.messages.Vote_Link;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
@@ -372,7 +372,8 @@ public class DAO extends DAOBase {
 
 		public TopStories getTopStories(int editionNum, Name name) {
 			// TODO error checking
-
+			// TODO don't return 0-scored?
+			
 			Edition e = editions.getEdition(name, editionNum, null);
 			LinkedList<ScoredLink> scored = editions.getScoredLinks(e);
 			LinkedList<Key<Link>> linkKeys = new LinkedList<Key<Link>>();
@@ -940,15 +941,6 @@ public class DAO extends DAOBase {
 			domain = domain.toLowerCase();
 			return ofy().query(User.class).filter("email", email).filter(
 					"domain", domain).get();
-		}
-
-		public LinkedList<Link> findVotesByUser(User u) {
-			Objectify o = ofy();
-			LinkedList<Link> links = new LinkedList<Link>();
-			for (Link l : o.query(Link.class).ancestor(u)) {
-				links.add(l);
-			}
-			return links;
 		}
 
 		public LinkedList<User> getFollowers(Key<User> judge) {

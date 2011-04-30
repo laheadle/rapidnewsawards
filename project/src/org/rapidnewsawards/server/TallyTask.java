@@ -9,8 +9,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.rapidnewsawards.shared.Edition;
-import org.rapidnewsawards.shared.Name;
+import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.messages.Name;
 
 import com.google.appengine.api.labs.taskqueue.Queue;
 import com.google.appengine.api.labs.taskqueue.QueueFactory;

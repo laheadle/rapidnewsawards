@@ -2,13 +2,13 @@ package org.rapidnewsawards.server.test;
 
 import org.junit.Before;
 import org.junit.Test;
+import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.Link;
+import org.rapidnewsawards.core.User;
+import org.rapidnewsawards.messages.Name;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
 import org.rapidnewsawards.server.TitleGrabber;
-import org.rapidnewsawards.shared.Edition;
-import org.rapidnewsawards.shared.Link;
-import org.rapidnewsawards.shared.Name;
-import org.rapidnewsawards.shared.User;
 
 public class DAOTest extends RNATest {
 

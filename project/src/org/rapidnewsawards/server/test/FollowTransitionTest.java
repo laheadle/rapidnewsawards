@@ -3,11 +3,11 @@ package org.rapidnewsawards.server.test;
 //import static org.easymock.EasyMock.verify;
 
 import org.junit.Test;
+import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.User;
+import org.rapidnewsawards.messages.Name;
+import org.rapidnewsawards.messages.Return;
 import org.rapidnewsawards.server.DAO;
-import org.rapidnewsawards.shared.Edition;
-import org.rapidnewsawards.shared.Name;
-import org.rapidnewsawards.shared.Return;
-import org.rapidnewsawards.shared.User;
 
 public class FollowTransitionTest extends RNATest {
 

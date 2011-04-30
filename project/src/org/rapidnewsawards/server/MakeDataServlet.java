@@ -13,14 +13,13 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.rapidnewsawards.shared.Cell;
-import org.rapidnewsawards.shared.Edition;
-import org.rapidnewsawards.shared.Name;
-import org.rapidnewsawards.shared.Periodical;
-import org.rapidnewsawards.shared.Return;
-import org.rapidnewsawards.shared.Root;
-import org.rapidnewsawards.shared.User;
-import org.rapidnewsawards.shared.VoteResult;
+import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.Periodical;
+import org.rapidnewsawards.core.Root;
+import org.rapidnewsawards.core.User;
+import org.rapidnewsawards.messages.Name;
+import org.rapidnewsawards.messages.Return;
+import org.rapidnewsawards.messages.VoteResult;
 
 import com.google.appengine.api.labs.taskqueue.Queue;
 import com.google.appengine.api.labs.taskqueue.QueueFactory;

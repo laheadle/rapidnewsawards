@@ -1,8 +1,9 @@
-package org.rapidnewsawards.shared;
+package org.rapidnewsawards.core;
 
 import java.util.Date;
 
 import javax.persistence.Id;
+
 
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cached;

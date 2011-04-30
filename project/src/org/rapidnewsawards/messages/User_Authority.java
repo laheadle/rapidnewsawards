@@ -1,4 +1,6 @@
-package org.rapidnewsawards.shared;
+package org.rapidnewsawards.messages;
+
+import org.rapidnewsawards.core.User;
 
 
 public class User_Authority implements Comparable<User_Authority> {

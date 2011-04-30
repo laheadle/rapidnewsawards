@@ -5,11 +5,11 @@ package org.rapidnewsawards.server.test;
 import java.util.Iterator;
 
 import org.junit.Test;
-import org.rapidnewsawards.shared.Edition;
-import org.rapidnewsawards.shared.Link;
-import org.rapidnewsawards.shared.Name;
-import org.rapidnewsawards.shared.ScoredLink;
-import org.rapidnewsawards.shared.User;
+import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.Link;
+import org.rapidnewsawards.core.ScoredLink;
+import org.rapidnewsawards.core.User;
+import org.rapidnewsawards.messages.Name;
 
 public class VoteTransitionTest extends RNATest {
 	

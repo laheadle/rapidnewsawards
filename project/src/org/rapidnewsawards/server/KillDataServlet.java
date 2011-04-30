@@ -8,16 +8,16 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.rapidnewsawards.shared.Donation;
-import org.rapidnewsawards.shared.Edition;
-import org.rapidnewsawards.shared.Follow;
-import org.rapidnewsawards.shared.Link;
-import org.rapidnewsawards.shared.Periodical;
-import org.rapidnewsawards.shared.Root;
-import org.rapidnewsawards.shared.ScoredLink;
-import org.rapidnewsawards.shared.SocialEvent;
-import org.rapidnewsawards.shared.User;
-import org.rapidnewsawards.shared.Vote;
+import org.rapidnewsawards.core.Donation;
+import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.Follow;
+import org.rapidnewsawards.core.Link;
+import org.rapidnewsawards.core.Periodical;
+import org.rapidnewsawards.core.Root;
+import org.rapidnewsawards.core.ScoredLink;
+import org.rapidnewsawards.core.SocialEvent;
+import org.rapidnewsawards.core.User;
+import org.rapidnewsawards.core.Vote;
 
 public class KillDataServlet extends HttpServlet {
 	/**

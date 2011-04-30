@@ -7,7 +7,7 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.rapidnewsawards.shared.Name;
+import org.rapidnewsawards.messages.Name;
 
 public class TransitionTask  extends HttpServlet {
 	/**

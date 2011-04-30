@@ -1,4 +1,4 @@
-package org.rapidnewsawards.shared;
+package org.rapidnewsawards.server;
 
 public class Cell <T>  {
 	public T value;
