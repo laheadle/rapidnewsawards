@@ -44,7 +44,7 @@ import com.googlecode.objectify.NotFoundException;
 import com.googlecode.objectify.Objectify;
 import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.Query;
-import com.googlecode.objectify.helper.DAOBase;
+import com.googlecode.objectify.util.DAOBase;
 
 public class DAO extends DAOBase {
 	public class Editions {
@@ -477,7 +477,7 @@ public class DAO extends DAOBase {
 			// TODO careful: this could return hundreds of judges
 			for (User u : ofy().query(User.class).filter("isEditor", false)) {
 				int tmp = ofy().query(Follow.class).filter("judge", u.getKey())
-						.countAll();
+						.count();
 				u.authority = tmp;
 				users.add(u);
 				EditionUserAuthority eua = new EditionUserAuthority(
@@ -926,8 +926,8 @@ public class DAO extends DAOBase {
 			Objectify o = ofy();
 
 			Query<User> q = o.query(User.class).filter("isRNA", true);
-			if (q.countAll() != 1) {
-				log.severe("bad rnaEditor count: " + q.countAll());
+			if (q.count() != 1) {
+				log.severe("bad rnaEditor count: " + q.count());
 				return null;
 			}
 
@@ -1026,7 +1026,7 @@ public class DAO extends DAOBase {
 		public boolean hasVoted(User u, Edition e, Link l) {
 			Objectify o = ofy();
 			int count = o.query(Vote.class).ancestor(u).filter("edition",
-					e.getKey()).filter("link", l.getKey()).countAll();
+					e.getKey()).filter("link", l.getKey()).count();
 			if (count > 1) {
 				log.severe("too many eventPanel for user " + u);
 			}
