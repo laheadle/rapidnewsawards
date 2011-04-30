@@ -2,9 +2,7 @@ package org.rapidnewsawards.shared;
 
 import java.util.LinkedList;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
-
-public class UserInfo implements IsSerializable {
+public class UserInfo {
 	public User user;
 	public LinkedList<Vote_Link> votes;
 	public LinkedList<User> followers;

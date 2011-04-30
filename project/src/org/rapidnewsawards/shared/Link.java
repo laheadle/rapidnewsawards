@@ -2,13 +2,12 @@ package org.rapidnewsawards.shared;
 
 import javax.persistence.Id;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cached;
 
 
 @Cached
-public class Link implements IsSerializable {
+public class Link {
 	
 	public String url;
 	public String title;

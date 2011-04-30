@@ -412,11 +412,6 @@ public class DAO extends DAOBase {
 			return result;
 		}
 
-		public boolean isExpired(Edition e) {
-			Perishable expiry = new Calendar(e.end); // Config.injector.getInstance(PerishableFactory.class).create(e.end);
-			return expiry.isExpired();
-		}
-
 		public VoteResult submitStory(String url, String title,
 				Edition edition, User submitter) {
 			VoteResult vr = new VoteResult();

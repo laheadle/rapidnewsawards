@@ -4,13 +4,12 @@ import java.util.Date;
 
 import javax.persistence.Id;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Parent;
 
 @Cached
-public class Vote implements IsSerializable {
+public class Vote {
 	@Parent
 	public Key<User> voter;
 

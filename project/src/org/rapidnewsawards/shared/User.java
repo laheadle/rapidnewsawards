@@ -3,14 +3,13 @@ import java.util.Date;
 
 import javax.persistence.Id;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cached;
 
 
 
 @Cached
-public class User implements IsSerializable {
+public class User {
 
 	@Id
 	public Long id;

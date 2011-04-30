@@ -2,9 +2,7 @@ package org.rapidnewsawards.shared;
 
 import java.util.LinkedList;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
-
-public class AllEditions implements IsSerializable {
+public class AllEditions {
 	public LinkedList<Edition> editions;
 	public Edition current;
 	

@@ -1,8 +1,7 @@
 package org.rapidnewsawards.shared;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
 
-public class User_Vote_Link implements IsSerializable {
+public class User_Vote_Link {
 	public User user;
 	public Link link;
 	public Vote vote;

@@ -1,8 +1,7 @@
 package org.rapidnewsawards.shared;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
 
-public class StoryInfo implements IsSerializable {
+public class StoryInfo {
 	public StoryInfo () {}
 	public String editionId;
 	public User submitter;

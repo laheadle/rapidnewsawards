@@ -4,12 +4,11 @@ import java.util.Date;
 
 import javax.persistence.Id;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cached;
 
 @Cached
-public class Edition implements IsSerializable, Comparable<Edition> {
+public class Edition implements Comparable<Edition> {
 	
 	@Id	
 	public String id;

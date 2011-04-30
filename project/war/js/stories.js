@@ -1094,5 +1094,6 @@ $(function(){
 	flashClear('');
     });
 
+    $('#loadMessage').html('');
     log({info: 'loaded'});
 });

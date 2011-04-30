@@ -1,9 +1,9 @@
 package org.rapidnewsawards.server.test;
 
+import java.util.HashMap;
 import java.util.Map;
 
 import com.google.apphosting.api.ApiProxy.Environment;
-import com.google.gwt.dev.util.collect.HashMap;
 
 public class TestEnvironment implements Environment {
 

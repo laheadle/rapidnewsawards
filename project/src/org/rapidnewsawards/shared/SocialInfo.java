@@ -1,11 +1,10 @@
 package org.rapidnewsawards.shared;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
 
 /* User Interface Info Package
  * 
  */
-public class SocialInfo implements IsSerializable {
+public class SocialInfo {
 	public User editor;
 	public User judge;
 	/*

@@ -5,11 +5,10 @@ import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
 import com.googlecode.objectify.Key;
 
 @Entity
-public class Donation implements IsSerializable {
+public class Donation {
 
 	@Id Long id;
 

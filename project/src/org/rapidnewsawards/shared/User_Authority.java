@@ -1,8 +1,7 @@
 package org.rapidnewsawards.shared;
 
-import com.google.gwt.user.client.rpc.IsSerializable;
 
-public class User_Authority implements IsSerializable, Comparable<User_Authority> {
+public class User_Authority implements Comparable<User_Authority> {
 	public User user;
 	public Integer authority;
 	public User_Authority (User u, int authority) { this.user = u; this.authority = authority; }
