@@ -46,55 +46,55 @@ import com.googlecode.objectify.ObjectifyService;
 import com.googlecode.objectify.Query;
 import com.googlecode.objectify.helper.DAOBase;
 
-public class DAO extends DAOBase
-{
-    public class Editions {
-		
-    	private void clearTally(Key<Edition> e) {
+public class DAO extends DAOBase {
+	public class Editions {
+
+		private void clearTally(Key<Edition> e) {
 			LinkedList<ScoredLink> result = new LinkedList<ScoredLink>();
-			for (ScoredLink sl : ofy().query(ScoredLink.class).filter("edition", e)) {
+			for (ScoredLink sl : ofy().query(ScoredLink.class).filter(
+					"edition", e)) {
 				result.add(sl);
-			}	
+			}
 			ofy().delete(result);
 		}
 
 		public void fund(Edition e) {
-			
+
 			if (e == null) {
 				log.warning("cannot fund null edition");
-				throw new IllegalArgumentException("Edition is null");			
+				throw new IllegalArgumentException("Edition is null");
 			}
-			
+
 			LockedPeriodical lp = lockPeriodical();
 
 			if (lp == null) {
 				log.warning("failed to lock for tally");
 				throw new IllegalStateException("lock failed for fund");
 			}
-			
+
 			Map<Key<Link>, ScoredLink> links = new HashMap<Key<Link>, ScoredLink>();
-			
+
 			if (e == null) {
 				log.severe("No edition");
 				return;
 			}
-			
+
 			int totalScore = 0;
 			int numLinks = 0;
-			
-			Query<Vote> q = ofy().query(Vote.class).filter("edition", e.getKey())
-				.filter("authority >", 0);
-			
+
+			Query<Vote> q = ofy().query(Vote.class).filter("edition",
+					e.getKey()).filter("authority >", 0);
+
 			for (Vote v : q) {
 				numLinks++;
 				totalScore += v.authority;
 			}
-			
+
 			if (totalScore == 0) {
 				lp.transaction.getTxn().commit();
 				return;
 			}
-			
+
 			int totalSpend = 0;
 			for (Vote v : q) {
 				if (links.containsKey(v.link)) {
@@ -104,14 +104,14 @@ public class DAO extends DAOBase
 					totalSpend += (revenue - sl.revenue);
 					sl.revenue = revenue;
 					links.put(v.link, sl);
-				}
-				else {
+				} else {
 					int revenue = revenue(v.authority, totalScore, e.revenue);
 					totalSpend += revenue;
-					links.put(v.link, new ScoredLink(e.getKey(), v.link, v.authority, revenue));
+					links.put(v.link, new ScoredLink(e.getKey(), v.link,
+							v.authority, revenue));
 				}
 			}
-			
+
 			clearTally(e.getKey());
 
 			if (links.size() > 0) {
@@ -125,7 +125,6 @@ public class DAO extends DAOBase
 
 		}
 
-		
 		// TODO parameterize by periodical
 		public AllEditions getAllEditions() {
 			LinkedList<Edition> ll = new LinkedList<Edition>();
@@ -137,31 +136,33 @@ public class DAO extends DAOBase
 			return ae;
 		}
 
-
 		public Edition getCurrentEdition(Name periodicalName) {
 			return getEdition(periodicalName, -1, null);
 		}
 
 		/*
 		 * Just get the requested edition
-		 * @param number the edition number requested, or -1 for current, or -2 for next
+		 * 
+		 * @param number the edition number requested, or -1 for current, or -2
+		 * for next
 		 */
 		public Edition getEdition(Name periodicalName, int number, Objectify o) {
 			if (periodicalName == null)
 				periodicalName = Name.AGGREGATOR_NAME;
-			
+
 			if (o == null)
 				o = ofy();
-			
-			final Periodical p = findByFieldName(Periodical.class, Name.NAME, periodicalName.name, o);
+
+			final Periodical p = findByFieldName(Periodical.class, Name.NAME,
+					periodicalName.name, o);
 
 			if (p == null)
-				return  null;
+				return null;
 
 			if (number == -1) {
 				if (!p.live)
 					return null;
-				
+
 				return ofy().find(p.getCurrentEditionKey());
 			}
 
@@ -170,11 +171,12 @@ public class DAO extends DAOBase
 					log.warning("Next edition requested for dead periodical");
 					return null;
 				}
-				return ofy().find(Edition.getNextKey(p.getCurrentEditionKey().getName()));			
+				return ofy().find(
+						Edition.getNextKey(p.getCurrentEditionKey().getName()));
 			}
-			
+
 			// TODO this only works because we assume one periodical
-			return ofy().find(Edition.class, ""+number);
+			return ofy().find(Edition.class, "" + number);
 		}
 
 		// fixme refactor with getvoters
@@ -184,8 +186,8 @@ public class DAO extends DAOBase
 			Map<Key<User>, Integer> authorities = new HashMap<Key<User>, Integer>();
 			ArrayList<Key<User>> judges = new ArrayList<Key<User>>();
 
-			for (EditionUserAuthority eua : 
-				ofy().query(EditionUserAuthority.class).filter("edition", e.getKey())) {
+			for (EditionUserAuthority eua : ofy().query(
+					EditionUserAuthority.class).filter("edition", e.getKey())) {
 				authorities.put(eua.user, eua.authority);
 				judges.add(eua.user);
 			}
@@ -194,40 +196,43 @@ public class DAO extends DAOBase
 				log.warning("requested judges for empty edition " + e);
 				return result;
 			}
-			
+
 			Map<Key<User>, User> vmap = ofy().get(judges);
 
-			for(int i = 0;i < judges.size();i++) {
-				result.add(new User_Authority(vmap.get(judges.get(i)), 
-											  authorities.get(judges.get(i))));
+			for (int i = 0; i < judges.size(); i++) {
+				result.add(new User_Authority(vmap.get(judges.get(i)),
+						authorities.get(judges.get(i))));
 			}
-			
+
 			Collections.sort(result);
 			return result;
 		}
 
 		private Edition getLastEdition(final Periodical p) {
 			Edition e;
-			e = ofy().find(Edition.getPreviousKey(""+editions.getNumEditions(p)));
+			e = ofy().find(
+					Edition.getPreviousKey("" + editions.getNumEditions(p)));
 			return e;
 		}
-		
-		/* Runs three queries: first get keys, then use the keys to get 2 sets of entities
-		 * 
+
+		/*
+		 * Runs three queries: first get keys, then use the keys to get 2 sets
+		 * of entities
 		 */
 		private LinkedList<SocialInfo> getLatestEditor_Judges(Edition e) {
 			LinkedList<SocialInfo> result = new LinkedList<SocialInfo>();
 
 			if (e == null)
 				return result;
-			
+
 			ArrayList<Key<User>> editors = new ArrayList<Key<User>>();
 			ArrayList<Key<User>> judges = new ArrayList<Key<User>>();
 			ArrayList<Boolean> bools = new ArrayList<Boolean>();
 			// think - does this show everything we want?
 			// todo ignore welcomes on eds and donors
-			Query<SocialEvent> q = ofy().query(SocialEvent.class).filter("edition", e.getKey()).order("-time");
-			
+			Query<SocialEvent> q = ofy().query(SocialEvent.class).filter(
+					"edition", e.getKey()).order("-time");
+
 			for (SocialEvent event : q) {
 				editors.add(event.editor);
 				judges.add(event.judge);
@@ -235,65 +240,70 @@ public class DAO extends DAOBase
 			}
 			Map<Key<User>, User> umap = ofy().get(editors);
 			Map<Key<User>, User> lmap = ofy().get(judges);
-			
-			for(int i = 0;i < editors.size();i++) {
-				result.add(new SocialInfo(umap.get(editors.get(i)), lmap.get(judges.get(i)), bools.get(i)));
+
+			for (int i = 0; i < editors.size(); i++) {
+				result.add(new SocialInfo(umap.get(editors.get(i)), lmap
+						.get(judges.get(i)), bools.get(i)));
 			}
 
 			return result;
 
 		}
 
-		/* Runs three queries: first get keys, then use the keys to get 2 sets of entities
-		 * 
+		/*
+		 * Runs three queries: first get keys, then use the keys to get 2 sets
+		 * of entities
 		 */
 		public LinkedList<User_Vote_Link> getLatestUser_Vote_Links(Edition e) {
 			LinkedList<User_Vote_Link> result = new LinkedList<User_Vote_Link>();
-			
+
 			ArrayList<Key<User>> users = new ArrayList<Key<User>>();
 			ArrayList<Key<Link>> links = new ArrayList<Key<Link>>();
-			
-			Query<Vote> q = ofy().query(Vote.class).filter("edition", e.getKey()).order("-time");
-		
+
+			Query<Vote> q = ofy().query(Vote.class).filter("edition",
+					e.getKey()).order("-time");
+
 			LinkedList<Vote> votes = new LinkedList<Vote>();
 			for (Vote v : q) {
 				votes.add(v);
 			}
-			
+
 			for (Vote v : votes) {
 				users.add(v.voter);
 				links.add(v.link);
 			}
-			
+
 			Map<Key<User>, User> umap = ofy().get(users);
 			Map<Key<Link>, Link> lmap = ofy().get(links);
-			
+
 			int i = 0;
-			for(Vote v : votes) { // iterate again in the same order
-				result.add(new User_Vote_Link(umap.get(users.get(i)), v, lmap.get(links.get(i))));
+			for (Vote v : votes) { // iterate again in the same order
+				result.add(new User_Vote_Link(umap.get(users.get(i)), v, lmap
+						.get(links.get(i))));
 				i++;
 			}
-		
+
 			return result;
 		}
-		
+
 		public Edition getNextEdition(Name periodicalName) {
 			return getEdition(periodicalName, -2, null);
 		}
-		
+
 		// TODO cache this
 		public int getNumEditions(Name periodicalName) {
-			final Periodical p = findByFieldName(Periodical.class, Name.NAME, periodicalName.name, null);
+			final Periodical p = findByFieldName(Periodical.class, Name.NAME,
+					periodicalName.name, null);
 
 			if (p == null) {
 				log.severe("Can't find periodical: " + periodicalName);
-				return  0;
+				return 0;
 			}
 
 			return getNumEditions(p);
 		}
-		
-		public int getNumEditions(Periodical p) {		
+
+		public int getNumEditions(Periodical p) {
 			return p.numEditions;
 		}
 
@@ -304,23 +314,24 @@ public class DAO extends DAOBase
 			s.numEditions = editions.getNumEditions(name);
 			if (e == null) {
 				log.warning("no recent votes for bad edition " + edition);
-			}
-			else {
+			} else {
 				s.list = getLatestUser_Vote_Links(e);
 			}
 			return s;
 		}
 
 		public ScoredLink getScoredLink(Key<Edition> e, Key<Link> l) {
-			return ofy().query(ScoredLink.class).filter("edition", e).filter("link", l).get();
+			return ofy().query(ScoredLink.class).filter("edition", e).filter(
+					"link", l).get();
 		}
-		
+
 		public LinkedList<ScoredLink> getScoredLinks(Edition e) {
 			LinkedList<ScoredLink> result = new LinkedList<ScoredLink>();
 			if (e == null)
 				return result;
-			
-			for (ScoredLink sl : ofy().query(ScoredLink.class).filter("edition", e.getKey()).order("-score")) {
+
+			for (ScoredLink sl : ofy().query(ScoredLink.class).filter(
+					"edition", e.getKey()).order("-score")) {
 				result.add(sl);
 			}
 			return result;
@@ -328,19 +339,18 @@ public class DAO extends DAOBase
 
 		public FullStoryInfo getStory(int editionNum, Long linkId) {
 			Key<Link> linkKey = new Key<Link>(Link.class, linkId);
-			Key<Edition> editionKey = new Key<Edition>(Edition.class, ""+editionNum);
-			
-			//Edition e = getEdition(Name.AGGREGATOR_NAME, editionNum, null);
-			ScoredLink sl = 
-				editions.getScoredLink(editionKey, 
-						linkKey);
+			Key<Edition> editionKey = new Key<Edition>(Edition.class, ""
+					+ editionNum);
+
+			// Edition e = getEdition(Name.AGGREGATOR_NAME, editionNum, null);
+			ScoredLink sl = editions.getScoredLink(editionKey, linkKey);
 
 			Link link = ofy().get(linkKey);
-			
+
 			StoryInfo si = new StoryInfo();
 			si.link = link;
 			si.score = sl.score;
-			si.editionId = ""+editionNum;
+			si.editionId = "" + editionNum;
 			si.submitter = ofy().get(link.submitter);
 			si.revenue = sl.revenue;
 
@@ -350,11 +360,9 @@ public class DAO extends DAOBase
 			return fsi;
 		}
 
-		public TopJudges getTopJudges(int edition) {	
-			Edition e = 
-				editions.getEdition(Name.AGGREGATOR_NAME, 
-										edition, 
-										null);
+		public TopJudges getTopJudges(int edition) {
+			Edition e = editions
+					.getEdition(Name.AGGREGATOR_NAME, edition, null);
 			TopJudges tj = new TopJudges();
 			tj.edition = e;
 			tj.numEditions = editions.getNumEditions(Name.AGGREGATOR_NAME);
@@ -364,29 +372,29 @@ public class DAO extends DAOBase
 
 		public TopStories getTopStories(int editionNum, Name name) {
 			// TODO error checking
-			
+
 			Edition e = editions.getEdition(name, editionNum, null);
 			LinkedList<ScoredLink> scored = editions.getScoredLinks(e);
 			LinkedList<Key<Link>> linkKeys = new LinkedList<Key<Link>>();
-			
-			for(ScoredLink sl : scored) {
+
+			for (ScoredLink sl : scored) {
 				linkKeys.add(sl.link);
 			}
-			
+
 			Map<Key<Link>, Link> linkMap = ofy().get(linkKeys);
-		
+
 			// for the submitter of each vote
 			LinkedList<Key<User>> userKeys = new LinkedList<Key<User>>();
-			
-			for(Link l : linkMap.values()) {
+
+			for (Link l : linkMap.values()) {
 				userKeys.add(l.submitter);
 			}
-			
+
 			Map<Key<User>, User> userMap = ofy().get(userKeys);
-		
+
 			LinkedList<StoryInfo> stories = new LinkedList<StoryInfo>();
-			
-			for(ScoredLink sl : scored) {
+
+			for (ScoredLink sl : scored) {
 				StoryInfo si = new StoryInfo();
 				si.link = linkMap.get(sl.link);
 				si.score = sl.score;
@@ -395,74 +403,73 @@ public class DAO extends DAOBase
 				si.revenue = sl.revenue;
 				stories.add(si);
 			}
-		
+
 			TopStories result = new TopStories();
 			result.edition = e;
 			result.numEditions = editions.getNumEditions(name);
 			result.list = stories;
-			
+
 			return result;
 		}
 
 		public boolean isExpired(Edition e) {
-			Perishable expiry = new Calendar(e.end); //Config.injector.getInstance(PerishableFactory.class).create(e.end);
+			Perishable expiry = new Calendar(e.end); // Config.injector.getInstance(PerishableFactory.class).create(e.end);
 			return expiry.isExpired();
 		}
 
-		public VoteResult submitStory(String url, String title, Edition edition, User submitter) {
+		public VoteResult submitStory(String url, String title,
+				Edition edition, User submitter) {
 			VoteResult vr = new VoteResult();
-			
+
 			if (submitter == null) {
 				vr.returnVal = Return.NOT_LOGGED_IN;
 				vr.authUrl = null; // userService.createLoginURL(fullLink);
 				return vr;
 			}
-		
-			// TODO broken on some complex hrefs
+
 			Link l = users.createLink(url, title, submitter.getKey());
-		
+
 			if (l == null) {
 				return null;
 			}
-			
+
 			else {
-				vr.returnVal = users.voteFor(submitter, 
-							edition == null? 
-									editions.getCurrentEdition(Name.AGGREGATOR_NAME) : edition, 
-								l, 
-								true);
-				vr.authUrl = null; // userService.createLogoutURL(home);    		
+				vr.returnVal = users.voteFor(submitter,
+						edition == null ? editions
+								.getCurrentEdition(Name.AGGREGATOR_NAME)
+								: edition, l, true);
+				vr.authUrl = null; // userService.createLogoutURL(home);
 			}
 			return vr;
 		}
 
 		public Periodical tally(Edition e) {
-			
+
 			LockedPeriodical lp = lockPeriodical();
 
 			if (lp == null) {
-				throw new IllegalStateException("lock failed for tally");		
+				throw new IllegalStateException("lock failed for tally");
 			}
 
 			Map<Key<Link>, ScoredLink> links = new HashMap<Key<Link>, ScoredLink>();
-			
-			for (Vote v : ofy().query(Vote.class).filter("edition", e)
-						.filter("authority >", 0)) {
+
+			for (Vote v : ofy().query(Vote.class).filter("edition", e).filter(
+					"authority >", 0)) {
 				if (links.containsKey(v.link)) {
 					ScoredLink sl = links.get(v.link);
 					sl.score += v.authority;
-				}
-				else {
-					links.put(v.link, new ScoredLink(e.getKey(), v.link, v.authority, 0));
+				} else {
+					links.put(v.link, new ScoredLink(e.getKey(), v.link,
+							v.authority, 0));
 				}
 			}
-			
+
 			editions.clearTally(e.getKey());
 			if (links.size() > 0) {
 				e.numFundedLinks = links.size();
 				ofy().put(links.values());
-			}				
-			
+			}
+
 			lp.transaction.getTxn().commit();
 			return lp.periodical;
 		}
@@ -473,14 +480,15 @@ public class DAO extends DAOBase
 			LinkedList<EditionUserAuthority> eaus = new LinkedList<EditionUserAuthority>();
 			// TODO careful: this could return hundreds of judges
 			for (User u : ofy().query(User.class).filter("isEditor", false)) {
-				int tmp = ofy().query(Follow.class).filter("judge", u.getKey()).countAll();
+				int tmp = ofy().query(Follow.class).filter("judge", u.getKey())
+						.countAll();
 				u.authority = tmp;
 				users.add(u);
-				EditionUserAuthority eua = 
-					new EditionUserAuthority(u.authority, e.getKey(), u.getKey());
+				EditionUserAuthority eua = new EditionUserAuthority(
+						u.authority, e.getKey(), u.getKey());
 				eaus.add(eua);
 			}
-		
+
 			ofy().put(users);
 			ofy().put(eaus);
 		}
@@ -489,53 +497,54 @@ public class DAO extends DAOBase
 			Key<Edition> current = lp.periodical.getCurrentEditionKey();
 			if (current == null) {
 				// last edition
-				current = new Key<Edition>(Edition.class, 
-						""+(editions.getNumEditions(lp.periodical) - 1));
+				current = new Key<Edition>(Edition.class, ""
+						+ (editions.getNumEditions(lp.periodical) - 1));
 			}
 			return ofy().find(Edition.getPreviousKey(current.getName()));
 		}
 
 		public LinkedList<User_Authority> getVoters(Key<Link> l, Key<Edition> e) {
 			LinkedList<User_Authority> result = new LinkedList<User_Authority>();
-		
+
 			Map<Key<User>, Integer> authorities = new HashMap<Key<User>, Integer>();
 			ArrayList<Key<User>> voters = new ArrayList<Key<User>>();
-		
-			for (Vote v : ofy().query(Vote.class).filter("link", l).filter("edition", e)) {
+
+			for (Vote v : ofy().query(Vote.class).filter("link", l).filter(
+					"edition", e)) {
 				authorities.put(v.voter, v.authority);
 				voters.add(v.voter);
 			}
-		
+
 			if (voters.size() == 0) {
 				log.warning("requested voters for empty link " + l);
 				return result;
 			}
-			
+
 			Map<Key<User>, User> vmap = ofy().get(voters);
-		
-			for(int i = 0;i < voters.size();i++) {
-				result.add(new User_Authority(vmap.get(voters.get(i)), authorities.get(voters.get(i))));
+
+			for (int i = 0; i < voters.size(); i++) {
+				result.add(new User_Authority(vmap.get(voters.get(i)),
+						authorities.get(voters.get(i))));
 			}
-			
+
 			Collections.sort(result);
 			return result;
 		}
 
 	}
 
-    private class LockedPeriodical {
+	private class LockedPeriodical {
 		public Objectify transaction;
 		public Periodical periodical;
-		
+
 		public LockedPeriodical(Objectify o, Periodical p) {
 			this.transaction = o;
 			this.periodical = p;
 		}
 	}
-    
-    
+
 	public class Social {
-		
+
 		/*
 		 * Do a follow, unfollow, or cancel pending follow
 		 * 
@@ -613,54 +622,58 @@ public class DAO extends DAOBase
 			return r;
 		}
 
-
-		public Return doSocial(User to, Boolean on) {		
+		public Return doSocial(User to, Boolean on) {
 			if (user == null) {
 				log.warning("attempt to follow with null user");
 				return Return.ILLEGAL_OPERATION;
 			}
-			
-			// read-only transaction 
+
+			// read-only transaction
 			Edition e = editions.getEdition(Name.AGGREGATOR_NAME, -2, null);
 			if (e == null) {
-				log.warning(user + "Attempted to socialize during final edition");
-				return Return.FORBIDDEN_DURING_FINAL;			
+				log.warning(user
+						+ "Attempted to socialize during final edition");
+				return Return.FORBIDDEN_DURING_FINAL;
 			}
 			Return result = social.doSocial(user.getKey(), to.getKey(), e, on);
 			return result;
 		}
 
-		public SocialEvent getAboutToSocial(Key<User> from, Key<User> to, Edition e, Objectify o) {
+		public SocialEvent getAboutToSocial(Key<User> from, Key<User> to,
+				Edition e, Objectify o) {
 			if (o == null)
 				o = instance.ofy();
 
 			if (e == null)
 				return null;
-			
-			return o.query(SocialEvent.class).filter("editor", from).filter("judge", to).filter("edition", e.getKey()).get();
+
+			return o.query(SocialEvent.class).filter("editor", from).filter(
+					"judge", to).filter("edition", e.getKey()).get();
 		}
-		
+
 		public Follow getFollow(Key<User> from, Key<User> to, Objectify o) {
 			if (o == null)
 				o = instance.ofy();
 
-			return o.query(Follow.class).ancestor(from).filter("judge", to).get();
+			return o.query(Follow.class).ancestor(from).filter("judge", to)
+					.get();
 		}
 
-		public RecentSocials getRecentSocials(int edition) {	
+		public RecentSocials getRecentSocials(int edition) {
 			Edition current = null;
 			Edition next = null;
-		
+
 			if (edition == -1) {
 				current = editions.getEdition(Name.AGGREGATOR_NAME, -1, null);
 				next = editions.getEdition(Name.AGGREGATOR_NAME, -2, null);
-			}
-			else {
+			} else {
 				// next after edition
-				current = editions.getEdition(Name.AGGREGATOR_NAME, edition, null);
-				next = editions.getEdition(Name.AGGREGATOR_NAME, edition + 1, null);
+				current = editions.getEdition(Name.AGGREGATOR_NAME, edition,
+						null);
+				next = editions.getEdition(Name.AGGREGATOR_NAME, edition + 1,
+						null);
 			}
-				
+
 			RecentSocials s = new RecentSocials();
 			s.edition = current;
 			s.numEditions = editions.getNumEditions(Name.AGGREGATOR_NAME);
@@ -674,18 +687,17 @@ public class DAO extends DAOBase
 
 			if (about != null) {
 				return about.on;
-			}
-			else {
+			} else {
 				Follow f = getFollow(from, to, null);
 				return f != null;
 			}
 		}
 	}
-	
+
 	public class Transition {
 
 		private void _transitionEdition(LockedPeriodical lp) {
-			
+
 			final Periodical p = lp.periodical;
 
 			if (p == null) {
@@ -699,61 +711,61 @@ public class DAO extends DAOBase
 			}
 
 			Edition current = ofy().find(p.getCurrentEditionKey());
-			
+
 			if (current == null) {
 				log.severe("no edition matching" + p.getCurrentEditionKey());
-				return;	
-			}
-			
-			int nextNum = current.number + 1;
-			int n = editions.getNumEditions(p);
-					
-			if (nextNum == n) {
-				p.live = false;
-			}
-			else if (nextNum > n) {
-				log.severe("bug in edition numbers: " + nextNum);
 				return;
 			}
-			else {
+
+			int nextNum = current.number + 1;
+			int n = editions.getNumEditions(p);
+
+			if (nextNum == n) {
+				p.live = false;
+			} else if (nextNum > n) {
+				log.severe("bug in edition numbers: " + nextNum);
+				return;
+			} else {
 				// change current edition
-				p.setcurrentEditionKey(new Key<Edition>(Edition.class, ""+nextNum));
+				p.setcurrentEditionKey(new Key<Edition>(Edition.class, ""
+						+ nextNum));
 			}
-			
+
 			p.inSocialTransition = true;
-			
+
 			ofy().put(p);
 			lp.transaction.getTxn().commit();
-			
+
 			log.info(p.name + ": New current Edition:" + nextNum);
 		}
 
-		public void doTransition(Name aggregatorName, int editionNum, Objectify o) {
+		public void doTransition(Name aggregatorName, int editionNum,
+				Objectify o) {
 			Edition from = editions.getEdition(aggregatorName, editionNum, o);
 
 			Edition current = editions.getCurrentEdition(Name.AGGREGATOR_NAME);
 			Edition next = editions.getNextEdition(Name.AGGREGATOR_NAME);
-			
+
 			if (from == null) {
 				log.severe("Edition " + editionNum + " does not exist");
 				return;
 			}
 			if (!from.equals(current)) {
-				log.severe("edition 1 not current (2 is): " + from + ", " + current);
+				log.severe("edition 1 not current (2 is): " + from + ", "
+						+ current);
 				return;
 			}
-			
+
 			if (next == null) {
 				transition.finishPeriodical(Name.AGGREGATOR_NAME);
 				log.info("End of periodical; last edition is" + current);
-			}
-			else {
+			} else {
 				transition.transitionEdition(Name.AGGREGATOR_NAME);
 				transition.socialTransition(next);
 				editions.updateAuthorities();
 			}
 			transition.setEditionRevenue();
-			editions.fund(current);		
+			editions.fund(current);
 		}
 
 		public void finishPeriodical(Name journalism) {
@@ -764,7 +776,7 @@ public class DAO extends DAOBase
 				log.severe("finish failed");
 				return;
 			}
-			
+
 			final Periodical p = lp.periodical;
 
 			if (p == null) {
@@ -779,7 +791,7 @@ public class DAO extends DAOBase
 			p.live = false;
 			p.setcurrentEditionKey(null);
 			ofy().put(p);
-			
+
 			lp.transaction.getTxn().commit();
 		}
 
@@ -791,7 +803,7 @@ public class DAO extends DAOBase
 				log.warning("failed");
 				return;
 			}
-			
+
 			final Periodical p = lp.periodical;
 
 			if (p == null) {
@@ -803,22 +815,21 @@ public class DAO extends DAOBase
 
 			if (!p.live) {
 				log.warning("spending all remaining revenue");
-				
+
 				e = editions.getLastEdition(p);
-				
+
 				if (e == null) {
 					log.severe("no final edition");
-					return;	
+					return;
 				}
 				e.revenue = p.balance;
 				p.balance = 0;
-			}
-			else {
+			} else {
 				e = editions.getPreviousEdition(lp);
-				
+
 				if (e == null) {
 					log.severe("no previous edition");
-					return;	
+					return;
 				}
 
 				int n = editions.getNumEditions(p);
@@ -828,7 +839,7 @@ public class DAO extends DAOBase
 
 			ofy().put(e);
 			lp.transaction.put(p);
-			
+
 			lp.transaction.getTxn().commit();
 
 			log.info(e + ": revenue " + Periodical.moneyPrint(e.revenue));
@@ -836,7 +847,8 @@ public class DAO extends DAOBase
 		}
 
 		/*
-		 * makes pending social actions current.  part of the transition machinery.
+		 * makes pending social actions current. part of the transition
+		 * machinery.
 		 */
 		public void socialTransition(Edition to) {
 			Objectify o = ofy();
@@ -849,58 +861,58 @@ public class DAO extends DAOBase
 
 			log.info("Social transition into " + to);
 
-			for (SocialEvent s : o.query(SocialEvent.class).filter("edition", to.getKey()).filter("editor !=", User.getRNAEditor())) {
-				Follow old = ofy().query(Follow.class).ancestor(s.editor).filter("judge", s.judge).get();
+			for (SocialEvent s : o.query(SocialEvent.class).filter("edition",
+					to.getKey()).filter("editor !=", User.getRNAEditor())) {
+				Follow old = ofy().query(Follow.class).ancestor(s.editor)
+						.filter("judge", s.judge).get();
 
 				if (s.on == false) {
 					if (old == null) {
-						log.warning("Permitted unfollow when not isFollowing" + s);
-					}
-					else {
+						log.warning("Permitted unfollow when not isFollowing"
+								+ s);
+					} else {
 						o.delete(old);
 						log.info("Unfollowed: " + old);
 					}
-				}
-				else {
+				} else {
 					if (old != null) {
-						log.warning("Permitted follow when already isFollowing" + s);
-					}
-					else {
+						log.warning("Permitted follow when already isFollowing"
+								+ s);
+					} else {
 						// put new follow into effect
 						Follow f = new Follow(s.editor, s.judge, s.getKey());
 						o.put(f);
 					}
 				}
 			}
-			
+
 			lp.periodical.inSocialTransition = false;
 			lp.transaction.put(lp.periodical);
 			lp.transaction.getTxn().commit();
 		}
 
 		public boolean transitionEdition(Name periodicalName) {
-			
+
 			LockedPeriodical locked = lockPeriodical();
 
 			if (locked == null) {
 				log.severe("publish failed");
 				return false;
 			}
-			
+
 			transition._transitionEdition(locked);
 			return true;
 		}
 
 	}
-	
+
 	public class Users {
 
 		public Link createLink(String url, String title, Key<User> submitter) {
 			if (submitter == null) {
 				log.warning("tried to create link without submitter: " + url);
 				return null;
-			}
-			else {
+			} else {
 				String domain;
 				try {
 					domain = new java.net.URL(url).getHost();
@@ -911,18 +923,18 @@ public class DAO extends DAOBase
 				Link l = new Link(url, title, domain, submitter);
 				ofy().put(l);
 				return l;
-			}	
+			}
 		}
 
 		public User findRNAUser() {
 			Objectify o = ofy();
-			
+
 			Query<User> q = o.query(User.class).filter("isRNA", true);
 			if (q.countAll() != 1) {
 				log.severe("bad rnaEditor count: " + q.countAll());
 				return null;
 			}
-		
+
 			return q.get();
 		}
 
@@ -931,13 +943,14 @@ public class DAO extends DAOBase
 				return null;
 			email = email.toLowerCase();
 			domain = domain.toLowerCase();
-			return ofy().query(User.class).filter("email", email).filter("domain", domain).get();
+			return ofy().query(User.class).filter("email", email).filter(
+					"domain", domain).get();
 		}
 
 		public LinkedList<Link> findVotesByUser(User u) {
 			Objectify o = ofy();
 			LinkedList<Link> links = new LinkedList<Link>();
-			for(Link l : o.query(Link.class).ancestor(u)) {
+			for (Link l : o.query(Link.class).ancestor(u)) {
 				links.add(l);
 			}
 			return links;
@@ -957,7 +970,7 @@ public class DAO extends DAOBase
 
 		public LinkedList<User> getFollows(Key<User> editor) {
 			LinkedList<Key<User>> keys = new LinkedList<Key<User>>();
-		
+
 			for (Follow f : ofy().query(Follow.class).ancestor(editor)) {
 				keys.push(f.judge);
 			}
@@ -970,37 +983,36 @@ public class DAO extends DAOBase
 
 		private LinkedList<Vote_Link> getLatestVote_Links(Key<User> user) {
 			LinkedList<Vote_Link> result = new LinkedList<Vote_Link>();
-			
+
 			ArrayList<Vote> votes = new ArrayList<Vote>();
 			ArrayList<Key<Link>> links = new ArrayList<Key<Link>>();
-			
-			Query<Vote> q = ofy().query(Vote.class).ancestor(user).order("-time");
-			
+
+			Query<Vote> q = ofy().query(Vote.class).ancestor(user).order(
+					"-time");
+
 			for (Vote v : q) {
 				votes.add(v);
 				links.add(v.link);
 			}
 			Map<Key<Link>, Link> lmap = ofy().get(links);
-			
-			for(int i = 0;i < votes.size();i++) {
+
+			for (int i = 0; i < votes.size(); i++) {
 				result.add(new Vote_Link(votes.get(i), lmap.get(links.get(i))));
 			}
-		
+
 			return result;
 		}
 
 		/*
 		 * Return information about 'to' and his relation to 'from'
 		 */
-		public RelatedUserInfo getRelatedUserInfo(Name periodical, User from, Key<User> to) {
+		public RelatedUserInfo getRelatedUserInfo(Name periodical, User from,
+				Key<User> to) {
 			UserInfo ui = getUserInfo(periodical, to);
 			RelatedUserInfo rui = new RelatedUserInfo();
 			rui.userInfo = ui;
-			rui.isFollowing = 
-				from != null? 
-					social.isFollowingOrAboutToFollow(
-				from.getKey(), to) 
-							: false;
+			rui.isFollowing = from != null ? social.isFollowingOrAboutToFollow(
+					from.getKey(), to) : false;
 			return rui;
 		}
 
@@ -1009,13 +1021,12 @@ public class DAO extends DAOBase
 			try {
 				ui.user = ofy().get(user);
 				if (ui.user.isEditor) {
-					ui.follows = getFollows(user);				
+					ui.follows = getFollows(user);
 					ui.followers = new LinkedList<User>();
 					ui.votes = new LinkedList<Vote_Link>();
-				}
-				else {
+				} else {
 					ui.votes = getLatestVote_Links(user);
-					ui.followers = getFollowers(user);		
+					ui.followers = getFollowers(user);
 					ui.follows = new LinkedList<User>();
 				}
 				return ui;
@@ -1027,8 +1038,9 @@ public class DAO extends DAOBase
 
 		public boolean hasVoted(User u, Edition e, Link l) {
 			Objectify o = ofy();
-			int count =  o.query(Vote.class).ancestor(u).filter("edition", e.getKey()).filter("link", l.getKey()).countAll();
-			if(count > 1) {
+			int count = o.query(Vote.class).ancestor(u).filter("edition",
+					e.getKey()).filter("link", l.getKey()).countAll();
+			if (count > 1) {
 				log.severe("too many eventPanel for user " + u);
 			}
 			return count == 1;
@@ -1039,31 +1051,32 @@ public class DAO extends DAOBase
 			if (u == null) {
 				log.severe("bad input");
 				return false;
-			}		
+			}
 			return u.isEditor;
 		}
 
-		public VoteResult voteFor(String link, String fullLink, Edition edition, Boolean on) {
+		public VoteResult voteFor(String link, String fullLink,
+				Edition edition, Boolean on) {
 			VoteResult vr = new VoteResult();
-		    UserService userService = UserServiceFactory.getUserService();
-			
-		    // TODO test user login state for votes
+			UserService userService = UserServiceFactory.getUserService();
+
+			// TODO test user login state for votes
 			if (user == null) {
 				vr.returnVal = Return.NOT_LOGGED_IN;
 				vr.authUrl = userService.createLoginURL(fullLink);
 				return vr;
 			}
-		
-			// TODO broken on some complex hrefs
-			Link l = DAO.instance.findByFieldName(Link.class, Name.URL, link, null);
+
+			Link l = DAO.instance.findByFieldName(Link.class, Name.URL, link,
+					null);
 			if (l == null) {
 				return null;
-			}
-			else {
-				vr.returnVal = voteFor(user, edition == null? 
-						editions.getCurrentEdition(Name.AGGREGATOR_NAME) : edition, l, on);
-			    // TODO test user login state for votes
-				vr.authUrl = userService.createLogoutURL("FIXME");    		
+			} else {
+				vr.returnVal = voteFor(user, edition == null ? editions
+						.getCurrentEdition(Name.AGGREGATOR_NAME) : edition, l,
+						on);
+				// TODO test user login state for votes
+				vr.authUrl = userService.createLogoutURL("FIXME");
 			}
 			return vr;
 		}
@@ -1071,56 +1084,61 @@ public class DAO extends DAOBase
 		/**
 		 * Store a new vote in the DB by a user for a link
 		 * 
-		 * @param r the user voting
-		 * @param e the edition during which the vote occurs
-		 * @param l the link voted for
+		 * @param r
+		 *            the user voting
+		 * @param e
+		 *            the edition during which the vote occurs
+		 * @param l
+		 *            the link voted for
 		 * @throws IllegalArgumentException
 		 */
-		public Return voteFor(User u, Edition e, Link l, Boolean on) throws IllegalArgumentException {
+		public Return voteFor(User u, Edition e, Link l, Boolean on)
+				throws IllegalArgumentException {
 			// TODO only judges can vote, ditto for ed follows
-			
+
 			// obtain lock
 			LockedPeriodical lp = lockPeriodical();
-		
+
 			if (lp == null || e == null) {
 				log.warning("vote failed: " + u + " -> " + l.url);
 				return Return.FAILED;
 			}
-		
+
 			if (!lp.periodical.getCurrentEditionKey().equals(e.getKey())) {
 				log.warning("Attempted to vote in old edition");
 				lp.transaction.getTxn().rollback();
 				return Return.NO_LONGER_CURRENT;
 			}
-		
+
 			if (lp.periodical.inSocialTransition) {
 				log.warning("Attempted to vote during transition");
 				lp.transaction.getTxn().rollback();
 				return Return.TRANSITION_IN_PROGRESS;
 			}
-		
+
 			if (on) {
 				if (hasVoted(u, e, l)) {
 					lp.transaction.getTxn().rollback();
 					return Return.ALREADY_VOTED;
 				}
-		
-				ofy().put(new Vote(u.getKey(), e.getKey(), l.getKey(), new Date(), u.authority));
-				
+
+				ofy().put(
+						new Vote(u.getKey(), e.getKey(), l.getKey(),
+								new Date(), u.authority));
+
 				log.info(u + " " + u.authority + " -> " + l.url);
-		
+
 				// release lock
 				lp.transaction.getTxn().commit();
-		
+
 				return Return.SUCCESS;
-			}
-			else {
-				Vote v = ofy().query(Vote.class).filter("edition", e.getKey()).filter("link", l.getKey()).get();
+			} else {
+				Vote v = ofy().query(Vote.class).filter("edition", e.getKey())
+						.filter("link", l.getKey()).get();
 				if (v == null) {
 					lp.transaction.getTxn().rollback();
 					return Return.HAS_NOT_VOTED;
-				}
-				else {
+				} else {
 					ofy().delete(v);
 					TallyTask.scheduleImmediately();
 					// release lock
@@ -1131,115 +1149,113 @@ public class DAO extends DAOBase
 		}
 
 		public User welcomeUser(String nickname, int donation) {
-		
+
 			LockedPeriodical lp = lockPeriodical();
-		
+
 			user.nickname = nickname;
 			user.isInitialized = true;
-			
+
 			ofy().put(user);
-			
+
 			Donation don = new Donation(user.getKey(), donation);
-			
+
 			ofy().put(don);
-		
-			log.info("welcome: " + user + ": " + Periodical.moneyPrint(donation));
-		
+
+			log.info("welcome: " + user + ": "
+					+ Periodical.moneyPrint(donation));
+
 			Edition next = editions.getNextEdition(Name.AGGREGATOR_NAME);
-			
+
 			if (next == null) {
 				log.warning("join failed");
 				return null;
-			}
-			else {
-				SocialEvent join = new SocialEvent(User.getRNAEditor(), user.getKey(), next.getKey(), new Date(), true);
+			} else {
+				SocialEvent join = new SocialEvent(User.getRNAEditor(), user
+						.getKey(), next.getKey(), new Date(), true);
 				ofy().put(join);
 			}
-			
+
 			lp.periodical.balance += donation;
-			lp.transaction.put(lp.periodical);		
+			lp.transaction.put(lp.periodical);
 			lp.transaction.getTxn().commit();
-		
-			log.info("balance: " + Periodical.moneyPrint(lp.periodical.balance));
-		
+
+			log
+					.info("balance: "
+							+ Periodical.moneyPrint(lp.periodical.balance));
+
 			return user;
 		}
-		
-	}
-	static {
-        ObjectifyService.factory().register(User.class);
-        ObjectifyService.factory().register(Root.class);
-        ObjectifyService.factory().register(Vote.class);
-        ObjectifyService.factory().register(SocialEvent.class);
-        ObjectifyService.factory().register(Follow.class);
-        ObjectifyService.factory().register(Link.class);
-        ObjectifyService.factory().register(Donation.class);
-        ObjectifyService.factory().register(ScoredLink.class);        
-        ObjectifyService.factory().register(Periodical.class);
-        ObjectifyService.factory().register(Edition.class);
-        ObjectifyService.factory().register(EditionUserAuthority.class);
-    }
-	public static DAO instance = new DAO();
-	
-	/*
-	 * The currently logged-in user.  See AuthFilter 
-	 */
-    public User user;
-    
-    /* 
-     * Sub-modules for data access
-     */
-	public Social social;
-        
-    public Transition transition;
-    
-    public Users users;
-    
-    public Editions editions;
 
-    
+	}
+
+	static {
+		ObjectifyService.factory().register(User.class);
+		ObjectifyService.factory().register(Root.class);
+		ObjectifyService.factory().register(Vote.class);
+		ObjectifyService.factory().register(SocialEvent.class);
+		ObjectifyService.factory().register(Follow.class);
+		ObjectifyService.factory().register(Link.class);
+		ObjectifyService.factory().register(Donation.class);
+		ObjectifyService.factory().register(ScoredLink.class);
+		ObjectifyService.factory().register(Periodical.class);
+		ObjectifyService.factory().register(Edition.class);
+		ObjectifyService.factory().register(EditionUserAuthority.class);
+	}
+	public static DAO instance = new DAO();
+
+	/*
+	 * The currently logged-in user. See AuthFilter
+	 */
+	public User user;
+
+	/*
+	 * Sub-modules for data access
+	 */
+	public Social social;
+
+	public Transition transition;
+
+	public Users users;
+
+	public Editions editions;
+
 	public static final Logger log = Logger.getLogger(DAO.class.getName());
 
 	private static int RETRY_TIMES = 20;
-	
+
 	public DAO() {
-    	user = null;
-    	social = new Social();
-    	transition = new Transition();
-    	editions = new Editions();
-    	users = new Users();
-    }
-	
+		user = null;
+		social = new Social();
+		transition = new Transition();
+		editions = new Editions();
+		users = new Users();
+	}
+
 	// clients should call convenience methods above
-    public <T> T findByFieldName(Class<T> clazz, Name fieldName, Object value, Objectify o) {
-    	if (o == null)
-    		o = ofy();
-    	return o.query(clazz).filter(fieldName.name, value).get();
-    }
+	public <T> T findByFieldName(Class<T> clazz, Name fieldName, Object value,
+			Objectify o) {
+		if (o == null)
+			o = ofy();
+		return o.query(clazz).filter(fieldName.name, value).get();
+	}
 
-
-	
 	private LockedPeriodical lockPeriodical() {
 		Objectify oTxn = fact().beginTransaction();
 		Periodical p = null;
 
-		for(int i = 0;i < RETRY_TIMES;i++)
+		for (int i = 0; i < RETRY_TIMES; i++)
 			try {
 				Root root = ofy().find(Root.class, 1);
 				p = oTxn.query(Periodical.class).ancestor(root).get();
 				return new LockedPeriodical(oTxn, p);
+			} catch (Error e) {
+				log.warning("lock failed, i = " + i);
 			}
-		catch(Error e) {
-			log.warning("lock failed, i = " + i);
-		}
 		return null;
 	}
 
 	int revenue(int score, int totalScore, int editionFunds) {
 		return (int) (score / (double) totalScore * editionFunds);
 	}
-
-
-
 
 }
