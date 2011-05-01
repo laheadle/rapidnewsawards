@@ -23,7 +23,6 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
 import com.googlecode.objectify.Key;
-import com.sun.media.sound.JavaSoundAudioClip;
 
 public class JSONServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
