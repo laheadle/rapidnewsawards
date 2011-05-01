@@ -74,11 +74,6 @@ public class DAO extends DAOBase {
 
 			Map<Key<Link>, ScoredLink> links = new HashMap<Key<Link>, ScoredLink>();
 
-			if (e == null) {
-				log.severe("No edition");
-				return;
-			}
-
 			int totalScore = 0;
 			int numLinks = 0;
 
@@ -175,7 +170,7 @@ public class DAO extends DAOBase {
 						Edition.getNextKey(p.getCurrentEditionKey().getName()));
 			}
 
-			// TODO this only works because we assume one periodical
+			// TODO 2.0 this only works because we assume one periodical
 			return ofy().find(Edition.class, "" + number);
 		}
 
@@ -290,8 +285,16 @@ public class DAO extends DAOBase {
 			return getEdition(periodicalName, -2, null);
 		}
 
-		// TODO cache this
+		// cache the number of editions -- will NEVER change.
+		private int numEditions = -1;
 		public int getNumEditions(Name periodicalName) {
+			if (numEditions == -1) {
+				numEditions = _getNumEditions(periodicalName);
+			}
+			return numEditions;
+		}
+
+		private int _getNumEditions(Name periodicalName) {
 			final Periodical p = findByFieldName(Periodical.class, Name.NAME,
 					periodicalName.name, null);
 
@@ -299,7 +302,7 @@ public class DAO extends DAOBase {
 				log.severe("Can't find periodical: " + periodicalName);
 				return 0;
 			}
-
+			
 			return getNumEditions(p);
 		}
 
@@ -325,13 +328,13 @@ public class DAO extends DAOBase {
 					"link", l).get();
 		}
 
-		public LinkedList<ScoredLink> getScoredLinks(Edition e) {
+		public LinkedList<ScoredLink> getScoredLinks(Edition e, int minScore) {
 			LinkedList<ScoredLink> result = new LinkedList<ScoredLink>();
 			if (e == null)
 				return result;
 
 			for (ScoredLink sl : ofy().query(ScoredLink.class).filter(
-					"edition", e.getKey()).order("-score")) {
+					"edition", e.getKey()).filter("score >=", minScore).order("-score")) {
 				result.add(sl);
 			}
 			return result;
@@ -371,11 +374,18 @@ public class DAO extends DAOBase {
 		}
 
 		public TopStories getTopStories(int editionNum, Name name) {
-			// TODO error checking
-			// TODO don't return 0-scored?
-			
 			Edition e = editions.getEdition(name, editionNum, null);
-			LinkedList<ScoredLink> scored = editions.getScoredLinks(e);
+		
+			TopStories result = new TopStories();
+			LinkedList<StoryInfo> stories = new LinkedList<StoryInfo>();
+			result.edition = e;
+			result.numEditions = editions.getNumEditions(name);
+			result.list = stories;
+			
+			if (e == null)
+				return result;
+			
+			LinkedList<ScoredLink> scored = editions.getScoredLinks(e, 1);
 			LinkedList<Key<Link>> linkKeys = new LinkedList<Key<Link>>();
 
 			for (ScoredLink sl : scored) {
@@ -385,15 +395,13 @@ public class DAO extends DAOBase {
 			Map<Key<Link>, Link> linkMap = ofy().get(linkKeys);
 
 			// for the submitter of each vote
-			LinkedList<Key<User>> userKeys = new LinkedList<Key<User>>();
+			LinkedList<Key<User>> submitterKeys = new LinkedList<Key<User>>();
 
 			for (Link l : linkMap.values()) {
-				userKeys.add(l.submitter);
+				submitterKeys.add(l.submitter);
 			}
 
-			Map<Key<User>, User> userMap = ofy().get(userKeys);
-
-			LinkedList<StoryInfo> stories = new LinkedList<StoryInfo>();
+			Map<Key<User>, User> userMap = ofy().get(submitterKeys);
 
 			for (ScoredLink sl : scored) {
 				StoryInfo si = new StoryInfo();
@@ -404,11 +412,6 @@ public class DAO extends DAOBase {
 				si.revenue = sl.revenue;
 				stories.add(si);
 			}
-
-			TopStories result = new TopStories();
-			result.edition = e;
-			result.numEditions = editions.getNumEditions(name);
-			result.list = stories;
 
 			return result;
 		}
@@ -474,7 +477,7 @@ public class DAO extends DAOBase {
 			Edition e = editions.getCurrentEdition(Name.AGGREGATOR_NAME);
 			LinkedList<User> users = new LinkedList<User>();
 			LinkedList<EditionUserAuthority> eaus = new LinkedList<EditionUserAuthority>();
-			// TODO careful: this could return hundreds of judges
+			// TODO 2.0 careful: this could return hundreds of judges
 			for (User u : ofy().query(User.class).filter("isEditor", false)) {
 				int tmp = ofy().query(Follow.class).filter("judge", u.getKey())
 						.count();

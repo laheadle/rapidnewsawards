@@ -79,13 +79,14 @@ public class JSONServlet extends HttpServlet {
 		commandsMap.put("topStories", new AbstractCommand() {
 			public Object getResult() {
 				int edition = get("edition", Integer.class);
-				TopStories rs = d.editions.getTopStories(edition,
+				TopStories ts = d.editions.getTopStories(edition,
 						Name.AGGREGATOR_NAME);
-				if (rs.edition == null) {
-					rs = d.editions.getTopStories(rs.numEditions - 1,
+				if (ts.edition == null) {
+					ts = d.editions.getTopStories(ts.numEditions - 1,
 							Name.AGGREGATOR_NAME);
 				}
-				return rs;
+				assert (ts.numEditions > 0 && ts.edition != null && ts.list != null);
+				return ts;
 			}
 		});
 

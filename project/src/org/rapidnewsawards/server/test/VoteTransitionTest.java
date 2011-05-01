@@ -63,7 +63,7 @@ public class VoteTransitionTest extends RNATest {
 
 		doTransition();
 		
-		Iterator<ScoredLink> iter = d.editions.getScoredLinks(e2).iterator();
+		Iterator<ScoredLink> iter = d.editions.getScoredLinks(e2, 1).iterator();
 		
 		assertTrue(iter.hasNext());
 		ScoredLink sl1 = iter.next();
