@@ -1130,7 +1130,6 @@ public class DAO extends DAOBase {
 					return Return.HAS_NOT_VOTED;
 				} else {
 					ofy().delete(v);
-					TallyTask.scheduleImmediately();
 					// release lock
 					lp.transaction.getTxn().commit();
 					return Return.SUCCESS;

@@ -1,6 +1,6 @@
 package org.rapidnewsawards.server;
 
-import static com.google.appengine.api.labs.taskqueue.TaskOptions.Builder.url;
+import static com.google.appengine.api.taskqueue.TaskOptions.Builder.*;
 
 import java.io.IOException;
 
@@ -12,9 +12,9 @@ import javax.servlet.http.HttpServletResponse;
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.messages.Name;
 
-import com.google.appengine.api.labs.taskqueue.Queue;
-import com.google.appengine.api.labs.taskqueue.QueueFactory;
-import com.google.appengine.api.labs.taskqueue.TaskOptions;
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
+import com.google.appengine.api.taskqueue.TaskOptions;
 
 public class TallyTask  extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -24,7 +24,7 @@ public class TallyTask  extends HttpServlet {
 	public static void scheduleImmediately() {
 		// immediately tally all votes
 		Queue queue = QueueFactory.getDefaultQueue();
-		queue.add(null, url("/tasks/tally").method(TaskOptions.Method.GET));
+		queue.add(null, withUrl("/tasks/tally").method(TaskOptions.Method.GET));
 	}
 	
 	@Override

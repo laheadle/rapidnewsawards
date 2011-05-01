@@ -23,6 +23,7 @@ import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.google.gson.Gson;
 import com.googlecode.objectify.Key;
+import com.sun.media.sound.JavaSoundAudioClip;
 
 public class JSONServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
@@ -225,7 +226,7 @@ public class JSONServlet extends HttpServlet {
 			out.println("invalid function");
 			return;
 		}
-		log.info("Json Function: " + fun);
+		JSONServlet.log.info("Json Function: " + fun);
 		Gson g = new Gson();
 		AbstractCommand c = commandsMap.get(fun);
 		out.println(g.toJson(c.perform(request)));

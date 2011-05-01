@@ -1,7 +1,5 @@
 package org.rapidnewsawards.server;
 
-import static com.google.appengine.api.labs.taskqueue.TaskOptions.Builder.url;
-
 import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
@@ -21,9 +19,10 @@ import org.rapidnewsawards.messages.Name;
 import org.rapidnewsawards.messages.Return;
 import org.rapidnewsawards.messages.VoteResult;
 
-import com.google.appengine.api.labs.taskqueue.Queue;
-import com.google.appengine.api.labs.taskqueue.QueueFactory;
-import com.google.appengine.api.labs.taskqueue.TaskOptions;
+import static com.google.appengine.api.taskqueue.TaskOptions.Builder.*;
+import com.google.appengine.api.taskqueue.TaskOptions;
+import com.google.appengine.api.taskqueue.Queue;
+import com.google.appengine.api.taskqueue.QueueFactory;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 
@@ -204,7 +203,7 @@ public class MakeDataServlet extends HttpServlet {
 				if (e.number == 0 && doTransition) {
 					continue;
 				}
-				queue.add(url("/tasks/transition").param("fromEdition", e.id)
+				queue.add(withUrl("/tasks/transition").param("fromEdition", e.id)
 						.etaMillis(e.end.getTime()).method(TaskOptions.Method.GET));
 			}
 			
