@@ -63,7 +63,6 @@
 		<url-pattern>/killData</url-pattern>
 	</servlet-mapping>
 
-
   <filter> 
     <filter-name>AuthFilter</filter-name> 
     <filter-class>org.rapidnewsawards.server.AuthFilter</filter-class> 

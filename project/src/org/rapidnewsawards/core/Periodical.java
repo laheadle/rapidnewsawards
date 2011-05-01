@@ -31,16 +31,20 @@ public class Periodical {
 
 	public int numEditions;
 	
+	public boolean flag; // for locking
+	
 	/*
 	 * only called when intializing the db
 	 */
 	public Periodical(Name name, Key<Root> root) {
 		this();
+		this.flag = true;
 		this.root = root;
 		this.inSocialTransition = false;
 		this.tallying = false;
 		this.live = true;
 		this.name = name.name;
+		// TODO Remove.
 		this.balance = 500000; // 5k dollars (in pennies)
 	}
 	

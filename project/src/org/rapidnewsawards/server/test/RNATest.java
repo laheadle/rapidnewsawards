@@ -2,9 +2,7 @@ package org.rapidnewsawards.server.test;
 
 import junit.framework.TestCase;
 
-import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.User;
-import org.rapidnewsawards.messages.Name;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
 
@@ -26,12 +24,7 @@ public abstract class RNATest extends TestCase {
 	}
 
 	public void doTransition() {
-		Edition current = d.editions.getEdition(Name.AGGREGATOR_NAME, -1, null);
-		Edition next = d.editions.getEdition(Name.AGGREGATOR_NAME, -2, null);
-		d.transition.transitionEdition(Name.AGGREGATOR_NAME);
-		d.transition.socialTransition(next);
-		d.transition.setEditionRevenue();
-		d.editions.fund(current);
+		d.transition.transitionEdition();
 	}
 
 

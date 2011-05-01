@@ -4,7 +4,6 @@ import java.util.Date;
 
 import javax.persistence.Id;
 
-
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Parent;
@@ -22,7 +21,8 @@ public class Vote {
 	
 	public Date time;
 	
-	@Id Long id;
+	@Id 
+	public Long id;
 	
 	public Vote() {}
 	

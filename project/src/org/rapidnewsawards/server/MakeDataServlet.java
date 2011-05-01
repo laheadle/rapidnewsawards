@@ -14,15 +14,12 @@ import javax.servlet.http.HttpServletResponse;
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.Periodical;
 import org.rapidnewsawards.core.Root;
+import org.rapidnewsawards.core.ScoreSpace;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.messages.Name;
 import org.rapidnewsawards.messages.Return;
 import org.rapidnewsawards.messages.VoteResult;
 
-import static com.google.appengine.api.taskqueue.TaskOptions.Builder.*;
-import com.google.appengine.api.taskqueue.TaskOptions;
-import com.google.appengine.api.taskqueue.Queue;
-import com.google.appengine.api.taskqueue.QueueFactory;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 
@@ -74,7 +71,7 @@ public class MakeDataServlet extends HttpServlet {
 			makeData(numEditions, minutes * ONE_MINUTE, numUsers);
 
 			if (doTransition) {
-				DAO.instance.transition.doTransition(Name.AGGREGATOR_NAME, 0, null);
+				DAO.instance.transition.doTransition(0);
 			}
 			
 			if (numLinks > 0) {
@@ -88,7 +85,7 @@ public class MakeDataServlet extends HttpServlet {
 	}
 
 	private void makeLinks() {
-		Edition current = d.editions.getEdition(Name.AGGREGATOR_NAME, 1, null);
+		Edition current = d.editions.getEdition(1);
 		User jq = d.users.findUserByLogin("johnqpublic@gmail.com", "gmail.com");
 		for (int i = 0;i < numLinks;i++) {
 			VoteResult vr = d.editions.submitStory("http://www.example" + i + ".com", 
@@ -97,7 +94,6 @@ public class MakeDataServlet extends HttpServlet {
 				DAO.log.warning(vr.returnVal.toString());
 			}
 		}
-		TallyTask.scheduleImmediately();
 	}
 
 	public static void welcome(User u, String nickname, int donation) {
@@ -106,7 +102,8 @@ public class MakeDataServlet extends HttpServlet {
 		d.users.welcomeUser(nickname, donation * 100);		
 		d.user = olduser;
 	}
-	public static void makeData (int editionCount, long periodSize, Cell<Integer> numUsers) throws ParseException {		
+	public static void makeData (int editionCount, long periodSize, Cell<Integer> numUsers) 
+	throws ParseException {		
 		// add users to first edition
 		makeEditions(editionCount, periodSize);
 
@@ -155,17 +152,19 @@ public class MakeDataServlet extends HttpServlet {
 	}
 
 	 
-	public static ArrayList<Edition> makeEditions(int editionCount, long periodSize) throws ParseException {
+	public static ArrayList<Edition> makeEditions(int editionCount, long periodSize) 
+	throws ParseException {
+		Objectify o = DAO.instance.ofy();
 		final Root root = new Root();
 		root.id = 1L;
-		DAO.instance.ofy().put(root);
+		o.put(root);
 		
 		final Periodical p = new Periodical(Name.AGGREGATOR_NAME, new Key<Root>(Root.class, 1L));
-		Objectify o = DAO.instance.ofy();
 		p.numEditions = editionCount;
-		o.put(p);
+		assert(o.put(p) != null);
 
-
+		assert(d.getPeriodical() != null);
+		
 		// create editions using a local function class
 		// using arrays lets us mutate their contents from the local class method
 		final int[] number = { 0 };
@@ -183,7 +182,6 @@ public class MakeDataServlet extends HttpServlet {
 			public Edition make() { 
 				current[0] = new Date(current[0].getTime() + duration); 
 				Edition e = new Edition(current[0], number[0]++, p.getKey()); 
-				e.revenue = p.balance / p.numEditions;
 				return e;
 			}
 		}
@@ -195,16 +193,31 @@ public class MakeDataServlet extends HttpServlet {
 
 		// generate keys
 		DAO.instance.ofy().put(editions);		
+
+		// make ScoreSpaces
+		long rootCount = p.root.getId();
+		ArrayList<ScoreSpace> spaces = new ArrayList<ScoreSpace>();
+		for (Edition e : editions) {
+			Root parent = new Root();
+			parent.id = ++rootCount;
+			assert(o.put(parent) != null);
+
+			ScoreSpace s = new ScoreSpace(e.getKey(), new Key<Root>(Root.class, parent.id));
+			// TODO No revenue in signup.
+			s.revenue = p.balance / p.numEditions;
+			spaces.add(s);
+		}
 		
+		assert (DAO.instance.ofy().put(spaces).keySet().size() ==
+			spaces.size() && spaces.size() == editions.size());
+
 		// make transition tasks
 		if (!testing) {
-			Queue queue = QueueFactory.getDefaultQueue();
 			for (Edition e : editions) {
 				if (e.number == 0 && doTransition) {
 					continue;
 				}
-				queue.add(withUrl("/tasks/transition").param("fromEdition", e.id)
-						.etaMillis(e.end.getTime()).method(TaskOptions.Method.GET));
+				TransitionTask.scheduleTransition(e);
 			}
 			
 		}

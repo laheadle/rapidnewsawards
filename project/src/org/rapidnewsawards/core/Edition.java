@@ -4,7 +4,6 @@ import java.util.Date;
 
 import javax.persistence.Id;
 
-
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cached;
 
@@ -19,12 +18,6 @@ public class Edition implements Comparable<Edition> {
 	public int number;
 	
 	public Key<Periodical> periodical;
-
-	public int revenue;
-
-	public int totalSpend;
-	
-	public int numFundedLinks;
 	
 	public Edition() {}
 
@@ -33,9 +26,6 @@ public class Edition implements Comparable<Edition> {
 		this.periodical = periodical;
 		this.end = end;
 		this.number = number;
-		this.revenue = 0;
-		this.totalSpend = 0;
-		this.numFundedLinks = 0;
 	}
 		
 	@Override

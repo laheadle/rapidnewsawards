@@ -1,11 +1,12 @@
 package org.rapidnewsawards.server.test;
 
+import java.net.MalformedURLException;
+
 import org.junit.Before;
 import org.junit.Test;
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.Link;
 import org.rapidnewsawards.core.User;
-import org.rapidnewsawards.messages.Name;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
 import org.rapidnewsawards.server.TitleGrabber;
@@ -39,7 +40,7 @@ public class DAOTest extends RNATest {
 	}
 
 	void verifyEdition() {
-		Edition e = DAO.instance.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
+		Edition e = DAO.instance.editions.getCurrentEdition();
 		assertNotNull(e);
 	}
 
@@ -69,9 +70,9 @@ public class DAOTest extends RNATest {
 	}
 	
 	@Test
-	public void testVote() {
+	public void testVote() throws MalformedURLException {
 		User mg = getUser(null);
-		Edition e = DAO.instance.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
+		Edition e = DAO.instance.editions.getCurrentEdition();
 		
 		Link l = DAO.instance.users.createLink("http://example.com", "title", mg.getKey());
 		Link l3 = DAO.instance.users.createLink("http://example2.com",  "title", mg.getKey());

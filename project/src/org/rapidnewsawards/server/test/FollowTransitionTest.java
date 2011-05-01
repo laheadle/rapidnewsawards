@@ -5,7 +5,6 @@ package org.rapidnewsawards.server.test;
 import org.junit.Test;
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.User;
-import org.rapidnewsawards.messages.Name;
 import org.rapidnewsawards.messages.Return;
 import org.rapidnewsawards.server.DAO;
 
@@ -14,7 +13,7 @@ public class FollowTransitionTest extends RNATest {
 		
 	@Test
 	public void testFollows() {
-		Edition e2 = DAO.instance.editions.getEdition(Name.AGGREGATOR_NAME, 1, null);
+		Edition e2 = DAO.instance.editions.getEdition(1);
 				
 		User mg = getUser("ohthatmeg");
 		User jny2 = getUser("Joshuanyoung");
@@ -27,7 +26,7 @@ public class FollowTransitionTest extends RNATest {
 
 		doTransition();
 		
-		e2 = DAO.instance.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
+		e2 = DAO.instance.editions.getCurrentEdition();
 
 		assertNotNull(DAO.instance.social.getFollow(mg.getKey(), jny2.getKey(), null));
 

@@ -28,7 +28,6 @@ public class JSONServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(DoSomethingServlet.class
 			.getName());
-	private static DAO d = DAO.instance;
 
 	private static abstract class Parser {
 		public abstract Object parse(String value);
@@ -38,7 +37,12 @@ public class JSONServlet extends HttpServlet {
 		HttpServletRequest request;
 		public static Map<String, Object> defaults = new HashMap<String, Object>();
 		private static Map<Class<?>, Parser> parsers = new HashMap<Class<?>, Parser>();
+		public DAO d;
 
+		public AbstractCommand() {
+			this.d = DAO.instance;
+		}
+		
 		static {
 			defaults.put("edition", -1);
 			parsers.put(Integer.class, new Parser() {
@@ -79,11 +83,9 @@ public class JSONServlet extends HttpServlet {
 		commandsMap.put("topStories", new AbstractCommand() {
 			public Object getResult() {
 				int edition = get("edition", Integer.class);
-				TopStories ts = d.editions.getTopStories(edition,
-						Name.AGGREGATOR_NAME);
+				TopStories ts = d.editions.getTopStories(edition);
 				if (ts.edition == null) {
-					ts = d.editions.getTopStories(ts.numEditions - 1,
-							Name.AGGREGATOR_NAME);
+					ts = d.editions.getTopStories(ts.numEditions - 1);
 				}
 				assert (ts.numEditions > 0 && ts.edition != null && ts.list != null);
 				return ts;
@@ -120,7 +122,7 @@ public class JSONServlet extends HttpServlet {
 		commandsMap.put("recentFundings", new AbstractCommand() {
 			public Object getResult() {
 				RecentVotes rv = d.editions.getRecentVotes(get("edition",
-						Integer.class), Name.AGGREGATOR_NAME);
+						Integer.class));
 				return rv;
 			}
 		});
@@ -143,10 +145,9 @@ public class JSONServlet extends HttpServlet {
 				// TODO call typed interface, standardize exceptions
 				String link = request.getParameter("link");
 				String fullLink = request.getParameter("fullLink");
-				Edition ed = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
+				Edition ed = d.editions.getCurrentEdition();
 				Boolean on = new Boolean(request.getParameter("on"));
 				VoteResult vr = d.users.voteFor(link, fullLink, ed, on);
-				TallyTask.scheduleImmediately();
 				return vr;
 			}
 		});
@@ -165,9 +166,8 @@ public class JSONServlet extends HttpServlet {
 			public Object getResult() {
 				String url = request.getParameter("url");
 				String title = request.getParameter("title");
-				Edition ed = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
+				Edition ed = d.editions.getCurrentEdition();
 				VoteResult vr = d.editions.submitStory(url, title, ed, d.user);
-				TallyTask.scheduleImmediately();
 				return vr;
 			}
 		});
@@ -228,6 +228,8 @@ public class JSONServlet extends HttpServlet {
 		JSONServlet.log.info("Json Function: " + fun);
 		Gson g = new Gson();
 		AbstractCommand c = commandsMap.get(fun);
+		
+		// TODO CONCURRENT mod exceptions
 		out.println(g.toJson(c.perform(request)));
 	}
 

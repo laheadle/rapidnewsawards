@@ -2,6 +2,7 @@ package org.rapidnewsawards.server.test;
 
 //import static org.easymock.EasyMock.verify;
 
+import java.net.MalformedURLException;
 import java.util.Iterator;
 
 import org.junit.Test;
@@ -9,13 +10,12 @@ import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.Link;
 import org.rapidnewsawards.core.ScoredLink;
 import org.rapidnewsawards.core.User;
-import org.rapidnewsawards.messages.Name;
 
 public class VoteTransitionTest extends RNATest {
 	
 	@Test
-	public void testVotes() {
-		Edition e1 = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);		
+	public void testVotes() throws MalformedURLException {
+		Edition e1 = d.editions.getCurrentEdition();		
 		User mg = getUser(null);
 
 		Link l = d.users.createLink("http://example.com", "title", mg.getKey());
@@ -26,14 +26,14 @@ public class VoteTransitionTest extends RNATest {
 		
 		doTransition();
 		
-		Edition e2 = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
+		Edition e2 = d.editions.getCurrentEdition();
 		
 		assertFalse(d.users.hasVoted(mg, e2, l));
 	}
 
-	public void testTally() {
-		d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);		
-		Edition e2 = d.editions.getEdition(Name.AGGREGATOR_NAME, 1, null);
+	public void testTally() throws MalformedURLException {
+		d.editions.getCurrentEdition();		
+		Edition e2 = d.editions.getEdition(1);
 
 		User mg = getUser("ohthatmeg");
 		User jny2 = getUser("joshuanyoung");
@@ -48,7 +48,7 @@ public class VoteTransitionTest extends RNATest {
 
 		doTransition();
 
-		e2 = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
+		e2 = d.editions.getCurrentEdition();
 		
 		Link l1 = d.users.createLink("http://example.com", "title", mg.getKey());
 		Link l2 = d.users.createLink("http://example2.com", "title", mg.getKey());

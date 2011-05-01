@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletResponse;
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.Link;
 import org.rapidnewsawards.core.User;
-import org.rapidnewsawards.messages.Name;
 
 
 @SuppressWarnings("serial")
@@ -42,7 +41,7 @@ public class DoSomethingServlet extends HttpServlet {
 	public void doThing() throws IOException {
 		PrintWriter out = response.getWriter();
 
-		Edition e = DAO.instance.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
+		Edition e = DAO.instance.editions.getCurrentEdition();
 		
 		if (e == null) {
 			out.println("No current edition");
@@ -73,21 +72,14 @@ public class DoSomethingServlet extends HttpServlet {
 		DAO.instance.users.voteFor(jny2, e, l3, true);
 		DAO d = DAO.instance;
 		
-		Edition current = d.editions.getCurrentEdition(Name.AGGREGATOR_NAME);
-		Edition next = d.editions.getNextEdition(Name.AGGREGATOR_NAME);
+		Edition current = d.editions.getCurrentEdition();
+		Edition next = d.editions.getNextEdition();
 		
 		
-		d.transition.transitionEdition(Name.AGGREGATOR_NAME);
+		d.transition.transitionEdition();
 		if (next == null) {
 			log.info("End of periodical; last edition is" + current);
 		}
-		else {
-			d.transition.socialTransition(next);
-		}
-		d.transition.setEditionRevenue();
-		d.editions.fund(current);		
-
-		out.println("tally done");
-		
+		out.println("transition done");
 	}
 }

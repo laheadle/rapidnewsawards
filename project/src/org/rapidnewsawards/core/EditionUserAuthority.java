@@ -2,7 +2,6 @@ package org.rapidnewsawards.core;
 
 import javax.persistence.Id;
 
-
 import com.googlecode.objectify.Key;
 
 public class EditionUserAuthority {
