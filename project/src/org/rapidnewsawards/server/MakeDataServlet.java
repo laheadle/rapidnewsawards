@@ -159,7 +159,7 @@ public class MakeDataServlet extends HttpServlet {
 		root.id = 1L;
 		o.put(root);
 		
-		final Periodical p = new Periodical(Name.AGGREGATOR_NAME, new Key<Root>(Root.class, 1L));
+		final Periodical p = new Periodical(Name.AGGREGATOR_NAME);
 		p.numEditions = editionCount;
 		assert(o.put(p) != null);
 

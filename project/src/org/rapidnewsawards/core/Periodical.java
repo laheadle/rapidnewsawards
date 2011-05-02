@@ -4,6 +4,7 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 import org.rapidnewsawards.messages.Name;
+import org.rapidnewsawards.server.DAO;
 
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Parent;
@@ -11,15 +12,16 @@ import com.googlecode.objectify.annotation.Parent;
 @Entity
 public class Periodical {
 
+	private static final int ROOT_ID = 1;
+
 	private Key<Edition> currentEditionKey;
 	
-	public String name;
 
 	@Parent public Key<Root> root;
 	
 	// TODO Make id a String.
 	@Id
-	private Long id;
+	public String idName;
 
 	public boolean live;
 
@@ -38,32 +40,31 @@ public class Periodical {
 	/*
 	 * only called when intializing the db
 	 */
-	public Periodical(Name name, Key<Root> root) {
-		this();
+	public Periodical(Name name) {
 		this.userlocked = false;
 		this.flag = true;
-		this.root = root;
+		this.root = rootKey();
 		this.inSocialTransition = false;
 		this.tallying = false;
 		this.live = true;
-		this.name = name.name;
+		this.idName = name.name;
 		// TODO Remove.
 		this.balance = 500000; // 5k dollars (in pennies)
 	}
 	
+	private static Key<Root> rootKey() {
+		return new Key<Root>(Root.class, ROOT_ID);
+	}
+
 	public Periodical() {}	
 	
-
-	public String getName() {
-		return name;
+	public static Key<Periodical> getKey(String idName) {
+		return new Key<Periodical>(rootKey(), 
+				Periodical.class, DAO.periodicalName.name);
 	}
 
-	public void setName(String name) {
-		this.name = name;
-	}
-	
 	public Key<Periodical> getKey() {
-		return new Key<Periodical>(root, Periodical.class, id);
+		return Periodical.getKey(idName);
 	}
 
 	public void setcurrentEditionKey(Key<Edition> Key) {

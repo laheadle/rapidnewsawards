@@ -131,10 +131,10 @@ public class DAO extends DAOBase {
 			return result;
 		}
 
-		private Edition getLastEdition(final Periodical p) {
+		private Edition getLastEdition() {
 			Edition e;
 			e = ofy().find(
-					Edition.getPreviousKey("" + editions.getNumEditions(p)));
+					Edition.getPreviousKey("" + editions.getNumEditions()));
 			return e;
 		}
 
@@ -218,25 +218,9 @@ public class DAO extends DAOBase {
 
 		public int getNumEditions() {
 			if (numEditions == -1) {
-				numEditions = _getNumEditions();
+				numEditions = getPeriodical().numEditions;
 			}
 			return numEditions;
-		}
-
-		private int _getNumEditions() {
-			final Periodical p = findByFieldName(Periodical.class, Name.NAME,
-					periodicalName.name, null);
-
-			if (p == null) {
-				log.severe("Can't find periodical: " + periodicalName);
-				return 0;
-			}
-
-			return getNumEditions(p);
-		}
-
-		public int getNumEditions(Periodical p) {
-			return p.numEditions;
 		}
 
 		public RecentVotes getRecentVotes(int edition) {
@@ -398,12 +382,10 @@ public class DAO extends DAOBase {
 			TransitionTask.setBalance();			
 		}
 
-		private Edition getPreviousEdition(LockedPeriodical lp) {
+		private Edition getPreviousOrLastEdition(LockedPeriodical lp) {
 			Key<Edition> current = lp.periodical.getCurrentEditionKey();
 			if (current == null) {
-				// last edition
-				current = new Key<Edition>(Edition.class, ""
-						+ (editions.getNumEditions(lp.periodical) - 1));
+				return getLastEdition();
 			}
 			return ofy().find(Edition.getPreviousKey(current.getName()));
 		}
@@ -457,8 +439,8 @@ public class DAO extends DAOBase {
 	}
 
 	private class LockedPeriodical {
-		public Objectify transaction;
-		public Periodical periodical;
+		public final Objectify transaction;
+		public final Periodical periodical;
 
 		public LockedPeriodical() {		
 			Objectify oTxn = fact().beginTransaction();
@@ -635,51 +617,6 @@ public class DAO extends DAOBase {
 
 	public class Transition {
 
-		private void _transitionEdition(LockedPeriodical lp) {
-
-			final Periodical p = lp.periodical;
-
-			if (p == null) {
-				// DIE FOREVER
-				log.severe("No Periodical");
-				return;
-			}
-
-			if (!p.live) {
-				// DIE FOREVER
-				log.severe("tried to transition a dead periodical");
-				return;
-			}
-			
-			Edition current = ofy().find(p.getCurrentEditionKey());
-
-			if (current == null) {
-				// DIE FOREVER
-				log.severe("no edition matching" + p.getCurrentEditionKey());
-				return;
-			}
-
-			int nextNum = current.number + 1;
-			int n = editions.getNumEditions(p);
-
-			if (nextNum == n) {
-				p.live = false;
-			} else if (nextNum > n) {
-				// TODO throw?
-				log.severe("bug in edition numbers: " + nextNum);
-				return;
-			} else {
-				// Do it! Change current edition.
-				p.setcurrentEditionKey(new Key<Edition>(Edition.class, ""
-						+ nextNum));
-			}
-
-			p.inSocialTransition = true;
-			TransitionTask.doSocialTransition(lp.transaction.getTxn(), nextNum);
-			lp.commit();
-			log.info(p.name + ": New current Edition:" + nextNum);
-		}
-
 		public void doTransition(int editionNum) {
 			Edition from = editions.getEdition(editionNum);
 
@@ -728,7 +665,7 @@ public class DAO extends DAOBase {
 		}
 
 		public void setBalance() {
-
+			assert(getPeriodical().inSocialTransition);
 			LockedPeriodical lp = lockPeriodical();
 
 			if (lp == null) {
@@ -749,7 +686,7 @@ public class DAO extends DAOBase {
 			if (!p.live) {
 				log.warning("spending all remaining revenue");
 
-				e = editions.getLastEdition(p);
+				e = editions.getLastEdition();
 				if (e == null) {
 					throw new IllegalStateException("no final edition");
 				}
@@ -758,7 +695,7 @@ public class DAO extends DAOBase {
 				s.revenue = p.balance;
 				p.balance = 0;
 			} else {
-				e = editions.getPreviousEdition(lp);
+				e = editions.getPreviousOrLastEdition(lp);
 
 				if (e == null) {
 					throw new IllegalStateException("no previous edition");
@@ -766,7 +703,7 @@ public class DAO extends DAOBase {
 
 				s = editions.getScoreSpace(e.getKey());
 				assert (s != null);
-				int n = editions.getNumEditions(p);
+				int n = editions.getNumEditions();
 				s.revenue = p.balance / (n - e.number);
 				p.balance -= s.revenue;
 			}
@@ -825,26 +762,61 @@ public class DAO extends DAOBase {
 			lp.commit();
 		}
 
-		public boolean transitionEdition() {
+		public void transitionEdition() {
 
 			LockedPeriodical locked = lockPeriodical();
 
-			if (locked == null) {
-				log.severe("publish failed");
-				return false;
+			assert (locked != null);
+
+			final Periodical p = locked.periodical;
+
+			if (p == null) {
+				// DIE FOREVER
+				log.severe("No Periodical");
+				return;
 			}
 
-			transition._transitionEdition(locked);
+			if (!p.live) {
+				// DIE FOREVER
+				log.severe("tried to transition a dead periodical");
+				return;
+			}
 			
-			return true;
+			Edition current = ofy().find(p.getCurrentEditionKey());
+
+			if (current == null) {
+				// DIE FOREVER
+				log.severe("no edition matching" + p.getCurrentEditionKey());
+				return;
+			}
+
+			int nextNum = current.number + 1;
+			int n = editions.getNumEditions();
+
+			if (nextNum == n) {
+				p.live = false;
+			} else if (nextNum > n) {
+				// TODO throw?
+				log.severe(String.format("bug in edition numbers: %d > %d", nextNum, n));
+				return;
+			} else {
+				// Do it! Change current edition.
+				p.setcurrentEditionKey(new Key<Edition>(Edition.class, ""
+						+ nextNum));
+			}
+
+			p.inSocialTransition = true;
+			TransitionTask.doSocialTransition(locked.transaction.getTxn(), nextNum);
+			locked.commit();
+			log.info(p.idName + ": New current Edition:" + nextNum);
 		}
 
 		public void finishTransition() {
+			assert(getPeriodical().inSocialTransition);
 			// the final step in transition machinery!
 			LockedPeriodical lp = lockPeriodical();
 			lp.periodical.inSocialTransition = false;
-			lp.transaction.put(lp.periodical);	
-			lp.transaction.getTxn().commit();
+			lp.commit();
 		}
 
 	}
@@ -1144,7 +1116,7 @@ public class DAO extends DAOBase {
 	 */
 	public User user;
 	
-	public Name periodicalName = Name.AGGREGATOR_NAME;
+	public static final Name periodicalName = Name.AGGREGATOR_NAME;
 
 
 
@@ -1169,20 +1141,8 @@ public class DAO extends DAOBase {
 		users = new Users();
 	}
 
-	// clients should call convenience methods above
-	private <T> T findByFieldName(Class<T> clazz, Name fieldName, Object value,
-			Objectify o) {
-		if (o == null)
-			o = ofy();
-		return o.query(clazz).filter(fieldName.name, value).get();
-	}
-
 	public Periodical getPeriodical() {
-		// TODO need a cache filter?
-		
-		Root root = ofy().get(Root.class, 1L);
-		// TODO 2.0 Why can't I filter this by name?  BUG.
-		return ofy().query(Periodical.class).ancestor(root).get();
+		return ofy().get(Periodical.getKey(periodicalName.name));
 	}
 
 
