@@ -32,12 +32,15 @@ public class Periodical {
 	public int numEditions;
 	
 	public boolean flag; // for locking
+
+	public boolean userlocked;
 	
 	/*
 	 * only called when intializing the db
 	 */
 	public Periodical(Name name, Key<Root> root) {
 		this();
+		this.userlocked = false;
 		this.flag = true;
 		this.root = root;
 		this.inSocialTransition = false;

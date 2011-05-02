@@ -15,8 +15,6 @@ public class ScoredLink {
     @Parent
     public Key<Root> root;
     
-    public Key<ScoreSpace> space;
-    
 	public Key<Edition> edition;
 
 	@Unindexed 

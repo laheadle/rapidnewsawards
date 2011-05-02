@@ -3,6 +3,7 @@ package org.rapidnewsawards.server;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
@@ -459,19 +460,30 @@ public class DAO extends DAOBase {
 		public Objectify transaction;
 		public Periodical periodical;
 
-		public LockedPeriodical(Objectify o, Periodical p) {
-			this.transaction = o;
+		public LockedPeriodical() {		
+			Objectify oTxn = fact().beginTransaction();
+			// TODO 2.0 Need a periodical name
+			Key<Root> root = new Key<Root>(Root.class, 1);
+			Periodical p = oTxn.query(Periodical.class).ancestor(root).get();
+			this.transaction = oTxn;
 			this.periodical = p;
+			this.periodical.flag = !this.periodical.flag;
 		}
 
-		public void release() {
-			this.periodical.flag = !this.periodical.flag;
+		public void commit() {
 			this.transaction.put(this.periodical);
 			this.transaction.getTxn().commit();
 		}
-
 		public void rollback() {
 			this.transaction.getTxn().rollback();
+		}
+
+		public void releaseUserLock() {
+			this.periodical.userlocked = false;
+		}
+
+		public void setUserLock() {
+			this.periodical.userlocked = true;
 		}
 	}
 
@@ -493,13 +505,13 @@ public class DAO extends DAOBase {
 			if (!lp.periodical.getCurrentEditionKey()
 					.equals(e.getPreviousKey())) {
 				log.warning("Attempted to socialize in old edition");
-				lp.release();
+				lp.commit();
 				return Return.NO_LONGER_CURRENT;
 			}
 
 			if (lp.periodical.inSocialTransition) {
 				log.warning("Attempted to socialize during transition");
-				lp.release();
+				lp.commit();
 				return Return.TRANSITION_IN_PROGRESS;
 			}
 
@@ -547,7 +559,7 @@ public class DAO extends DAOBase {
 				r = Return.NOT_FOLLOWING;
 			}
 
-			lp.release();
+			lp.commit();
 			return r;
 		}
 
@@ -628,18 +640,21 @@ public class DAO extends DAOBase {
 			final Periodical p = lp.periodical;
 
 			if (p == null) {
+				// DIE FOREVER
 				log.severe("No Periodical");
 				return;
 			}
 
 			if (!p.live) {
-				log.warning("tried to transition a dead periodical");
+				// DIE FOREVER
+				log.severe("tried to transition a dead periodical");
 				return;
 			}
-
+			
 			Edition current = ofy().find(p.getCurrentEditionKey());
 
 			if (current == null) {
+				// DIE FOREVER
 				log.severe("no edition matching" + p.getCurrentEditionKey());
 				return;
 			}
@@ -661,7 +676,7 @@ public class DAO extends DAOBase {
 
 			p.inSocialTransition = true;
 			TransitionTask.doSocialTransition(lp.transaction.getTxn(), nextNum);
-			lp.release();
+			lp.commit();
 			log.info(p.name + ": New current Edition:" + nextNum);
 		}
 
@@ -709,7 +724,7 @@ public class DAO extends DAOBase {
 
 			p.live = false;
 			p.setcurrentEditionKey(null);
-			lp.release();
+			lp.commit();
 		}
 
 		public void setBalance() {
@@ -757,7 +772,7 @@ public class DAO extends DAOBase {
 			}
 
 			TransitionTask.setRevenue(lp.transaction.getTxn(), e, s.revenue);
-			lp.release();
+			lp.commit();
 
 			log.info(e + ": revenue " + Periodical.moneyPrint(s.revenue));
 			log.info("balance: " + Periodical.moneyPrint(p.balance));
@@ -768,7 +783,9 @@ public class DAO extends DAOBase {
 		 * machinery.
 		 */
 		public void socialTransition(int _to) {
-
+			assert(getPeriodical().inSocialTransition);
+			assert(!getPeriodical().userlocked);
+			
 			Edition to = editions.getEdition(_to);
 			Objectify o = ofy();
 			
@@ -805,7 +822,7 @@ public class DAO extends DAOBase {
 				}
 			}
 			TransitionTask.updateAuthorities(lp.transaction.getTxn(), _to);
-			lp.release();
+			lp.commit();
 		}
 
 		public boolean transitionEdition() {
@@ -950,7 +967,7 @@ public class DAO extends DAOBase {
 					.filter("edition", e.getKey()).filter("link", l.getKey())
 					.count();
 			if (count > 1) {
-				log.severe("too many eventPanel for user " + u);
+				throw new IllegalStateException("too many votes for user " + u);
 			}
 			return count == 1;
 		}
@@ -976,10 +993,9 @@ public class DAO extends DAOBase {
 				return vr;
 			}
 
-			Link l = DAO.instance.findByFieldName(Link.class, Name.URL, link,
-					null);
+			Link l = ofy().query(Link.class).filter(Name.URL.name, link).get();
 			if (l == null) {
-				return null;
+				return null; // User must submit the link
 			} else {
 				vr.returnVal = voteFor(
 						user,
@@ -1003,17 +1019,14 @@ public class DAO extends DAOBase {
 		 *            the link voted for
 		 * @throws IllegalArgumentException
 		 */
-		public Return voteFor(User u, Edition e, Link l, Boolean on)
+		public Return voteFor(User u, Edition e, Link l, boolean on)
 				throws IllegalArgumentException {
 			// TODO only judges can vote, ditto for ed follows
 
+			assert(e != null);
+			
 			// obtain lock
 			LockedPeriodical lp = lockPeriodical();
-
-			if (lp == null || e == null) {
-				log.warning("vote failed: " + u + " -> " + l.url);
-				return Return.FAILED;
-			}
 
 			if (!lp.periodical.getCurrentEditionKey().equals(e.getKey())) {
 				log.warning("Attempted to vote in old edition");
@@ -1027,35 +1040,48 @@ public class DAO extends DAOBase {
 				return Return.TRANSITION_IN_PROGRESS;
 			}
 
-			if (on) {
-				if (hasVoted(u, e, l)) {
-					lp.rollback();
-					return Return.ALREADY_VOTED;
-				}
+			if (lp.periodical.userlocked) {
+				log.warning("waiting to vote");
+				lp.rollback();
+				throw new ConcurrentModificationException("waiting");
+		 	}
 
-				Vote v = new Vote(u.getKey(), e.getKey(), l.getKey(),
-						new Date(), u.authority);
-				Objectify txn = fact().beginTransaction();
+			boolean hasv = hasVoted(u, e, l);
+			if (hasv && on) {
+				lp.rollback();
+				return Return.ALREADY_VOTED;
+			}
+			
+			if (!on && !hasv) {
+				lp.rollback();
+				return Return.HAS_NOT_VOTED;
+			}
+			
+			lp.setUserLock();
+			TallyTask.writeVote(lp.transaction.getTxn(), u, e, l, on);
+			lp.commit();
+			log.info(u + " " + u.authority + (on ? " +++-> " : " xxx-> ") + l.url);
+			return Return.SUCCESS;
+		}
+		
+		public void writeVote(Key<User> uk, Key<Edition> ek,
+				Key<Link> lk, boolean on, int authority) {
+			assert(getPeriodical().userlocked);
+			Objectify txn = fact().beginTransaction();
+			if (on) {
+				// TODO pass in date
+				Vote v = new Vote(uk, ek, lk, new Date(), authority);
 				txn.put(v);
-				log.info(u + " " + u.authority + " -> " + l.url);
 				TallyTask.tallyVote(txn.getTxn(), v);
 				txn.getTxn().commit();
-				lp.release();
-				return Return.SUCCESS;
 			} else {
-				Vote v = ofy().query(Vote.class).filter("edition", e.getKey())
-						.filter("link", l.getKey()).get();
-				if (v == null) {
-					lp.rollback();
-					return Return.HAS_NOT_VOTED;
-				} else {
-					Objectify txn = fact().beginTransaction();
-					txn.delete(v);
-					// release lock
-					TallyTask.tallyVote(txn.getTxn(), v);
-					lp.release();
-					return Return.SUCCESS;
-				}
+				throw new IllegalArgumentException("no negative voting yet");
+				/*
+				Vote v = ofy().query(Vote.class).filter("edition", ek)
+				.filter("link", lk).get();
+				txn.delete(v);
+				// TODO pass in actual values -- vote is gone!
+				TallyTask.tallyVote(txn.getTxn(), v); */
 			}
 		}
 
@@ -1088,8 +1114,7 @@ public class DAO extends DAOBase {
 
 			// TODO not used
 			lp.periodical.balance += donation;
-			lp.transaction.put(lp.periodical);
-			lp.release();
+			lp.commit();
 
 			log.info("balance: " + Periodical.moneyPrint(lp.periodical.balance));
 
@@ -1136,22 +1161,12 @@ public class DAO extends DAOBase {
 
 	public static final Logger log = Logger.getLogger(DAO.class.getName());
 
-	private static int RETRY_TIMES = 5;
-
 	public DAO() {
 		user = null;
 		social = new Social();
 		transition = new Transition();
 		editions = new Editions();
 		users = new Users();
-	}
-
-	public Periodical getPeriodical() {
-		// TODO need a cache filter?
-		
-		Root root = ofy().get(Root.class, 1L);
-		// TODO 2.0 Why can't I filter this by name?  BUG.
-		return ofy().query(Periodical.class).ancestor(root).get();
 	}
 
 	// clients should call convenience methods above
@@ -1162,19 +1177,17 @@ public class DAO extends DAOBase {
 		return o.query(clazz).filter(fieldName.name, value).get();
 	}
 
+	public Periodical getPeriodical() {
+		// TODO need a cache filter?
+		
+		Root root = ofy().get(Root.class, 1L);
+		// TODO 2.0 Why can't I filter this by name?  BUG.
+		return ofy().query(Periodical.class).ancestor(root).get();
+	}
+
+
 	private LockedPeriodical lockPeriodical() {
-		Objectify oTxn = fact().beginTransaction();
-		for (int i = 0; i < RETRY_TIMES; i++) {
-			try {
-				// TODO 2.0 Need a periodical name
-				Root root = ofy().find(Root.class, 1);
-				Periodical p = oTxn.query(Periodical.class).ancestor(root).get();
-				return new LockedPeriodical(oTxn, p);
-			} catch (Error e) {
-				log.warning("lock failed, i = " + i);
-			}
-		}
-		throw new IllegalStateException("failed to lock periodical");
+		return new LockedPeriodical();
 	}
 
 	int revenue(int score, int totalScore, int editionFunds) {
@@ -1182,6 +1195,7 @@ public class DAO extends DAOBase {
 	}
 
 	public void tallyVote(Key<Vote> vote) {
+		assert(getPeriodical().userlocked);
 		Vote v = ofy().get(vote);
 		Objectify otx = fact().beginTransaction();
 		ScoreSpace space = editions.getScoreSpace(v.edition);
@@ -1202,7 +1216,14 @@ public class DAO extends DAOBase {
 		}
 		otx.put(sl);
 		otx.put(space);
+		TallyTask.releaseUserLock(otx.getTxn());
 		otx.getTxn().commit();
+	}
+
+	public void releaseUserLock() {
+		LockedPeriodical lp = lockPeriodical();
+		lp.releaseUserLock();
+		lp.commit();
 	}
 
 }
