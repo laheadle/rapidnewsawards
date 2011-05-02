@@ -444,9 +444,7 @@ public class DAO extends DAOBase {
 
 		public LockedPeriodical() {		
 			Objectify oTxn = fact().beginTransaction();
-			// TODO 2.0 Need a periodical name
-			Key<Root> root = new Key<Root>(Root.class, 1);
-			Periodical p = oTxn.query(Periodical.class).ancestor(root).get();
+			Periodical p = oTxn.get(Periodical.getKey(periodicalName.name));
 			this.transaction = oTxn;
 			this.periodical = p;
 			this.periodical.flag = !this.periodical.flag;
