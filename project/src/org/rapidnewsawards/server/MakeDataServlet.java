@@ -17,7 +17,7 @@ import org.rapidnewsawards.core.Root;
 import org.rapidnewsawards.core.ScoreSpace;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.messages.Name;
-import org.rapidnewsawards.messages.Return;
+import org.rapidnewsawards.messages.Response;
 import org.rapidnewsawards.messages.VoteResult;
 
 import com.googlecode.objectify.Key;
@@ -90,7 +90,7 @@ public class MakeDataServlet extends HttpServlet {
 		for (int i = 0;i < numLinks;i++) {
 			VoteResult vr = d.editions.submitStory("http://www.example" + i + ".com", 
 					"example story", current, jq);
-			if (!vr.returnVal.s.equals(Return.SUCCESS.s)) {
+			if (!vr.returnVal.s.equals(Response.SUCCESS.s)) {
 				DAO.log.warning(vr.returnVal.toString());
 			}
 		}

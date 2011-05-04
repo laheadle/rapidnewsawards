@@ -7,6 +7,7 @@ import javax.persistence.Id;
 
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cached;
+import com.googlecode.objectify.annotation.Parent;
 
 @Entity
 /*
@@ -20,6 +21,7 @@ public class SocialEvent {
     /*
      * The actor; if this field is null, then this SocialEvent is a "Join" -- somebody has joined the site but no power is granted
      */
+    @Parent
 	public Key<User> editor;
 	public Key<Edition> edition;
 	public Key<User> judge;

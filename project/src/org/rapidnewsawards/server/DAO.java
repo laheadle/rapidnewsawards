@@ -28,7 +28,7 @@ import org.rapidnewsawards.messages.Name;
 import org.rapidnewsawards.messages.RecentSocials;
 import org.rapidnewsawards.messages.RecentVotes;
 import org.rapidnewsawards.messages.RelatedUserInfo;
-import org.rapidnewsawards.messages.Return;
+import org.rapidnewsawards.messages.Response;
 import org.rapidnewsawards.messages.SocialInfo;
 import org.rapidnewsawards.messages.StoryInfo;
 import org.rapidnewsawards.messages.TopJudges;
@@ -336,7 +336,7 @@ public class DAO extends DAOBase {
 			VoteResult vr = new VoteResult();
 
 			if (submitter == null) {
-				vr.returnVal = Return.NOT_LOGGED_IN;
+				vr.returnVal = Response.NOT_LOGGED_IN;
 				vr.authUrl = null; // userService.createLoginURL(fullLink);
 				return vr;
 			}
@@ -353,7 +353,7 @@ public class DAO extends DAOBase {
 				catch (MalformedURLException e) {
 					// TODO Test on frontend
 					log.warning("bad url " + url + "submitted by " + submitter);
-					vr.returnVal = Return.BAD_URL;
+					vr.returnVal = Response.BAD_URL;
 				}
 			}
 			return vr;
@@ -447,7 +447,6 @@ public class DAO extends DAOBase {
 			Periodical p = oTxn.get(Periodical.getKey(periodicalName.name));
 			this.transaction = oTxn;
 			this.periodical = p;
-			this.periodical.flag = !this.periodical.flag;
 		}
 
 		public void commit() {
@@ -474,79 +473,104 @@ public class DAO extends DAOBase {
 		 * 
 		 * @param e this should be the next edition after current
 		 */
-		public Return doSocial(Key<User> from, Key<User> to, Edition e,
+		public Response doSocial(Key<User> from, Key<User> to, Edition e,
 				boolean on) {
 			LockedPeriodical lp = lockPeriodical();
-
-			// TODO handle the case where this is the last edition
+			
+			// assertion: this is not the last edition
 
 			assert(lp != null);
 			
 			if (!lp.periodical.getCurrentEditionKey()
 					.equals(e.getPreviousKey())) {
 				log.warning("Attempted to socialize in old edition");
-				lp.commit();
-				return Return.NO_LONGER_CURRENT;
+				lp.rollback();
+				return Response.NO_LONGER_CURRENT;
 			}
 
 			if (lp.periodical.inSocialTransition) {
 				log.warning("Attempted to socialize during transition");
-				lp.commit();
-				return Return.TRANSITION_IN_PROGRESS;
+				lp.rollback();
+				return Response.TRANSITION_IN_PROGRESS;
 			}
-
-			Return r = Return.SUCCESS;
-			Objectify o = ofy();
-
-			final Follow following = getFollow(from, to, o);
-			final SocialEvent aboutToSocial = getAboutToSocial(from, to, e, o);
+			Objectify socialTxn = fact().beginTransaction();
+			final Follow following = getFollow(from, to, socialTxn);
+			final SocialEvent aboutToSocial = getAboutToSocial(from, to, e, socialTxn);
 
 			if (on) {
-				if (aboutToSocial != null && !aboutToSocial.on) {
-					// cancel (delete) the pending unfollow
-					o.delete(aboutToSocial);
-					r = Return.PENDING_UNFOLLOW_CANCELLED;
-				} else if (aboutToSocial != null && aboutToSocial.on) {
-					log.warning("Already about to follow: [" + from + ", " + to
-							+ "]");
-					r = Return.ALREADY_ABOUT_TO_FOLLOW;
+				if (!users.isEditor(from)) {
+					lp.rollback();
+					return Response.NOT_AN_EDITOR;
+				}
+				else if (aboutToSocial != null && aboutToSocial.on) {
+					log.warning(String.format("%s is already about to follow %s", 
+							from, to));
+					lp.rollback();
+					return Response.ALREADY_ABOUT_TO_FOLLOW;
 				} else if (following != null) {
 					log.warning("Already isFollowing: [" + from + ", " + to
 							+ "]");
-					r = Return.ALREADY_FOLLOWING;
-				} else if (!users.isEditor(from)) {
-					r = Return.NOT_AN_EDITOR;
-				} else {
-					// this follow won't take effect until a transition
-					final SocialEvent follow = new SocialEvent(from, to,
-							e.getKey(), new Date(), on);
-					r = Return.ABOUT_TO_FOLLOW;
-					o.put(follow);
-				}
-			} else if (following != null) {
-				// this unfollow won't take effect until a transition
-				final SocialEvent unfollow = new SocialEvent(from, to,
-						e.getKey(), new Date(), on);
-				o.put(unfollow);
-				r = Return.ABOUT_TO_UNFOLLOW;
-			} else if (aboutToSocial != null) {
-				// cancel (delete) the pending follow
-				o.delete(aboutToSocial);
-				r = Return.PENDING_FOLLOW_CANCELLED;
-			} else {
+					lp.rollback();
+					return Response.ALREADY_FOLLOWING;
+				} 
+			}
+			else if (following == null && aboutToSocial == null){
+				assert(!on);
 				log.warning("Can't unfollow unless isFollowing: " + from + ", "
 						+ to + ", " + e);
-				r = Return.NOT_FOLLOWING;
+				lp.rollback();
+				return Response.NOT_FOLLOWING;
 			}
 
-			lp.commit();
-			return r;
+			// we are now clear to hit the db and commit
+			try {
+				lp.setUserLock();
+				return writeSocial(from, to, e, on, following, aboutToSocial, socialTxn);
+			} finally {
+				lp.commit();				
+			}
+		}
+		
+		public Response writeSocial(Key<User> from, Key<User> to, Edition e, 
+				boolean on, Follow following, SocialEvent aboutToSocial, Objectify txn) {
+			if (on) {
+				if (aboutToSocial != null && !aboutToSocial.on) {
+					// cancel (delete) the pending unfollow
+					txn.delete(aboutToSocial);
+					return Response.PENDING_UNFOLLOW_CANCELLED;
+				}
+				assert(aboutToSocial == null && following == null);
+				// this follow won't take effect until a transition
+				final SocialEvent follow = new SocialEvent(from, to,
+						e.getKey(), new Date(), on);
+				txn.put(follow);
+				txn.getTxn().commit();
+				return Response.ABOUT_TO_FOLLOW;
+			}
+			else {
+				if (aboutToSocial != null) {
+					assert (following == null);
+					// cancel (delete) the pending follow
+					txn.delete(aboutToSocial);
+					txn.getTxn().commit();
+					return Response.PENDING_FOLLOW_CANCELLED;
+				} 
+				else {
+					assert (following != null);
+					// this unfollow won't take effect until a transition
+					final SocialEvent unfollow = new SocialEvent(from, to,
+							e.getKey(), new Date(), on);
+					txn.put(unfollow);
+					txn.getTxn().commit();
+					return Response.ABOUT_TO_UNFOLLOW;
+				}
+			}
 		}
 
-		public Return doSocial(User to, Boolean on) {
+		public Response doSocial(User to, Boolean on) {
 			if (user == null) {
 				log.warning("attempt to follow with null user");
-				return Return.ILLEGAL_OPERATION;
+				return Response.ILLEGAL_OPERATION;
 			}
 
 			// read-only transaction
@@ -554,28 +578,24 @@ public class DAO extends DAOBase {
 			if (e == null) {
 				log.warning(user
 						+ "Attempted to socialize during final edition");
-				return Return.FORBIDDEN_DURING_FINAL;
+				return Response.FORBIDDEN_DURING_FINAL;
 			}
-			Return result = social.doSocial(user.getKey(), to.getKey(), e, on);
-			return result;
+			return social.doSocial(user.getKey(), to.getKey(), e, on);
 		}
 
 		public SocialEvent getAboutToSocial(Key<User> from, Key<User> to,
 				Edition e, Objectify o) {
-			if (o == null)
-				o = instance.ofy();
+			assert(o != null);
 
 			if (e == null)
 				return null;
 
-			return o.query(SocialEvent.class).filter("editor", from)
+			return o.query(SocialEvent.class).ancestor(from)
 					.filter("judge", to).filter("edition", e.getKey()).get();
 		}
 
 		public Follow getFollow(Key<User> from, Key<User> to, Objectify o) {
-			if (o == null)
-				o = instance.ofy();
-
+			assert(o != null);
 			return o.query(Follow.class).ancestor(from).filter("judge", to)
 					.get();
 		}
@@ -932,14 +952,19 @@ public class DAO extends DAOBase {
 		}
 
 		public boolean hasVoted(User u, Edition e, Link l) {
-			Objectify o = ofy();
-			int count = o.query(Vote.class).ancestor(u)
-					.filter("edition", e.getKey()).filter("link", l.getKey())
-					.count();
-			if (count > 1) {
-				throw new IllegalStateException("too many votes for user " + u);
+			Objectify o = fact().beginTransaction();
+			try {
+				int count = o.query(Vote.class).ancestor(u)
+				.filter("edition", e.getKey()).filter("link", l.getKey())
+				.count();
+				if (count > 1) {
+					throw new IllegalStateException("too many votes for user " + u);
+				}
+				return count == 1;
 			}
-			return count == 1;
+			finally {
+				o.getTxn().commit();
+			}
 		}
 
 		private boolean isEditor(Key<User> from) {
@@ -958,7 +983,7 @@ public class DAO extends DAOBase {
 
 			// TODO test user login state for votes
 			if (user == null) {
-				vr.returnVal = Return.NOT_LOGGED_IN;
+				vr.returnVal = Response.NOT_LOGGED_IN;
 				vr.authUrl = userService.createLoginURL(fullLink);
 				return vr;
 			}
@@ -989,7 +1014,7 @@ public class DAO extends DAOBase {
 		 *            the link voted for
 		 * @throws IllegalArgumentException
 		 */
-		public Return voteFor(User u, Edition e, Link l, boolean on)
+		public Response voteFor(User u, Edition e, Link l, boolean on)
 				throws IllegalArgumentException {
 			// TODO only judges can vote, ditto for ed follows
 
@@ -1001,13 +1026,13 @@ public class DAO extends DAOBase {
 			if (!lp.periodical.getCurrentEditionKey().equals(e.getKey())) {
 				log.warning("Attempted to vote in old edition");
 				lp.rollback();
-				return Return.NO_LONGER_CURRENT;
+				return Response.NO_LONGER_CURRENT;
 			}
 
 			if (lp.periodical.inSocialTransition) {
 				log.warning("Attempted to vote during transition");
 				lp.rollback();
-				return Return.TRANSITION_IN_PROGRESS;
+				return Response.TRANSITION_IN_PROGRESS;
 			}
 
 			if (lp.periodical.userlocked) {
@@ -1019,19 +1044,19 @@ public class DAO extends DAOBase {
 			boolean hasv = hasVoted(u, e, l);
 			if (hasv && on) {
 				lp.rollback();
-				return Return.ALREADY_VOTED;
+				return Response.ALREADY_VOTED;
 			}
 			
 			if (!on && !hasv) {
 				lp.rollback();
-				return Return.HAS_NOT_VOTED;
+				return Response.HAS_NOT_VOTED;
 			}
 			
 			lp.setUserLock();
 			TallyTask.writeVote(lp.transaction.getTxn(), u, e, l, on);
 			lp.commit();
 			log.info(u + " " + u.authority + (on ? " +++-> " : " xxx-> ") + l.url);
-			return Return.SUCCESS;
+			return Response.SUCCESS;
 		}
 		
 		public void writeVote(Key<User> uk, Key<Edition> ek,
@@ -1077,6 +1102,7 @@ public class DAO extends DAOBase {
 				log.warning("join failed");
 				return null;
 			} else {
+				// TODO double check they're not present
 				SocialEvent join = new SocialEvent(User.getRNAEditor(),
 						user.getKey(), next.getKey(), new Date(), true);
 				ofy().put(join);
