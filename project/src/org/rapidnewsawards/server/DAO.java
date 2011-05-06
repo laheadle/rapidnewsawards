@@ -7,6 +7,7 @@ import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.LinkedList;
+import java.util.List;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -17,6 +18,7 @@ import org.rapidnewsawards.core.Follow;
 import org.rapidnewsawards.core.Link;
 import org.rapidnewsawards.core.Periodical;
 import org.rapidnewsawards.core.Root;
+import org.rapidnewsawards.core.ScoreRoot;
 import org.rapidnewsawards.core.ScoreSpace;
 import org.rapidnewsawards.core.ScoredLink;
 import org.rapidnewsawards.core.SocialEvent;
@@ -51,6 +53,9 @@ import com.googlecode.objectify.util.DAOBase;
 public class DAO extends DAOBase {
 	public class Editions {
 
+		public static final int CURRENT = -1;
+		public static final int NEXT = -2;
+
 		// TODO parameterize by periodical
 		public AllEditions getAllEditions() {
 			LinkedList<Edition> ll = new LinkedList<Edition>();
@@ -63,43 +68,41 @@ public class DAO extends DAOBase {
 		}
 
 		public Edition getCurrentEdition() {
-			return getEdition(-1);
+			return getEdition(CURRENT);
 		}
 
 		/*
 		 * Just get the requested edition
 		 * 
-		 * @param number the edition number requested, or -1 for current, or -2
+		 * @param number the edition number requested, or CURRENT for current, or NEXT
 		 * for next
 		 */
-		public Edition getEdition(int number) {
+		public Edition getEdition(final int number) {
 
-			Objectify o = ofy();
+			final Objectify o = ofy();
 
-			final Periodical p = getPeriodical();
-
-			if (p == null) {
-				throw new IllegalStateException("no periodical");
-			}
-			
-			if (number == -1) {
+			// TODO These should throw exceptions
+			if (number == CURRENT) {
+				final Periodical p = getPeriodical();
 				if (!p.live)
 					return null;
 
-				return o.find(p.getCurrentEditionKey());
+				return o.get(p.currentEditionKey);
 			}
 
-			if (number == -2) {
+			else if (number == NEXT) {
+				final Periodical p = getPeriodical();
 				if (!p.live) {
-					log.warning("Next edition requested for dead periodical");
-					return null;
+					throw new IllegalStateException(
+							"Next edition requested for finished periodical");
 				}
-				return o.find(
-						Edition.getNextKey(p.getCurrentEditionKey().getName()));
+				return o.get(
+						Edition.getNextKey(p.currentEditionKey.getName()));
 			}
-
-			// TODO 2.0 this only works because we assume one periodical
-			return o.find(Edition.class, "" + number);
+			else {
+				// TODO 2.0 this only works because we assume one periodical
+				return o.get(Edition.class, "" + number);
+			}
 		}
 
 		// fixme refactor with getvoters
@@ -210,7 +213,7 @@ public class DAO extends DAOBase {
 		}
 
 		public Edition getNextEdition() {
-			return getEdition(-2);
+			return getEdition(NEXT);
 		}
 
 		// cache the number of editions -- will NEVER change.
@@ -359,31 +362,8 @@ public class DAO extends DAOBase {
 			return vr;
 		}
 
-		public void updateAuthorities(int next) {
-			// TODO 2.0 No transaction here.  This is idempotent and 
-			// correct, but not very scalable.
-			
-			Edition e = editions.getEdition(next);
-			LinkedList<User> users = new LinkedList<User>();
-			LinkedList<EditionUserAuthority> eaus = new LinkedList<EditionUserAuthority>();
-			// TODO 2.0 careful: this could return hundreds of judges
-			for (User u : ofy().query(User.class).filter("isEditor", false)) {
-				int tmp = ofy().query(Follow.class).filter("judge", u.getKey())
-						.count();
-				u.authority = tmp;
-				users.add(u);
-				EditionUserAuthority eua = new EditionUserAuthority(
-						u.authority, e.getKey(), u.getKey());
-				eaus.add(eua);
-			}
-
-			ofy().put(users);
-			ofy().put(eaus);
-			TransitionTask.setBalance();			
-		}
-
 		private Edition getPreviousOrLastEdition(LockedPeriodical lp) {
-			Key<Edition> current = lp.periodical.getCurrentEditionKey();
+			Key<Edition> current = lp.periodical.currentEditionKey;
 			if (current == null) {
 				return getLastEdition();
 			}
@@ -419,7 +399,17 @@ public class DAO extends DAOBase {
 		}
 
 		public ScoreSpace getScoreSpace(Key<Edition> key) {
-			ScoreSpace s = ofy().query(ScoreSpace.class).filter("edition", key).get();				
+			Key<ScoreRoot> sroot = new Key<ScoreRoot>(ScoreRoot.class, key.getName());
+			Key<ScoreSpace> skey = new Key<ScoreSpace>(sroot,
+					ScoreSpace.class, key.getName());
+
+			if (ofy().find(sroot) == null) { throw new IllegalStateException(); }
+			if (ofy().find(skey) == null) { throw new IllegalStateException(); }
+
+			assert(ofy().find(sroot) != null);
+			assert(ofy().find(skey) != null);
+			ScoreSpace s = ofy().find(skey);
+			ScoreSpace s2 = ofy().find(ScoreSpace.keyFromEditionKey(key));
 			if (s == null) {
 				throw new IllegalStateException(
 						"no associated score space for edition "+ key);
@@ -445,6 +435,9 @@ public class DAO extends DAOBase {
 		public LockedPeriodical() {		
 			Objectify oTxn = fact().beginTransaction();
 			Periodical p = oTxn.get(Periodical.getKey(periodicalName.name));
+			if (p.isFinished()) {
+				throw new IllegalStateException("The periodical is finished");
+			}
 			this.transaction = oTxn;
 			this.periodical = p;
 		}
@@ -468,145 +461,159 @@ public class DAO extends DAOBase {
 
 	public class Social {
 
-		/*
-		 * Do a follow, unfollow, or cancel pending follow
-		 * 
-		 * @param e this should be the next edition after current
-		 */
-		public Response doSocial(Key<User> from, Key<User> to, Edition e,
+		public void writeSocialEvent(
+				final Key<User> from, final Key<User> to, final Key<Edition> e, 
 				boolean on) {
-			LockedPeriodical lp = lockPeriodical();
+			final Objectify txn = fact().beginTransaction();
 			
-			// assertion: this is not the last edition
+			SocialEvent social = new SocialEvent(from, to, e, new Date(), on);
+			txn.put(social);				
 
-			assert(lp != null);
+			if (on) {
+				Query<Edition> eds = txn.query(Edition.class).filter("name >=", e.getName());
+				List<Follow> fols = new LinkedList<Follow>();
+				for (Key<Edition> ekey : eds.fetchKeys()) {
+					fols.add(new Follow(from, to, ekey, social.getKey()));
+				}
+				txn.put(fols);
+			}
+			else {
+				txn.delete(txn.query(Follow.class)
+						.ancestor(from).filter("to", to).filter("edition >=", e).fetchKeys());
+			}
+			int amount = on ? 1 : -1;
+			SocialTask.changePendingAuthority(to, e, amount, txn.getTxn());
+			txn.getTxn().commit();
+		}
+
+		/* Wrapper which assumes a <from> of the current user */
+		public Response doSocial(Key<User> to, Key<Edition> e, boolean on) {
+			if (user == null) {
+				log.warning("attempt to follow with null user");
+				return Response.ILLEGAL_OPERATION;
+			}
+			Key<User> from = user.getKey();
+			return doSocial(from, to, e, on);
+		}
+		
+		/* Do a follow, unfollow, or cancel pending follow, unfollow */
+		public Response doSocial(Key<User> from, Key<User> to, Key<Edition> e, boolean on) {
 			
-			if (!lp.periodical.getCurrentEditionKey()
-					.equals(e.getPreviousKey())) {
-				log.warning("Attempted to socialize in old edition");
-				lp.rollback();
-				return Response.NO_LONGER_CURRENT;
+			if (Edition.isFinalOrBad(e, editions.getNumEditions())) {
+				log.warning(String.format(
+						"Attempted to socialize during illegal edition: User %s, Edition %s",
+						user, e));
+				return Response.FORBIDDEN_DURING_FINAL;
 			}
 
-			if (lp.periodical.inSocialTransition) {
-				log.warning("Attempted to socialize during transition");
-				lp.rollback();
-				return Response.TRANSITION_IN_PROGRESS;
-			}
 			Objectify socialTxn = fact().beginTransaction();
-			final Follow following = getFollow(from, to, socialTxn);
+			final Follow following = getFollow(from, to, e, socialTxn);
 			final SocialEvent aboutToSocial = getAboutToSocial(from, to, e, socialTxn);
 
 			if (on) {
 				if (!users.isEditor(from)) {
-					lp.rollback();
+					socialTxn.getTxn().rollback();
 					return Response.NOT_AN_EDITOR;
 				}
+				// TODO make sure to is a judge
 				else if (aboutToSocial != null && aboutToSocial.on) {
 					log.warning(String.format("%s is already about to follow %s", 
 							from, to));
-					lp.rollback();
+					socialTxn.getTxn().rollback();
 					return Response.ALREADY_ABOUT_TO_FOLLOW;
 				} else if (following != null) {
 					log.warning("Already isFollowing: [" + from + ", " + to
 							+ "]");
-					lp.rollback();
+					socialTxn.getTxn().rollback();
 					return Response.ALREADY_FOLLOWING;
-				} 
+				}
 			}
 			else if (following == null && aboutToSocial == null){
 				assert(!on);
 				log.warning("Can't unfollow unless isFollowing: " + from + ", "
 						+ to + ", " + e);
-				lp.rollback();
+				socialTxn.getTxn().rollback();
 				return Response.NOT_FOLLOWING;
 			}
+			LockedPeriodical lp = lockPeriodical();
+			
+			assert(lp != null);
+			
+			if (!lp.periodical.currentEditionKey
+					.equals(Edition.getPreviousKey(e.getName()))) {
+				log.warning("Attempted to socialize in old edition");
+				lp.rollback(); socialTxn.getTxn().rollback();
+				return Response.NO_LONGER_CURRENT;
+			}
 
-			// we are now clear to hit the db and commit
+			if (lp.periodical.inSocialTransition) {
+				log.warning("Attempted to socialize during transition");
+				lp.rollback(); socialTxn.getTxn().rollback();
+				return Response.TRANSITION_IN_PROGRESS;
+			}
+
+			// we are now clear to commit to the social task
+
 			try {
-				lp.setUserLock();
-				return writeSocial(from, to, e, on, following, aboutToSocial, socialTxn);
+				if (aboutToSocial == null) {
+					return following == null ? 
+							Response.ABOUT_TO_FOLLOW : Response.ABOUT_TO_UNFOLLOW;
+				} else {
+					return following == null ? 
+							Response.PENDING_FOLLOW_CANCELLED : 
+								Response.PENDING_UNFOLLOW_CANCELLED;
+				}
 			} finally {
-				lp.commit();				
-			}
-		}
-		
-		public Response writeSocial(Key<User> from, Key<User> to, Edition e, 
-				boolean on, Follow following, SocialEvent aboutToSocial, Objectify txn) {
-			if (on) {
-				if (aboutToSocial != null && !aboutToSocial.on) {
-					// cancel (delete) the pending unfollow
-					txn.delete(aboutToSocial);
-					return Response.PENDING_UNFOLLOW_CANCELLED;
-				}
-				assert(aboutToSocial == null && following == null);
-				// this follow won't take effect until a transition
-				final SocialEvent follow = new SocialEvent(from, to,
-						e.getKey(), new Date(), on);
-				txn.put(follow);
-				txn.getTxn().commit();
-				return Response.ABOUT_TO_FOLLOW;
-			}
-			else {
-				if (aboutToSocial != null) {
-					assert (following == null);
-					// cancel (delete) the pending follow
-					txn.delete(aboutToSocial);
-					txn.getTxn().commit();
-					return Response.PENDING_FOLLOW_CANCELLED;
-				} 
-				else {
-					assert (following != null);
-					// this unfollow won't take effect until a transition
-					final SocialEvent unfollow = new SocialEvent(from, to,
-							e.getKey(), new Date(), on);
-					txn.put(unfollow);
-					txn.getTxn().commit();
-					return Response.ABOUT_TO_UNFOLLOW;
-				}
+				lp.setUserLock();
+				SocialTask.writeSocialEvent(
+						from, to, e, on, aboutToSocial.getKey(), lp.transaction.getTxn());
+				lp.commit();
 			}
 		}
 
-		public Response doSocial(User to, Boolean on) {
-			if (user == null) {
-				log.warning("attempt to follow with null user");
-				return Response.ILLEGAL_OPERATION;
+		public void changePendingAuthority(Key<User> judge, Key<Edition> edition,
+				int amount) {
+			Objectify txn = fact().beginTransaction();
+			EditionUserAuthority eua = txn.query(EditionUserAuthority.class).ancestor(edition)
+			.filter("user", judge).get();
+			if (eua == null) {
+				assert(amount > 0);
+				eua = new EditionUserAuthority(0, edition, judge);
 			}
-
-			// read-only transaction
-			Edition e = editions.getEdition(-2);
-			if (e == null) {
-				log.warning(user
-						+ "Attempted to socialize during final edition");
-				return Response.FORBIDDEN_DURING_FINAL;
+			eua.authority += amount;
+			txn.put(eua);
+			Key<Edition> next = Edition.getNextKey(edition.getName());
+			if (!Edition.isFinal(edition, editions.getNumEditions())) {
+				SocialTask.changePendingAuthority(judge, next, amount, txn.getTxn());				
 			}
-			return social.doSocial(user.getKey(), to.getKey(), e, on);
+			txn.getTxn().commit();
 		}
 
 		public SocialEvent getAboutToSocial(Key<User> from, Key<User> to,
-				Edition e, Objectify o) {
+				Key<Edition> e, Objectify o) {
 			assert(o != null);
 
 			if (e == null)
 				return null;
 
-			return o.query(SocialEvent.class).ancestor(from)
-					.filter("judge", to).filter("edition", e.getKey()).get();
+			// checks the next edition
+			return o.query(SocialEvent.class).ancestor(from).filter("judge", to)
+			.filter("edition", Edition.getNextKey(e.getName())).get();
 		}
 
-		public Follow getFollow(Key<User> from, Key<User> to, Objectify o) {
+		public Follow getFollow(Key<User> from, Key<User> to, Key<Edition> e, Objectify o) {
 			assert(o != null);
-			return o.query(Follow.class).ancestor(from).filter("judge", to)
-					.get();
+			return o.query(Follow.class)
+			.ancestor(from).filter("judge", to).filter("edition", e).get();
 		}
 
 		public RecentSocials getRecentSocials(int edition) {
 			Edition current = null;
 			Edition next = null;
 
-			if (edition == -1) {
-				current = editions.getEdition(-1);
-				next = editions.getEdition(-2);
+			if (edition == Editions.CURRENT) {
+				current = editions.getEdition(Editions.CURRENT);
+				next = editions.getEdition(Editions.NEXT);
 			} else {
 				// next after edition
 				current = editions.getEdition(edition);
@@ -621,16 +628,17 @@ public class DAO extends DAOBase {
 		}
 
 		public boolean isFollowingOrAboutToFollow(Key<User> from, Key<User> to) {
-			Edition e = editions.getEdition(-2);
-			SocialEvent about = getAboutToSocial(from, to, e, null);
+			Edition e = editions.getEdition(Editions.CURRENT);
+			SocialEvent about = getAboutToSocial(from, to, e.getKey(), ofy());
 
 			if (about != null) {
 				return about.on;
 			} else {
-				Follow f = getFollow(from, to, null);
+				Follow f = getFollow(from, to, e.getKey(), ofy());
 				return f != null;
 			}
 		}
+
 	}
 
 	public class Transition {
@@ -658,25 +666,8 @@ public class DAO extends DAOBase {
 		}
 
 		public void finishPeriodical() {
-
 			LockedPeriodical lp = lockPeriodical();
-
-			if (lp == null) {
-				log.severe("finish failed");
-				return;
-			}
-
 			final Periodical p = lp.periodical;
-
-			if (p == null) {
-				log.severe("No Periodical");
-				return;
-			}
-
-			if (!p.live) {
-				log.warning("tried to finish a dead periodical");
-			}
-
 			p.live = false;
 			p.setcurrentEditionKey(null);
 			lp.commit();
@@ -733,53 +724,6 @@ public class DAO extends DAOBase {
 			log.info("balance: " + Periodical.moneyPrint(p.balance));
 		}
 
-		/*
-		 * makes pending social actions current. part of the transition
-		 * machinery.
-		 */
-		public void socialTransition(int _to) {
-			assert(getPeriodical().inSocialTransition);
-			assert(!getPeriodical().userlocked);
-			
-			Edition to = editions.getEdition(_to);
-			Objectify o = ofy();
-			
-			// obtain lock
-			LockedPeriodical lp = lockPeriodical();
-			assert (lp != null);
-			
-			log.info("Social transition into " + to);
-
-			for (SocialEvent s : o.query(SocialEvent.class)
-					.filter("edition", to.getKey())
-					.filter("editor !=", User.getRNAEditor())) {
-				// TODO If this crashes we're screwed -- parent to periodical
-				Follow old = ofy().query(Follow.class).ancestor(s.editor)
-						.filter("judge", s.judge).get();
-
-				if (s.on == false) {
-					if (old == null) {
-						log.warning("Permitted unfollow when not isFollowing"
-								+ s);
-					} else {
-						o.delete(old);
-						log.info("Unfollowed: " + old);
-					}
-				} else {
-					if (old != null) {
-						log.warning("Permitted follow when already isFollowing"
-								+ s);
-					} else {
-						// put new follow into effect
-						Follow f = new Follow(s.editor, s.judge, s.getKey());
-						o.put(f);
-					}
-				}
-			}
-			TransitionTask.updateAuthorities(lp.transaction.getTxn(), _to);
-			lp.commit();
-		}
-
 		public void transitionEdition() {
 
 			LockedPeriodical locked = lockPeriodical();
@@ -800,11 +744,11 @@ public class DAO extends DAOBase {
 				return;
 			}
 			
-			Edition current = ofy().find(p.getCurrentEditionKey());
+			Edition current = ofy().find(p.currentEditionKey);
 
 			if (current == null) {
 				// DIE FOREVER
-				log.severe("no edition matching" + p.getCurrentEditionKey());
+				log.severe("no edition matching" + p.currentEditionKey);
 				return;
 			}
 
@@ -824,7 +768,7 @@ public class DAO extends DAOBase {
 			}
 
 			p.inSocialTransition = true;
-			TransitionTask.doSocialTransition(locked.transaction.getTxn(), nextNum);
+			TransitionTask.setBalance(locked.transaction.getTxn());
 			locked.commit();
 			log.info(p.idName + ": New current Edition:" + nextNum);
 		}
@@ -1023,7 +967,13 @@ public class DAO extends DAOBase {
 			// obtain lock
 			LockedPeriodical lp = lockPeriodical();
 
-			if (!lp.periodical.getCurrentEditionKey().equals(e.getKey())) {
+			if (lp.periodical.isFinished()) {
+				log.warning("Attempted to vote in finished periodical");
+				lp.rollback();
+				return Response.IS_FINISHED;
+			}
+
+			if (!lp.periodical.currentEditionKey.equals(e.getKey())) {
 				log.warning("Attempted to vote in old edition");
 				lp.rollback();
 				return Response.NO_LONGER_CURRENT;
@@ -1055,16 +1005,18 @@ public class DAO extends DAOBase {
 			lp.setUserLock();
 			TallyTask.writeVote(lp.transaction.getTxn(), u, e, l, on);
 			lp.commit();
-			log.info(u + " " + u.authority + (on ? " +++-> " : " xxx-> ") + l.url);
+			log.info(u + (on ? " +++-> " : " xxx-> ") + l.url);
 			return Response.SUCCESS;
 		}
 		
 		public void writeVote(Key<User> uk, Key<Edition> ek,
-				Key<Link> lk, boolean on, int authority) {
+				Key<Link> lk, boolean on) {
 			assert(getPeriodical().userlocked);
 			Objectify txn = fact().beginTransaction();
 			if (on) {
 				// TODO pass in date
+				int authority = ofy().query(EditionUserAuthority.class).ancestor(ek)
+				.filter("user", uk).get().authority;
 				Vote v = new Vote(uk, ek, lk, new Date(), authority);
 				txn.put(v);
 				TallyTask.tallyVote(txn.getTxn(), v);
@@ -1081,20 +1033,13 @@ public class DAO extends DAOBase {
 		}
 
 		public User welcomeUser(String nickname, int donation) {
-
-			LockedPeriodical lp = lockPeriodical();
-
+			// TODO Transactions!
 			user.nickname = nickname;
 			user.isInitialized = true;
 
 			ofy().put(user);
 
-			Donation don = new Donation(user.getKey(), donation);
-
-			ofy().put(don);
-
-			log.info("welcome: " + user + ": "
-					+ Periodical.moneyPrint(donation));
+			log.info("welcome: " + user);
 
 			Edition next = editions.getNextEdition();
 
@@ -1107,13 +1052,22 @@ public class DAO extends DAOBase {
 						user.getKey(), next.getKey(), new Date(), true);
 				ofy().put(join);
 			}
+			ofy().put(new EditionUserAuthority(0, 
+					editions.getCurrentEdition().getKey(), user.getKey()));
+			
+			// TODO 2.0 not used 
+			/*
+			LockedPeriodical lp = lockPeriodical();
 
-			// TODO not used
 			lp.periodical.balance += donation;
 			lp.commit();
 
 			log.info("balance: " + Periodical.moneyPrint(lp.periodical.balance));
+						Donation don = new Donation(user.getKey(), donation);
 
+			ofy().put(don);
+
+			*/	
 			return user;
 		}
 
@@ -1128,6 +1082,8 @@ public class DAO extends DAOBase {
 		ObjectifyService.factory().register(Periodical.class);
 		ObjectifyService.factory().register(Root.class);
 		ObjectifyService.factory().register(ScoredLink.class);
+		// TODO Replace with edition?
+		ObjectifyService.factory().register(ScoreRoot.class);
 		ObjectifyService.factory().register(ScoreSpace.class);
 		ObjectifyService.factory().register(SocialEvent.class);
 		ObjectifyService.factory().register(User.class);
@@ -1166,7 +1122,11 @@ public class DAO extends DAOBase {
 	}
 
 	public Periodical getPeriodical() {
-		return ofy().get(Periodical.getKey(periodicalName.name));
+		Periodical p = ofy().get(Periodical.getKey(periodicalName.name));
+		if (p == null) {
+			throw new IllegalStateException("no periodical");
+		}
+		return p;
 	}
 
 

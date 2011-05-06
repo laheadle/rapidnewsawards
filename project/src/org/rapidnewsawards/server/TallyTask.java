@@ -44,17 +44,17 @@ public class TallyTask  extends HttpServlet {
 		Queue queue = QueueFactory.getDefaultQueue();
 		queue.add(txn, withUrl("/tasks/tally").method(TaskOptions.Method.GET)
 				.param("fun", "writeVote")
-				.param("user", Long.toString(u.getKey().getId()))
+				.param("user", Long.toString(u.id))
 				.param("edition", e.id)
-				.param("link", l.url)
-				.param("on", Boolean.toString(on))
-				.param("authority", Integer.toString(u.authority)));		
+				.param("link", Long.toString(l.id))
+				.param("on", Boolean.toString(on)));		
 	}
 
 	
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
+		DAO.log.info("boo");
 		String fun = request.getParameter("fun");
 		if (fun == null) {
 			throw new IllegalArgumentException("fun");
@@ -69,26 +69,20 @@ public class TallyTask  extends HttpServlet {
 			if (edition == null) {
 				throw new IllegalArgumentException("edition");
 			}
-			String link = request.getParameter("link");
-			if (link == null) {
+			String _link = request.getParameter("link");
+			if (_link == null) {
 				throw new IllegalArgumentException("link");
 			}
+			long link = Long.valueOf(_link);
 			String _on = request.getParameter("on");
 			if (_on == null) {
 				throw new IllegalArgumentException("on");
 			}
 			boolean on = Boolean.valueOf(_on);
-			
-			String _authority = request.getParameter("authority");
-			if (_authority == null) {
-				throw new IllegalArgumentException("authority");
-			}
-			int authority = Integer.valueOf(_authority);
-			
 			d.users.writeVote(new Key<User>(User.class, user), 
 					new Key<Edition>(Edition.class, edition), 
 					new Key<Link>(Link.class, link), 
-					on, authority);
+					on);
 		}
 		else if (fun.equals("tallyVote")) {
 			String votestr = request.getParameter("vote");

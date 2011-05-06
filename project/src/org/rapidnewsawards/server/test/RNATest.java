@@ -8,6 +8,7 @@ import org.rapidnewsawards.server.MakeDataServlet;
 
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
+import com.google.appengine.tools.development.testing.LocalTaskQueueTestConfig;
 
 
 public abstract class RNATest extends TestCase {
@@ -15,10 +16,11 @@ public abstract class RNATest extends TestCase {
 	protected static DAO d = DAO.instance;
 
 	private final LocalServiceTestHelper helper = new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
+	private LocalTaskQueueTestConfig taskQueueConfig;
 
 	protected User getUser(String name) {
 		if (name == null)
-			name = "ohthatmeg";
+			name = "johnqpublic";
 		
 		return d.users.findUserByLogin(name + "@gmail.com", "gmail.com"); 
 	}
@@ -33,6 +35,8 @@ public abstract class RNATest extends TestCase {
         super.setUp();
         helper.setUp();
         MakeDataServlet.testing = true;
+        taskQueueConfig = new LocalTaskQueueTestConfig();
+
 		MakeDataServlet.makeData(3, 30 * 60 * MakeDataServlet.ONE_SECOND, null);
 	}
 

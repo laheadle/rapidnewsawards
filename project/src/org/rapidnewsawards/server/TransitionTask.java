@@ -31,13 +31,6 @@ public class TransitionTask  extends HttpServlet {
 	}
 
 	// these are all called, directly or indirectly, by doTransition
-	
-	public static void doSocialTransition(Transaction txn, int nextEdition) {
-		Queue queue = QueueFactory.getDefaultQueue();
-		queue.add(txn, withUrl("/tasks/transition").method(TaskOptions.Method.GET)
-				.param("fun", "socialTransition")
-				.param("nextEdition", Integer.toString(nextEdition)));
-	}
 
 	public static void updateAuthorities(Transaction txn, int nextEdition) {
 		Queue queue = QueueFactory.getDefaultQueue();
@@ -46,10 +39,10 @@ public class TransitionTask  extends HttpServlet {
 				.param("nextEdition", Integer.toString(nextEdition)));
 	}	
 
-	public static void setBalance() {
+	public static void setBalance(Transaction txn) {
 		Queue queue = QueueFactory.getDefaultQueue();
 		// no transaction, will retry if fails
-		queue.add(null, withUrl("/tasks/transition").method(TaskOptions.Method.GET)
+		queue.add(txn, withUrl("/tasks/transition").method(TaskOptions.Method.GET)
 				.param("fun", "setBalance"));		
 	}
 
@@ -82,22 +75,6 @@ public class TransitionTask  extends HttpServlet {
 			int from = Integer.valueOf(_from);
 			d.transition.doTransition(from);
 		}
-		else if (fun.equals("socialTransition")) {
-			String _next = request.getParameter("nextEdition");
-			if (_next == null) {
-				throw new IllegalArgumentException("next");
-			}
-			int next = Integer.valueOf(_next);
-			d.transition.socialTransition(next);
-		}		
-		else if (fun.equals("updateAuthorities")) {
-			String _next = request.getParameter("nextEdition");
-			if (_next == null) {
-				throw new IllegalArgumentException("next");
-			}
-			int next = Integer.valueOf(_next);
-			d.editions.updateAuthorities(next);
-		}		
 		else if (fun.equals("setBalance")) {
 			d.transition.setBalance();
 		}		

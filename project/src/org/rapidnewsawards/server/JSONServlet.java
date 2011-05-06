@@ -195,9 +195,12 @@ public class JSONServlet extends HttpServlet {
 		commandsMap.put("doSocial", new AbstractCommand() {
 			public Object getResult() {
 				String _to = request.getParameter("to");
-				User to = d.ofy().get(User.getKey(new Long(_to)));
+				String _edition = request.getParameter("edition");
+				Key<User> to = User.getKey(new Long(_to));
+				// TODO pass in from client
+				Key<Edition> e = Edition.getKey(_edition);
 				Boolean on = new Boolean(request.getParameter("on"));
-				return d.social.doSocial(to, on).s;
+				return d.social.doSocial(to, e, on).s;
 			}
 		});
 

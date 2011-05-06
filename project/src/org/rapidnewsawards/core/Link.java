@@ -8,15 +8,12 @@ import com.googlecode.objectify.annotation.Cached;
 
 @Cached
 public class Link {
-	
+
+	@Id public Long id;
 	public String url;
 	public String title;
 	public Key<User> submitter;
 	public String domain;
-	
-	@Id
-	Long id;
-
 		 	
 	public Key<Link> getKey() {
 		return new Key<Link>(Link.class, id);

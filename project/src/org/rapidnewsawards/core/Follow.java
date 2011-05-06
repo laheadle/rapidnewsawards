@@ -20,13 +20,15 @@ public class Follow {
     @Parent
 	public Key<User> editor;
 	public Key<User> judge;
+	public Key<Edition> edition;
 	public Key<SocialEvent> event; // the event establishing the follow
 
 	public Follow() {}
 	
-	public Follow(Key<User> from, Key<User> to, Key<SocialEvent> s) {
+	public Follow(Key<User> from, Key<User> to, Key<Edition> e, Key<SocialEvent> s) {
 		editor = from;
 		judge = to;
+		edition = e;
 		event = s;
 	}
 	

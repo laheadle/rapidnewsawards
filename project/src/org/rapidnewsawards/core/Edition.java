@@ -57,13 +57,31 @@ public class Edition implements Comparable<Edition> {
 		return getNextKey(id);
 	}
 
+	public static Key<Edition> getKey(String id) {
+		return new Key<Edition>(Edition.class, id);		
+	}
+
 	public static Key<Edition> getNextKey(String id) {
 		String nextId = new Integer(id) + 1 +"";
-		return new Key<Edition>(Edition.class, nextId);		
+		return getKey(nextId);		
 	}
 	public static Key<Edition> getPreviousKey(String id) {
-		String nextId = new Integer(id) - 1 +"";
-		return new Key<Edition>(Edition.class, nextId);		
+		String prevId = new Integer(id) - 1 +"";
+		return getKey(prevId);		
+	}
+
+	public static int getNumber(Key<Edition> e) {
+		return Integer.valueOf(e.getName());
 	}
 	
+	public static boolean isFinal(Key<Edition> edition, int numEditions) {
+		return getNumber(edition)== numEditions - 1;
+	}	
+	
+	public static boolean isFinalOrBad(Key<Edition> e, int numEditions) {
+		int number = getNumber(e);
+		return isFinal(e, numEditions) || number < 0 || number > numEditions -1;
+	}
+
+
 }

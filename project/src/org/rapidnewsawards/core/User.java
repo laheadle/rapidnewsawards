@@ -24,9 +24,7 @@ public class User {
 	public boolean isInitialized;
 	
 	public boolean isEditor;
-	
-	public int authority;
-	
+		
 	public User() {}
 	
 	public User(String email, String domain, boolean isEditor) {
@@ -39,7 +37,6 @@ public class User {
 		this.isInitialized = false;
 		this.isEditor = isEditor;
 		this.lastLogin = new Date();
-		this.authority = 0;
 	}
 
 	/*

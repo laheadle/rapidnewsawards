@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.List;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpServletResponse;
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.Periodical;
 import org.rapidnewsawards.core.Root;
+import org.rapidnewsawards.core.ScoreRoot;
 import org.rapidnewsawards.core.ScoreSpace;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.messages.Name;
@@ -24,6 +26,7 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 
 public class MakeDataServlet extends HttpServlet {
+	private static final String FIRST_EDITION = "0";
 	/**
 	 * 
 	 */
@@ -122,7 +125,7 @@ public class MakeDataServlet extends HttpServlet {
 		
 		if (doFollow) {
 			d.user = lyn;
-			d.social.doSocial(jq, true);
+			d.social.doSocial(jq.getKey(), d.editions.getCurrentEdition().getKey(), true);
 		}
 	}
 
@@ -135,11 +138,9 @@ public class MakeDataServlet extends HttpServlet {
 
 
 	public static User makeUser(String email, boolean isEditor) {
-		Objectify txn = DAO.instance.fact().beginTransaction();
+		Objectify o = DAO.instance.ofy();
 		User u = new User(email, "gmail.com", isEditor);
-		txn.put(u);
-		//DAO.instance.doSocial(u.getKey(), u.getKey(), e, txn, true);
-		txn.getTxn().commit();
+		o.put(u);
 		return u;		
 	}
 
@@ -194,22 +195,22 @@ public class MakeDataServlet extends HttpServlet {
 		// generate keys
 		DAO.instance.ofy().put(editions);		
 
-		// make ScoreSpaces
-		long rootCount = p.root.getId();
-		ArrayList<ScoreSpace> spaces = new ArrayList<ScoreSpace>();
+		List<ScoreSpace> spaces = new ArrayList<ScoreSpace>();
 		for (Edition e : editions) {
-			Root parent = new Root();
-			parent.id = ++rootCount;
-			assert(o.put(parent) != null);
+			ScoreRoot parent = new ScoreRoot();
+			parent.id = e.getKey().getName();
+			boolean pinserted = o.put(parent) != null;
+			assert(pinserted);
 
-			ScoreSpace s = new ScoreSpace(e.getKey(), new Key<Root>(Root.class, parent.id));
+			ScoreSpace s = new ScoreSpace(parent.id);
 			// TODO No revenue in signup.
 			s.revenue = p.balance / p.numEditions;
 			spaces.add(s);
 		}
 		
-		assert (DAO.instance.ofy().put(spaces).keySet().size() ==
-			spaces.size() && spaces.size() == editions.size());
+		boolean inserted = DAO.instance.ofy().put(spaces).keySet().size() ==
+			spaces.size() && spaces.size() == editions.size();
+		assert (inserted);
 
 		// make transition tasks
 		if (!testing) {
@@ -222,7 +223,7 @@ public class MakeDataServlet extends HttpServlet {
 			
 		}
 		
-		p.setcurrentEditionKey(editions.get(0).getKey());
+		p.setcurrentEditionKey(Edition.getKey(FIRST_EDITION));
 		o.put(p);
 
 		return editions;

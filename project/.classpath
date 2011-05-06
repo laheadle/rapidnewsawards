@@ -11,5 +11,9 @@
 	<classpathentry kind="lib" path="war/WEB-INF/lib/gson-1.6.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/junit-4.9b2.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/appengine-testing.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/code/eclipse-java-helios-SR1-win32/eclipse/plugins/com.google.appengine.eclipse.sdkbundle_1.4.3.v201103311225/appengine-java-sdk-1.4.3/lib/impl/appengine-api.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/code/eclipse-java-helios-SR1-win32/eclipse/plugins/com.google.appengine.eclipse.sdkbundle_1.4.3.v201103311225/appengine-java-sdk-1.4.3/lib/impl/appengine-api-labs.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/code/eclipse-java-helios-SR1-win32/eclipse/plugins/com.google.appengine.eclipse.sdkbundle_1.4.3.v201103311225/appengine-java-sdk-1.4.3/lib/impl/appengine-api-stubs.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Administrator/Desktop/code/eclipse-java-helios-SR1-win32/eclipse/plugins/com.google.appengine.eclipse.sdkbundle_1.4.3.v201103311225/appengine-java-sdk-1.4.3/lib/impl/appengine-local-runtime.jar"/>
 	<classpathentry kind="output" path="war/WEB-INF/classes"/>
 </classpath>

@@ -13,7 +13,7 @@ public class ScoredLink {
 	public Long id;
 
     @Parent
-    public Key<Root> root;
+    public Key<ScoreRoot> root;
     
 	public Key<Edition> edition;
 
@@ -27,7 +27,7 @@ public class ScoredLink {
 		
 	public ScoredLink() {}
 	
-	public ScoredLink(Key<Edition> edition, Key<Root> root, 
+	public ScoredLink(Key<Edition> edition, Key<ScoreRoot> root, 
 			Key<Link> link, int score, int revenue) {
 		this.root = root;
 		this.edition = edition;
