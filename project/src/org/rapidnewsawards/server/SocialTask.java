@@ -25,7 +25,7 @@ public class SocialTask extends HttpServlet {
 
 	public static void writeSocialEvent(Key<User> from, 
 			Key<User> to, Key<Edition> e, boolean on, 
-			Key<SocialEvent> aboutToSocial, Transaction txn) {
+			Transaction txn) {
 
 		Queue queue = QueueFactory.getDefaultQueue();
 		queue.add(txn, withUrl("/tasks/social").method(TaskOptions.Method.GET)
@@ -33,8 +33,7 @@ public class SocialTask extends HttpServlet {
 				.param("from", Long.toString(from.getId()))
 				.param("to", Long.toString(from.getId()))
 				.param("e", e.getName())
-				.param("on", Boolean.toString(on))				
-				.param("aboutToSocialId", Long.toString(aboutToSocial.getId())));
+				.param("on", Boolean.toString(on)));
 	}
 
 	public static void changePendingAuthority(Key<User> to,

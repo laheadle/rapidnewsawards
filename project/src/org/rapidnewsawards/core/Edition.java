@@ -83,5 +83,9 @@ public class Edition implements Comparable<Edition> {
 		return isFinal(e, numEditions) || number < 0 || number > numEditions -1;
 	}
 
+	public static Key<Edition> getKey(int i) {
+		return new Key<Edition>(Edition.class, Integer.toString(i));
+	}
+
 
 }

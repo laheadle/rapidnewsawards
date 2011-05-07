@@ -19,7 +19,8 @@ public enum Response {
 	HAS_NOT_VOTED("You cannot cancel a vote unless you have voted"), 
 	FORBIDDEN_DURING_FINAL("You can't do that during the final edition"), 
 	NOT_AN_EDITOR("Only Editors can do this"), 
-	BAD_URL("Malformed URL"), IS_FINISHED("The last edition is finished");
+	BAD_URL("Malformed URL"), IS_FINISHED("The last edition is finished"), 
+	ALREADY_ABOUT_TO_UNFOLLOW("Already about to unfollow");
 
 
 public String s;

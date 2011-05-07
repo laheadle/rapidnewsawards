@@ -409,7 +409,6 @@ public class DAO extends DAOBase {
 			assert(ofy().find(sroot) != null);
 			assert(ofy().find(skey) != null);
 			ScoreSpace s = ofy().find(skey);
-			ScoreSpace s2 = ofy().find(ScoreSpace.keyFromEditionKey(key));
 			if (s == null) {
 				throw new IllegalStateException(
 						"no associated score space for edition "+ key);
@@ -464,13 +463,15 @@ public class DAO extends DAOBase {
 		public void writeSocialEvent(
 				final Key<User> from, final Key<User> to, final Key<Edition> e, 
 				boolean on) {
+			assert(getPeriodical().userlocked);
+			assert(!getPeriodical().inSocialTransition);
 			final Objectify txn = fact().beginTransaction();
 			
 			SocialEvent social = new SocialEvent(from, to, e, new Date(), on);
 			txn.put(social);				
 
 			if (on) {
-				Query<Edition> eds = txn.query(Edition.class).filter("name >=", e.getName());
+				Query<Edition> eds = ofy().query(Edition.class).filter("id >=", e.getName());
 				List<Follow> fols = new LinkedList<Follow>();
 				for (Key<Edition> ekey : eds.fetchKeys()) {
 					fols.add(new Follow(from, to, ekey, social.getKey()));
@@ -521,7 +522,7 @@ public class DAO extends DAOBase {
 							from, to));
 					socialTxn.getTxn().rollback();
 					return Response.ALREADY_ABOUT_TO_FOLLOW;
-				} else if (following != null) {
+				} else if (following != null && aboutToSocial == null) {
 					log.warning("Already isFollowing: [" + from + ", " + to
 							+ "]");
 					socialTxn.getTxn().rollback();
@@ -535,12 +536,18 @@ public class DAO extends DAOBase {
 				socialTxn.getTxn().rollback();
 				return Response.NOT_FOLLOWING;
 			}
+			else if (following != null && aboutToSocial != null && !aboutToSocial.on){
+				assert(!on);
+				log.warning("Already about to unfollow: " + from + ", "
+						+ to + ", " + e);
+				socialTxn.getTxn().rollback();
+				return Response.ALREADY_ABOUT_TO_UNFOLLOW;
+			}
 			LockedPeriodical lp = lockPeriodical();
 			
 			assert(lp != null);
 			
-			if (!lp.periodical.currentEditionKey
-					.equals(Edition.getPreviousKey(e.getName()))) {
+			if (!lp.periodical.currentEditionKey.equals(e)) {
 				log.warning("Attempted to socialize in old edition");
 				lp.rollback(); socialTxn.getTxn().rollback();
 				return Response.NO_LONGER_CURRENT;
@@ -566,13 +573,16 @@ public class DAO extends DAOBase {
 			} finally {
 				lp.setUserLock();
 				SocialTask.writeSocialEvent(
-						from, to, e, on, aboutToSocial.getKey(), lp.transaction.getTxn());
+						from, to, e, on, lp.transaction.getTxn());
 				lp.commit();
 			}
 		}
 
 		public void changePendingAuthority(Key<User> judge, Key<Edition> edition,
 				int amount) {
+			assert(getPeriodical().userlocked);
+			assert(!getPeriodical().inSocialTransition);
+
 			Objectify txn = fact().beginTransaction();
 			EditionUserAuthority eua = txn.query(EditionUserAuthority.class).ancestor(edition)
 			.filter("user", judge).get();
@@ -1052,9 +1062,14 @@ public class DAO extends DAOBase {
 						user.getKey(), next.getKey(), new Date(), true);
 				ofy().put(join);
 			}
-			ofy().put(new EditionUserAuthority(0, 
-					editions.getCurrentEdition().getKey(), user.getKey()));
 			
+			for(int i = editions.getCurrentEdition().number;
+					i < editions.getNumEditions();
+					i++) {
+				Key<Edition> eKey = Edition.getKey(i);
+				ofy().put(new EditionUserAuthority(0, 
+						eKey, user.getKey()));
+			}
 			// TODO 2.0 not used 
 			/*
 			LockedPeriodical lp = lockPeriodical();

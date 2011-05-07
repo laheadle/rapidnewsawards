@@ -57,7 +57,7 @@ public class DAOTest extends RNATest {
 		User mg = getUser(null);
 		
 		final String displayName = mg.getDisplayName();
-		assertEquals(displayName, "ohthatmeg");
+		assertEquals(displayName, "john q public");
 		assertNotNull(mg);
 	}
 
@@ -69,24 +69,5 @@ public class DAOTest extends RNATest {
 				"j");
 	}
 	
-	@Test
-	public void testVote() throws MalformedURLException, InterruptedException {
-		User mg = getUser(null);
-		Edition e = DAO.instance.editions.getCurrentEdition();
-		
-		Link l = DAO.instance.users.createLink("http://example.com", "title", mg.getKey());
-		Link l3 = DAO.instance.users.createLink("http://example2.com",  "title", mg.getKey());
-		Response r = DAO.instance.users.voteFor(mg, e, l, true);
-		assertTrue(r.equals(Response.SUCCESS));
-/*		Thread.sleep(1000);
-		assertTrue(DAO.instance.users.hasVoted(mg, e, l));
-		DAO.instance.users.voteFor(mg, e, l3, true);
-		assertTrue(DAO.instance.users.hasVoted(mg, e, l3));
-		assertTrue(DAO.instance.users.hasVoted(mg, e, l));
-		Link l2 = DAO.instance.users.createLink("http://bad.com",  "title", mg.getKey());
-		assertFalse(DAO.instance.users.hasVoted(mg, e, l2));
-		*/
-	}
-
 
 }

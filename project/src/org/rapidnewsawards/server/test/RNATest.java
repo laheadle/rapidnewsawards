@@ -1,8 +1,16 @@
 package org.rapidnewsawards.server.test;
 
+import java.util.Date;
+
 import junit.framework.TestCase;
 
+import org.junit.Test;
+import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.Follow;
+import org.rapidnewsawards.core.Periodical;
+import org.rapidnewsawards.core.SocialEvent;
 import org.rapidnewsawards.core.User;
+import org.rapidnewsawards.messages.Response;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
 
@@ -49,3 +57,5 @@ public abstract class RNATest extends TestCase {
 	
 	
 }
+
+
