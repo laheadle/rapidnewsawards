@@ -436,6 +436,12 @@ public class DAO extends DAOBase {
 		public final Objectify transaction;
 		public final Periodical periodical;
 
+		public void checkState() {
+			if (periodical.inTransition && periodical.userlocked) {
+				throw new IllegalStateException("deadlock!");				
+			}
+		}
+		
 		public LockedPeriodical() {		
 			Objectify oTxn = fact().beginTransaction();
 			Periodical p = oTxn.get(Periodical.getKey(periodicalName.name));
@@ -444,9 +450,11 @@ public class DAO extends DAOBase {
 			}
 			this.transaction = oTxn;
 			this.periodical = p;
+			checkState();
 		}
 
 		public void commit() {
+			checkState();
 			this.transaction.put(this.periodical);
 			this.transaction.getTxn().commit();
 		}
@@ -469,7 +477,7 @@ public class DAO extends DAOBase {
 				final Key<User> from, final Key<User> to, final Key<Edition> e, 
 				boolean on) {
 			assert(getPeriodical().userlocked);
-			assert(!getPeriodical().inSocialTransition);
+			assert(!getPeriodical().inTransition);
 			final Objectify txn = fact().beginTransaction();
 			
 			SocialEvent social = new SocialEvent(from, to, e, new Date(), on);
@@ -558,7 +566,7 @@ public class DAO extends DAOBase {
 				return Response.NO_LONGER_CURRENT;
 			}
 
-			if (lp.periodical.inSocialTransition) {
+			if (lp.periodical.inTransition) {
 				log.warning("Attempted to socialize during transition");
 				lp.rollback(); socialTxn.getTxn().rollback();
 				return Response.TRANSITION_IN_PROGRESS;
@@ -580,13 +588,14 @@ public class DAO extends DAOBase {
 				SocialTask.writeSocialEvent(
 						from, to, e, on, lp.transaction.getTxn());
 				lp.commit();
+				assert(!getPeriodical().inTransition);
 			}
 		}
 
 		public void changePendingAuthority(Key<User> judge, Key<Edition> edition,
 				int amount) {
 			assert(getPeriodical().userlocked);
-			assert(!getPeriodical().inSocialTransition);
+			assert(!getPeriodical().inTransition);
 
 			Objectify txn = fact().beginTransaction();
 			EditionUserAuthority eua = txn.query(EditionUserAuthority.class).ancestor(edition)
@@ -598,7 +607,10 @@ public class DAO extends DAOBase {
 			eua.authority += amount;
 			txn.put(eua);
 			Key<Edition> next = Edition.getNextKey(edition.getName());
-			if (!Edition.isFinal(edition, editions.getNumEditions())) {
+			if (Edition.isFinal(edition, editions.getNumEditions())) {
+				TallyTask.releaseUserLock(txn.getTxn());
+			}
+			else {
 				SocialTask.changePendingAuthority(judge, next, amount, txn.getTxn());				
 			}
 			txn.getTxn().commit();
@@ -689,7 +701,7 @@ public class DAO extends DAOBase {
 		}
 
 		public void setBalance() {
-			assert(getPeriodical().inSocialTransition);
+			assert(getPeriodical().inTransition);
 			LockedPeriodical lp = lockPeriodical();
 
 			if (lp == null) {
@@ -748,12 +760,8 @@ public class DAO extends DAOBase {
 			assert (locked != null);
 
 			final Periodical p = locked.periodical;
-
-			if (p == null) {
-				// DIE FOREVER
-				log.severe("No Periodical");
-				return;
-			}
+			
+			if (p.userlocked) { throw new ConcurrentModificationException(); }
 
 			if (!p.live) {
 				// DIE FOREVER
@@ -784,17 +792,17 @@ public class DAO extends DAOBase {
 						+ nextNum));
 			}
 
-			p.inSocialTransition = true;
+			p.inTransition = true;
 			TransitionTask.setBalance(locked.transaction.getTxn());
 			locked.commit();
 			log.info(p.idName + ": New current Edition:" + nextNum);
 		}
 
 		public void finishTransition() {
-			assert(getPeriodical().inSocialTransition);
+			assert(getPeriodical().inTransition);
 			// the final step in transition machinery!
 			LockedPeriodical lp = lockPeriodical();
-			lp.periodical.inSocialTransition = false;
+			lp.periodical.inTransition = false;
 			lp.commit();
 		}
 
@@ -996,7 +1004,7 @@ public class DAO extends DAOBase {
 				return Response.NO_LONGER_CURRENT;
 			}
 
-			if (lp.periodical.inSocialTransition) {
+			if (lp.periodical.inTransition) {
 				log.warning("Attempted to vote during transition");
 				lp.rollback();
 				return Response.TRANSITION_IN_PROGRESS;

@@ -19,13 +19,12 @@ public class Periodical {
 
 	@Parent public Key<Root> root;
 	
-	// TODO Make id a String.
 	@Id
 	public String idName;
 
 	public boolean live;
 
-	public boolean inSocialTransition;
+	public boolean inTransition;
 
 	public boolean tallying;
 
@@ -33,8 +32,6 @@ public class Periodical {
 
 	public int numEditions;
 	
-	public boolean flag; // for locking
-
 	public boolean userlocked;
 	
 	/*
@@ -42,9 +39,8 @@ public class Periodical {
 	 */
 	public Periodical(Name name) {
 		this.userlocked = false;
-		this.flag = true;
 		this.root = rootKey();
-		this.inSocialTransition = false;
+		this.inTransition = false;
 		this.tallying = false;
 		this.live = true;
 		this.idName = name.name;

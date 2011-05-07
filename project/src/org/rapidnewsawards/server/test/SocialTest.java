@@ -39,7 +39,7 @@ public class SocialTest extends RNATest {
 	@Test
 	public void transitionInProgressResponse()  {
 		Periodical p = d.getPeriodical();
-		p.inSocialTransition = true;
+		p.inTransition = true;
 		d.ofy().put(p);
 
 		Response r = DAO.instance.social.doSocial(

@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
+import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.List;
 
@@ -74,7 +75,17 @@ public class MakeDataServlet extends HttpServlet {
 			makeData(numEditions, minutes * ONE_MINUTE, numUsers);
 
 			if (doTransition) {
-				DAO.instance.transition.doTransition(0);
+				
+				try { 
+					DAO.instance.transition.doTransition(0);
+				} catch (ConcurrentModificationException cme) {
+					try {
+						Thread.sleep(500);
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					DAO.instance.transition.doTransition(0);
+				}
 			}
 			
 			if (numLinks > 0) {
@@ -124,14 +135,9 @@ public class MakeDataServlet extends HttpServlet {
 			numUsers.value = new Integer(6);
 		
 		if (doFollow) {
-			try {
-				Thread.sleep(200);
-			} catch (InterruptedException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			d.user = lyn;
-			d.social.doSocial(jq.getKey(), true);
+				d.user = lyn;
+				Response r = d.social.doSocial(jq.getKey(), true);
+				assert(r.equals(Response.ABOUT_TO_FOLLOW));
 		}
 	}
 

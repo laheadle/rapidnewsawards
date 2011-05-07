@@ -22,7 +22,7 @@ public class TransitionTest extends RNATest {
 	public void testTransition() {
 		d.transition.doTransition(0);
 		assertTrue(d.getPeriodical().live);
-		assertTrue(d.getPeriodical().inSocialTransition);
+		assertTrue(d.getPeriodical().inTransition);
 		assertFalse(d.getPeriodical().userlocked);
 	}
 
