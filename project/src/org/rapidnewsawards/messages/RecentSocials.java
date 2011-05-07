@@ -6,6 +6,6 @@ import org.rapidnewsawards.core.Edition;
 
 public class RecentSocials {
 	public int numEditions;
-	public Edition edition;
+	public EditionMessage edition;
 	public LinkedList<SocialInfo> list;
 }

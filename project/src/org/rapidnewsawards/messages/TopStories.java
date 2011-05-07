@@ -6,6 +6,6 @@ import org.rapidnewsawards.core.Edition;
 
 public class TopStories {
 	public int numEditions;
-	public Edition edition;
+	public EditionMessage edition;
 	public LinkedList<StoryInfo> list;
 }

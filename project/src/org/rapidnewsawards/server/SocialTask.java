@@ -55,10 +55,6 @@ public class SocialTask extends HttpServlet {
 			throw new IllegalArgumentException("fun");
 		}
 		if (fun.equals("writeSocialEvent")) {
-			String command = request.getParameter("command");
-			if (command == null) {
-				throw new IllegalArgumentException("command");
-			}
 			String _from = request.getParameter("from");
 			if (_from == null) {
 				throw new IllegalArgumentException("from");

@@ -6,6 +6,6 @@ import org.rapidnewsawards.core.Edition;
 
 public class TopJudges {
 		public int numEditions;
-		public Edition edition;
+		public EditionMessage edition;
 		public LinkedList<User_Authority> list;
 }

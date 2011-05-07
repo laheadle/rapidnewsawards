@@ -25,6 +25,7 @@ import org.rapidnewsawards.core.SocialEvent;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.core.Vote;
 import org.rapidnewsawards.messages.AllEditions;
+import org.rapidnewsawards.messages.EditionMessage;
 import org.rapidnewsawards.messages.FullStoryInfo;
 import org.rapidnewsawards.messages.Name;
 import org.rapidnewsawards.messages.RecentSocials;
@@ -56,14 +57,26 @@ public class DAO extends DAOBase {
 		public static final int CURRENT = -1;
 		public static final int NEXT = -2;
 
+		private EditionMessage makeEditionMessage(Edition e) {
+			return new EditionMessage(e,
+					ofy().get(ScoreSpace.keyFromEditionKey(e.getKey())));		
+		}
+
+
 		// TODO parameterize by periodical
 		public AllEditions getAllEditions() {
-			LinkedList<Edition> ll = new LinkedList<Edition>();
+			LinkedList<EditionMessage> ll = new LinkedList<EditionMessage>();
+			Map<String, ScoreSpace> spaces = 
+				new HashMap<String, ScoreSpace>(); 
+			for (ScoreSpace s : ofy().query(ScoreSpace.class)) {
+				spaces.put(s.id, s);
+			}
 			for (Edition e : ofy().query(Edition.class)) {
-				ll.add(e);
+				ll.add(new EditionMessage(e, spaces.get(e.id)));
 			}
 			Edition c = getCurrentEdition();
-			AllEditions ae = new AllEditions(ll, c);
+			AllEditions ae = new AllEditions(ll, 
+					new EditionMessage(c, spaces.get(c.id)));
 			return ae;
 		}
 
@@ -227,15 +240,11 @@ public class DAO extends DAOBase {
 		}
 
 		public RecentVotes getRecentVotes(int edition) {
-			Edition e = editions.getEdition(edition);
+			Edition e = getEdition(edition);
 			RecentVotes s = new RecentVotes();
-			s.edition = e;
-			s.numEditions = editions.getNumEditions();
-			if (e == null) {
-				log.warning("no recent votes for bad edition " + edition);
-			} else {
-				s.list = getLatestUser_Vote_Links(e);
-			}
+			s.edition = makeEditionMessage(e);
+			s.numEditions = getNumEditions();
+			s.list = getLatestUser_Vote_Links(e);
 			return s;
 		}
 
@@ -284,7 +293,7 @@ public class DAO extends DAOBase {
 			Edition e = editions
 					.getEdition(edition);
 			TopJudges tj = new TopJudges();
-			tj.edition = e;
+			tj.edition = makeEditionMessage(e);
 			tj.numEditions = editions.getNumEditions();
 			tj.list = getJudges(e);
 			return tj;
@@ -295,13 +304,9 @@ public class DAO extends DAOBase {
 
 			TopStories result = new TopStories();
 			LinkedList<StoryInfo> stories = new LinkedList<StoryInfo>();
-			result.edition = e;
+			result.edition = makeEditionMessage(e);
 			result.numEditions = editions.getNumEditions();
 			result.list = stories;
-
-			if (e == null)
-				return result;
-
 			LinkedList<ScoredLink> scored = editions.getScoredLinks(e, 1);
 			LinkedList<Key<Link>> linkKeys = new LinkedList<Key<Link>>();
 
@@ -488,13 +493,13 @@ public class DAO extends DAOBase {
 		}
 
 		/* Wrapper which assumes a <from> of the current user */
-		public Response doSocial(Key<User> to, Key<Edition> e, boolean on) {
+		public Response doSocial(Key<User> to, boolean on) {
 			if (user == null) {
 				log.warning("attempt to follow with null user");
 				return Response.ILLEGAL_OPERATION;
 			}
 			Key<User> from = user.getKey();
-			return doSocial(from, to, e, on);
+			return doSocial(from, to, editions.getCurrentEdition().getKey(), on);
 		}
 		
 		/* Do a follow, unfollow, or cancel pending follow, unfollow */
@@ -631,7 +636,7 @@ public class DAO extends DAOBase {
 			}
 
 			RecentSocials s = new RecentSocials();
-			s.edition = current;
+			s.edition = editions.makeEditionMessage(current);
 			s.numEditions = editions.getNumEditions();
 			s.list = editions.getLatestEditor_Judges(next);
 			return s;
@@ -723,8 +728,10 @@ public class DAO extends DAOBase {
 				s = editions.getScoreSpace(e.getKey());
 				assert (s != null);
 				int n = editions.getNumEditions();
-				s.revenue = p.balance / (n - e.number);
-				p.balance -= s.revenue;
+				if (e.number > 0) {
+					s.revenue = p.balance / (n - e.number);
+					p.balance -= s.revenue;
+				}
 			}
 
 			TransitionTask.setRevenue(lp.transaction.getTxn(), e, s.revenue);

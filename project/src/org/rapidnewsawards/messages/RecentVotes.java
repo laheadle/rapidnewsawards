@@ -6,7 +6,7 @@ import org.rapidnewsawards.core.Edition;
 
 public class RecentVotes {
 	public RecentVotes() {};
-	public Edition edition;
+	public EditionMessage edition;
 	public int numEditions;
 	public LinkedList<User_Vote_Link> list;
 }

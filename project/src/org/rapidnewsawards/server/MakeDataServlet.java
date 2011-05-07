@@ -124,8 +124,14 @@ public class MakeDataServlet extends HttpServlet {
 			numUsers.value = new Integer(6);
 		
 		if (doFollow) {
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
 			d.user = lyn;
-			d.social.doSocial(jq.getKey(), d.editions.getCurrentEdition().getKey(), true);
+			d.social.doSocial(jq.getKey(), true);
 		}
 	}
 
@@ -203,8 +209,6 @@ public class MakeDataServlet extends HttpServlet {
 			assert(pinserted);
 
 			ScoreSpace s = new ScoreSpace(parent.id);
-			// TODO No revenue in signup.
-			s.revenue = p.balance / p.numEditions;
 			spaces.add(s);
 		}
 		
