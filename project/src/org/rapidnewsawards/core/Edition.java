@@ -87,5 +87,10 @@ public class Edition implements Comparable<Edition> {
 		return new Key<Edition>(Edition.class, Integer.toString(i));
 	}
 
+	public static boolean isAfterFinal(Key<Edition> edition, int numEditions) {
+		return getNumber(edition)> numEditions - 1;
+
+	}
+
 
 }

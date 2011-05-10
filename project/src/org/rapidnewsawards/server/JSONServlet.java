@@ -197,7 +197,7 @@ public class JSONServlet extends HttpServlet {
 				String _to = request.getParameter("to");
 				String _edition = request.getParameter("edition");
 				Key<User> to = User.getKey(new Long(_to));
-				// TODO pass in from client
+				// TODO 2.0 pass in from client
 				Boolean on = new Boolean(request.getParameter("on"));
 				return d.social.doSocial(to, on).s;
 			}

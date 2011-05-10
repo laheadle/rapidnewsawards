@@ -2,22 +2,19 @@ package org.rapidnewsawards.server.test;
 
 //import static org.easymock.EasyMock.verify;
 
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 import java.net.MalformedURLException;
-import java.util.Iterator;
 
 import org.junit.Test;
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.EditionUserAuthority;
 import org.rapidnewsawards.core.Link;
-import org.rapidnewsawards.core.ScoreRoot;
 import org.rapidnewsawards.core.ScoreSpace;
-import org.rapidnewsawards.core.ScoredLink;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.core.Vote;
 import org.rapidnewsawards.messages.Response;
-import org.rapidnewsawards.server.DAO;
-
-import com.googlecode.objectify.Key;
 
 public class VoteTest extends RNATest {
 	

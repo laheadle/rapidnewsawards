@@ -1,13 +1,12 @@
 package org.rapidnewsawards.server.test;
 
-import java.net.MalformedURLException;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 
 import org.junit.Before;
 import org.junit.Test;
 import org.rapidnewsawards.core.Edition;
-import org.rapidnewsawards.core.Link;
 import org.rapidnewsawards.core.User;
-import org.rapidnewsawards.messages.Response;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
 import org.rapidnewsawards.server.TitleGrabber;

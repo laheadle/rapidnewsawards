@@ -10,7 +10,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.core.Edition;
-import org.rapidnewsawards.core.SocialEvent;
 import org.rapidnewsawards.core.User;
 
 import com.google.appengine.api.datastore.Transaction;

@@ -2,6 +2,8 @@ package org.rapidnewsawards.server.test;
 
 //import static org.easymock.EasyMock.verify;
 
+import static org.junit.Assert.assertEquals;
+
 import java.util.Date;
 
 import org.junit.Test;
@@ -13,11 +15,6 @@ import org.rapidnewsawards.core.SocialEvent;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.messages.Response;
 import org.rapidnewsawards.server.DAO;
-import org.rapidnewsawards.server.MakeDataServlet;
-
-import com.google.appengine.tools.development.testing.LocalTaskQueueTestConfig;
-import com.googlecode.objectify.Key;
-import com.googlecode.objectify.Query;
 
 public class SocialTest extends RNATest {
 	
@@ -43,7 +40,7 @@ public class SocialTest extends RNATest {
 		d.ofy().put(p);
 
 		Response r = DAO.instance.social.doSocial(
-				mg.getKey(), jqp.getKey(), Edition.getKey(1), true);
+				mg.getKey(), jqp.getKey(), Edition.getKey(0), true);
 		
 		assertEquals(r, Response.TRANSITION_IN_PROGRESS);
 	}

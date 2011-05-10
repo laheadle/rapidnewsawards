@@ -85,7 +85,7 @@ public class DAO extends DAOBase {
 		}
 
 		/*
-		 * Just get the requested edition
+		 * Get the requested edition
 		 * 
 		 * @param number the edition number requested, or CURRENT for current, or NEXT
 		 * for next
@@ -94,23 +94,26 @@ public class DAO extends DAOBase {
 
 			final Objectify o = ofy();
 
-			// TODO These should throw exceptions
 			if (number == CURRENT) {
 				final Periodical p = getPeriodical();
-				if (!p.live)
-					return null;
+				if (p.isFinished())
+					throw new IllegalStateException("no current edition");
 
-				return o.get(p.currentEditionKey);
+				return o.get(p.getcurrentEditionKey());
 			}
 
 			else if (number == NEXT) {
 				final Periodical p = getPeriodical();
-				if (!p.live) {
+				if (p.isFinished()) {
 					throw new IllegalStateException(
 							"Next edition requested for finished periodical");
 				}
-				return o.get(
-						Edition.getNextKey(p.currentEditionKey.getName()));
+				Key<Edition> nextKey = Edition.getNextKey(p.getcurrentEditionKey().getName());
+				if (Edition.isAfterFinal(nextKey, getNumEditions())) {
+					throw new IllegalStateException(
+					"Next edition requested after final Edition");					
+				}
+				return o.get(nextKey);
 			}
 			else {
 				// TODO 2.0 this only works because we assume one periodical
@@ -368,7 +371,7 @@ public class DAO extends DAOBase {
 		}
 
 		private Edition getPreviousOrLastEdition(LockedPeriodical lp) {
-			Key<Edition> current = lp.periodical.currentEditionKey;
+			Key<Edition> current = lp.periodical.getcurrentEditionKey();
 			if (current == null) {
 				return getLastEdition();
 			}
@@ -507,7 +510,7 @@ public class DAO extends DAOBase {
 				return Response.ILLEGAL_OPERATION;
 			}
 			Key<User> from = user.getKey();
-			return doSocial(from, to, editions.getCurrentEdition().getKey(), on);
+			return doSocial(from, to, editions.getEdition(Editions.CURRENT).getKey(), on);
 		}
 		
 		/* Do a follow, unfollow, or cancel pending follow, unfollow */
@@ -560,7 +563,7 @@ public class DAO extends DAOBase {
 			
 			assert(lp != null);
 			
-			if (!lp.periodical.currentEditionKey.equals(e)) {
+			if (!lp.periodical.getcurrentEditionKey().equals(e)) {
 				log.warning("Attempted to socialize in old edition");
 				lp.rollback(); socialTxn.getTxn().rollback();
 				return Response.NO_LONGER_CURRENT;
@@ -695,8 +698,7 @@ public class DAO extends DAOBase {
 		public void finishPeriodical() {
 			LockedPeriodical lp = lockPeriodical();
 			final Periodical p = lp.periodical;
-			p.live = false;
-			p.setcurrentEditionKey(null);
+			p.setFinished();
 			lp.commit();
 		}
 
@@ -719,7 +721,7 @@ public class DAO extends DAOBase {
 			Edition e;
 			ScoreSpace s;
 			
-			if (!p.live) {
+			if (p.isFinished()) {
 				log.warning("spending all remaining revenue");
 
 				e = editions.getLastEdition();
@@ -763,31 +765,30 @@ public class DAO extends DAOBase {
 			
 			if (p.userlocked) { throw new ConcurrentModificationException(); }
 
-			if (!p.live) {
+			if (p.isFinished()) {
 				// DIE FOREVER
 				log.severe("tried to transition a dead periodical");
 				return;
 			}
 			
-			Edition current = ofy().find(p.currentEditionKey);
+			Edition current = ofy().find(p.getcurrentEditionKey());
 
 			if (current == null) {
 				// DIE FOREVER
-				log.severe("no edition matching" + p.currentEditionKey);
+				log.severe("no edition matching" + p.getcurrentEditionKey());
 				return;
 			}
 
 			int nextNum = current.number + 1;
 			int n = editions.getNumEditions();
 
+			// Do it! Change current edition.
 			if (nextNum == n) {
-				p.live = false;
+				p.setFinished();
 			} else if (nextNum > n) {
-				// TODO throw?
-				log.severe(String.format("bug in edition numbers: %d > %d", nextNum, n));
-				return;
+				throw new IllegalStateException(String.format(
+						"bug in edition numbers: %d > %d", nextNum, n));
 			} else {
-				// Do it! Change current edition.
 				p.setcurrentEditionKey(new Key<Edition>(Edition.class, ""
 						+ nextNum));
 			}
@@ -998,7 +999,7 @@ public class DAO extends DAOBase {
 				return Response.IS_FINISHED;
 			}
 
-			if (!lp.periodical.currentEditionKey.equals(e.getKey())) {
+			if (!lp.periodical.getcurrentEditionKey().equals(e.getKey())) {
 				log.warning("Attempted to vote in old edition");
 				lp.rollback();
 				return Response.NO_LONGER_CURRENT;

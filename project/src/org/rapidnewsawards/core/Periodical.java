@@ -14,7 +14,7 @@ public class Periodical {
 
 	private static final int ROOT_ID = 1;
 
-	public Key<Edition> currentEditionKey;
+	private Key<Edition> currentEditionKey;
 	
 
 	@Parent public Key<Root> root;
@@ -22,7 +22,7 @@ public class Periodical {
 	@Id
 	public String idName;
 
-	public boolean live;
+	private boolean live;
 
 	public boolean inTransition;
 
@@ -56,6 +56,8 @@ public class Periodical {
 	
 	public boolean isFinished() { return live == false || currentEditionKey == null; }
 	
+	public void setFinished() { live = false; currentEditionKey = null; }
+
 	public static Key<Periodical> getKey(String idName) {
 		return new Key<Periodical>(rootKey(), 
 				Periodical.class, DAO.periodicalName.name);
@@ -67,6 +69,10 @@ public class Periodical {
 
 	public void setcurrentEditionKey(Key<Edition> Key) {
 		this.currentEditionKey = Key;
+	}
+
+	public Key<Edition> getcurrentEditionKey() {
+		return this.currentEditionKey;
 	}
 
 	public static String moneyPrint(int amount) {

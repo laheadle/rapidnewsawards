@@ -23,7 +23,6 @@ import org.rapidnewsawards.messages.Name;
 import org.rapidnewsawards.messages.Response;
 import org.rapidnewsawards.messages.VoteResult;
 
-import com.googlecode.objectify.Key;
 import com.googlecode.objectify.Objectify;
 
 public class MakeDataServlet extends HttpServlet {

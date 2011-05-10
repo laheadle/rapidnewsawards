@@ -1,16 +1,8 @@
 package org.rapidnewsawards.server.test;
 
-import java.util.Date;
-
-import junit.framework.TestCase;
-
-import org.junit.Test;
-import org.rapidnewsawards.core.Edition;
-import org.rapidnewsawards.core.Follow;
-import org.rapidnewsawards.core.Periodical;
-import org.rapidnewsawards.core.SocialEvent;
+import org.junit.Before;
+import org.junit.After;
 import org.rapidnewsawards.core.User;
-import org.rapidnewsawards.messages.Response;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
 
@@ -19,12 +11,13 @@ import com.google.appengine.tools.development.testing.LocalServiceTestHelper;
 import com.google.appengine.tools.development.testing.LocalTaskQueueTestConfig;
 
 
-public abstract class RNATest extends TestCase {
+public abstract class RNATest {
 
 	protected static DAO d = DAO.instance;
 
 	private final LocalServiceTestHelper helper = new LocalServiceTestHelper(new LocalDatastoreServiceTestConfig());
-	private LocalTaskQueueTestConfig taskQueueConfig;
+
+	protected LocalTaskQueueTestConfig taskQueueConfig;
 
 	protected User getUser(String name) {
 		if (name == null)
@@ -38,21 +31,20 @@ public abstract class RNATest extends TestCase {
 	}
 
 
-	@Override
+	@Before
 	public void setUp() throws Exception {
-        super.setUp();
         helper.setUp();
         MakeDataServlet.testing = true;
         taskQueueConfig = new LocalTaskQueueTestConfig();
+        new LocalTaskQueueTestConfig();
 
 		MakeDataServlet.makeData(3, 30 * 60 * MakeDataServlet.ONE_SECOND, null);
 	}
 
-	@Override
+	@After
 	public void tearDown() throws Exception {
         helper.tearDown();
         MakeDataServlet.testing = false;
-        super.tearDown();
 	}
 	
 	
