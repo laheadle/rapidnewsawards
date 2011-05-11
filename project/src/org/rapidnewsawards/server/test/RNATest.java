@@ -1,7 +1,7 @@
 package org.rapidnewsawards.server.test;
 
-import org.junit.Before;
 import org.junit.After;
+import org.junit.Before;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
@@ -12,6 +12,8 @@ import com.google.appengine.tools.development.testing.LocalTaskQueueTestConfig;
 
 
 public abstract class RNATest {
+
+	protected int numEditions = 3;
 
 	protected static DAO d = DAO.instance;
 

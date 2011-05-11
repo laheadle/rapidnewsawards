@@ -124,7 +124,7 @@ $(function(){
 
 	render: function() {
 	    var _copy = this.model.toJSON();
-	    _copy.revenue = '' +_copy.revenue / 100;
+	    _copy.funding = '' +_copy.funding / 100;
 	    _copy.href= '#story/' + _copy.editionId + '/' + _copy.link.id;
 	    $(this.el).html(this.template(_copy));
 	    return this;
@@ -615,13 +615,13 @@ $(function(){
 	    var self = this;
 	    var dollars = function(storyInfo, fund) {
 		if (storyInfo.score == 0) { return 0; }
-		return (storyInfo.revenue / storyInfo.score) 
+		return (storyInfo.funding / storyInfo.score) 
 		    * fund.authority / 100;
 	    };
 
 	    var pennies = function(storyInfo, fund) {
 		if (storyInfo.score == 0) { return 0; }
-		return (storyInfo.revenue / storyInfo.score) 
+		return (storyInfo.funding / storyInfo.score) 
 		    * fund.authority % 100;
 	    };
 
@@ -650,7 +650,7 @@ $(function(){
 
 	render: function() {
 	    var _copy = this.model.get('info');
-	    _copy.revenue = '' +_copy.revenue / 100;
+	    _copy.funding = '' +_copy.funding / 100;
 	    $(this.el).prepend(rMake('#full-story-template', 
 				     // story info
 				     _copy));

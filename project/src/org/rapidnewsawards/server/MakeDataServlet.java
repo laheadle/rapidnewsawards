@@ -102,7 +102,7 @@ public class MakeDataServlet extends HttpServlet {
 		User jq = d.users.findUserByLogin("johnqpublic@gmail.com", "gmail.com");
 		for (int i = 0;i < numLinks;i++) {
 			VoteResult vr = d.editions.submitStory("http://www.example" + i + ".com", 
-					"example story", current, jq);
+					"example story", current.getKey(), jq);
 			if (!vr.returnVal.s.equals(Response.SUCCESS.s)) {
 				DAO.log.warning(vr.returnVal.toString());
 			}

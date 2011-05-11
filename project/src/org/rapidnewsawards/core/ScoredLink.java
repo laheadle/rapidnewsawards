@@ -17,22 +17,21 @@ public class ScoredLink {
     
 	public Key<Edition> edition;
 
-	@Unindexed 
 	public Key<Link> link;
 	
 	public int score;
 
 	@Unindexed 
-	public int revenue;
+	public int funding;
 		
 	public ScoredLink() {}
 	
 	public ScoredLink(Key<Edition> edition, Key<ScoreRoot> root, 
-			Key<Link> link, int score, int revenue) {
+			Key<Link> link, int score, int funding) {
 		this.root = root;
 		this.edition = edition;
 		this.link = link;
 		this.score = score;
-		this.revenue = revenue;
+		this.funding = funding;
 	}
 }

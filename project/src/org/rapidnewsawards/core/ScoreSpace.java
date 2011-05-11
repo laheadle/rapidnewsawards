@@ -12,7 +12,7 @@ public class ScoreSpace {
 	@Parent 
 	public Key<ScoreRoot> root;
 
-	public int revenue;
+	public int balance;
 
 	public int totalSpend;
 	
@@ -25,7 +25,7 @@ public class ScoreSpace {
 	public ScoreSpace(String id) {
 		this.root = new Key<ScoreRoot>(ScoreRoot.class, id);
 		this.id = id;
-		this.revenue = 0;
+		this.balance = 0;
 		this.totalScore = 0;
 		this.totalSpend = 0;
 		this.numFundedLinks = 0;

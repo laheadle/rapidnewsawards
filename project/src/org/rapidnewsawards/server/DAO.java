@@ -196,14 +196,14 @@ public class DAO extends DAOBase {
 		 * Runs three queries: first get keys, then use the keys to get 2 sets
 		 * of entities
 		 */
-		public LinkedList<User_Vote_Link> getLatestUser_Vote_Links(Edition e) {
+		public LinkedList<User_Vote_Link> getLatestUser_Vote_Links(Key<Edition> e) {
 			LinkedList<User_Vote_Link> result = new LinkedList<User_Vote_Link>();
 
 			ArrayList<Key<User>> users = new ArrayList<Key<User>>();
 			ArrayList<Key<Link>> links = new ArrayList<Key<Link>>();
 
 			Query<Vote> q = ofy().query(Vote.class)
-					.filter("edition", e.getKey()).order("-time");
+					.filter("edition", e).order("-time");
 
 			LinkedList<Vote> votes = new LinkedList<Vote>();
 			for (Vote v : q) {
@@ -247,7 +247,7 @@ public class DAO extends DAOBase {
 			RecentVotes s = new RecentVotes();
 			s.edition = makeEditionMessage(e);
 			s.numEditions = getNumEditions();
-			s.list = getLatestUser_Vote_Links(e);
+			s.list = getLatestUser_Vote_Links(e.getKey());
 			return s;
 		}
 
@@ -284,7 +284,7 @@ public class DAO extends DAOBase {
 			si.score = sl.score;
 			si.editionId = "" + editionNum;
 			si.submitter = ofy().get(link.submitter);
-			si.revenue = sl.revenue;
+			si.revenue = sl.funding;
 
 			FullStoryInfo fsi = new FullStoryInfo();
 			fsi.info = si;
@@ -334,7 +334,7 @@ public class DAO extends DAOBase {
 				si.score = sl.score;
 				si.editionId = e.id;
 				si.submitter = userMap.get(si.link.submitter);
-				si.revenue = sl.revenue;
+				si.revenue = sl.funding;
 				stories.add(si);
 			}
 
@@ -342,7 +342,7 @@ public class DAO extends DAOBase {
 		}
 
 		public VoteResult submitStory(String url, String title,
-				Edition edition, User submitter) {
+				Key<Edition> e, User submitter) {
 			// TODO put this and vote in transaction along with task
 			VoteResult vr = new VoteResult();
 
@@ -356,12 +356,11 @@ public class DAO extends DAOBase {
 					Link l = users.createLink(url, title, submitter.getKey());
 					vr.returnVal = users.voteFor(
 							submitter,
-							edition == null ? editions
-									.getCurrentEdition()
-									: edition, l, true);
+							e, l, true);
 					vr.authUrl = null; // userService.createLogoutURL(home);
 				}
-				catch (MalformedURLException e) {
+				catch (MalformedURLException ex) {
+					// TODO Just Catch this in parent?
 					// TODO Test on frontend
 					log.warning("bad url " + url + "submitted by " + submitter);
 					vr.returnVal = Response.BAD_URL;
@@ -424,11 +423,12 @@ public class DAO extends DAOBase {
 			return s;
 		}
 
-		public void setRevenue(long edition, int revenue) {			
+		public void setSpaceBalance(int edition, int balance) {			
 			ScoreSpace s = getScoreSpace(
-					new Key<Edition>(Edition.class, Long.toString(edition)));
+					new Key<Edition>(Edition.class, Integer.toString(edition)));
 			Objectify oTxn = fact().beginTransaction();
-			s.revenue = revenue;
+			s.balance = balance;
+			oTxn.put(s);
 			TransitionTask.finish(oTxn.getTxn());
 			oTxn.getTxn().commit();
 		}
@@ -702,7 +702,7 @@ public class DAO extends DAOBase {
 			lp.commit();
 		}
 
-		public void setBalance() {
+		public void setPeriodicalBalance() {
 			assert(getPeriodical().inTransition);
 			LockedPeriodical lp = lockPeriodical();
 
@@ -730,7 +730,7 @@ public class DAO extends DAOBase {
 				}
 				s = editions.getScoreSpace(e.getKey());
 				assert (s != null);
-				s.revenue = p.balance;
+				s.balance = p.balance;
 				p.balance = 0;
 			} else {
 				e = editions.getPreviousOrLastEdition(lp);
@@ -743,15 +743,15 @@ public class DAO extends DAOBase {
 				assert (s != null);
 				int n = editions.getNumEditions();
 				if (e.number > 0) {
-					s.revenue = p.balance / (n - e.number);
-					p.balance -= s.revenue;
+					s.balance = p.balance / (n - e.number);
+					p.balance -= s.balance;
 				}
 			}
 
-			TransitionTask.setRevenue(lp.transaction.getTxn(), e, s.revenue);
+			TransitionTask.setSpaceBalance(lp.transaction.getTxn(), e, s.balance);
 			lp.commit();
 
-			log.info(e + ": revenue " + Periodical.moneyPrint(s.revenue));
+			log.info(e + ": revenue " + Periodical.moneyPrint(s.balance));
 			log.info("balance: " + Periodical.moneyPrint(p.balance));
 		}
 
@@ -785,7 +785,7 @@ public class DAO extends DAOBase {
 			// Do it! Change current edition.
 			if (nextNum == n) {
 				p.setFinished();
-			} else if (nextNum > n) {
+			} else if (nextNum > n || nextNum < 1) {
 				throw new IllegalStateException(String.format(
 						"bug in edition numbers: %d > %d", nextNum, n));
 			} else {
@@ -794,7 +794,7 @@ public class DAO extends DAOBase {
 			}
 
 			p.inTransition = true;
-			TransitionTask.setBalance(locked.transaction.getTxn());
+			TransitionTask.setPeriodicalBalance(locked.transaction.getTxn());
 			locked.commit();
 			log.info(p.idName + ": New current Edition:" + nextNum);
 		}
@@ -921,11 +921,11 @@ public class DAO extends DAOBase {
 			}
 		}
 
-		public boolean hasVoted(User u, Edition e, Link l) {
+		public boolean hasVoted(User u, Key<Edition> e, Link l) {
 			Objectify o = fact().beginTransaction();
 			try {
 				int count = o.query(Vote.class).ancestor(u)
-				.filter("edition", e.getKey()).filter("link", l.getKey())
+				.filter("edition", e).filter("link", l.getKey())
 				.count();
 				if (count > 1) {
 					throw new IllegalStateException("too many votes for user " + u);
@@ -947,7 +947,7 @@ public class DAO extends DAOBase {
 		}
 
 		public VoteResult voteFor(String link, String fullLink,
-				Edition edition, Boolean on) {
+				Key<Edition> edition, Boolean on) {
 			VoteResult vr = new VoteResult();
 			UserService userService = UserServiceFactory.getUserService();
 
@@ -963,10 +963,7 @@ public class DAO extends DAOBase {
 				return null; // User must submit the link
 			} else {
 				vr.returnVal = voteFor(
-						user,
-						edition == null ? editions
-								.getCurrentEdition()
-								: edition, l, on);
+						user, edition, l, on);
 				// TODO test user login state for votes
 				vr.authUrl = userService.createLogoutURL("FIXME");
 			}
@@ -984,7 +981,7 @@ public class DAO extends DAOBase {
 		 *            the link voted for
 		 * @throws IllegalArgumentException
 		 */
-		public Response voteFor(User u, Edition e, Link l, boolean on)
+		public Response voteFor(User u, Key<Edition> e, Link l, boolean on)
 				throws IllegalArgumentException {
 			// TODO only judges can vote, ditto for ed follows
 
@@ -999,7 +996,7 @@ public class DAO extends DAOBase {
 				return Response.IS_FINISHED;
 			}
 
-			if (!lp.periodical.getcurrentEditionKey().equals(e.getKey())) {
+			if (!lp.periodical.getcurrentEditionKey().equals(e)) {
 				log.warning("Attempted to vote in old edition");
 				lp.rollback();
 				return Response.NO_LONGER_CURRENT;
@@ -1165,7 +1162,7 @@ public class DAO extends DAOBase {
 		return new LockedPeriodical();
 	}
 
-	int revenue(int score, int totalScore, int editionFunds) {
+	int funding(int score, int totalScore, int editionFunds) {
 		return (int) (score / (double) totalScore * editionFunds);
 	}
 
@@ -1176,18 +1173,18 @@ public class DAO extends DAOBase {
 		ScoreSpace space = editions.getScoreSpace(v.edition);
 		
 		ScoredLink sl = otx.query(ScoredLink.class)
-		.ancestor(space).filter("link", v.link).get();
+		.ancestor(space.root).filter("link", v.link).get();
 		
 		space.totalScore += v.authority;
-		int rev = revenue(v.authority, space.totalScore, space.revenue);
-		space.totalSpend += rev;
+		int fund = funding(v.authority, space.totalScore, space.balance);
+		space.totalSpend += fund;
 		
 		if (sl == null) {
-			sl = new ScoredLink(v.edition, space.root, v.link, v.authority, rev);
+			sl = new ScoredLink(v.edition, space.root, v.link, v.authority, fund);
 		}
 		else {
 			sl.score += v.authority;
-			sl.revenue += rev;
+			sl.funding += fund;
 		}
 		otx.put(sl);
 		otx.put(space);

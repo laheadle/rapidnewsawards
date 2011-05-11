@@ -21,6 +21,6 @@ public class EditionMessage {
 		this.totalSpend = s.totalSpend;
 		this.totalScore = s.totalScore;
 		this.numFundedLinks = s.numFundedLinks;
-		this.revenue = s.revenue;
+		this.revenue = s.balance;
 	}
 }

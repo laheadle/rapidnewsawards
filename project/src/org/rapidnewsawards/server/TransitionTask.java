@@ -39,18 +39,18 @@ public class TransitionTask  extends HttpServlet {
 				.param("nextEdition", Integer.toString(nextEdition)));
 	}	
 
-	public static void setBalance(Transaction txn) {
+	public static void setPeriodicalBalance(Transaction txn) {
 		Queue queue = QueueFactory.getDefaultQueue();
 		// no transaction, will retry if fails
 		queue.add(txn, withUrl("/tasks/transition").method(TaskOptions.Method.GET)
-				.param("fun", "setBalance"));		
+				.param("fun", "setPeriodicalBalance"));		
 	}
 
 
-	public static void setRevenue(Transaction txn, Edition e, int revenue) {
+	public static void setSpaceBalance(Transaction txn, Edition e, int revenue) {
 		Queue queue = QueueFactory.getDefaultQueue();
 		queue.add(txn, withUrl("/tasks/transition").method(TaskOptions.Method.GET)
-				.param("fun", "setRevenue").param("edition", e.id)
+				.param("fun", "setSpaceBalance").param("edition", e.id)
 				.param("revenue", Integer.toString(revenue)));
 	}
 
@@ -75,10 +75,10 @@ public class TransitionTask  extends HttpServlet {
 			int from = Integer.valueOf(_from);
 			d.transition.doTransition(from);
 		}
-		else if (fun.equals("setBalance")) {
-			d.transition.setBalance();
+		else if (fun.equals("setPeriodicalBalance")) {
+			d.transition.setPeriodicalBalance();
 		}		
-		else if (fun.equals("setRevenue")) {
+		else if (fun.equals("setSpaceBalance")) {
 			String _edition = request.getParameter("edition");
 			if (_edition == null) {
 				throw new IllegalArgumentException("edition");
@@ -87,9 +87,9 @@ public class TransitionTask  extends HttpServlet {
 			if (_revenue == null) {
 				throw new IllegalArgumentException("revenue");
 			}
-			long edition = Long.valueOf(_edition);
+			int edition = Integer.valueOf(_edition);
 			int revenue = Integer.valueOf(_revenue);
-			d.editions.setRevenue(edition, revenue);
+			d.editions.setSpaceBalance(edition, revenue);
 		}		
 		else if (fun.equals("finish")) {
 			d.transition.finishTransition();

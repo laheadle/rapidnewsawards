@@ -142,12 +142,13 @@ public class JSONServlet extends HttpServlet {
 
 		commandsMap.put("voteFor", new AbstractCommand() {
 			public Object getResult() {
-				// TODO call typed interface, standardize exceptions
+				// TODO call typed interface, standardize exceptions 
+				// -- e.g. BadRequestException(Response to client)
 				String link = request.getParameter("link");
 				String fullLink = request.getParameter("fullLink");
 				Edition ed = d.editions.getCurrentEdition();
 				Boolean on = new Boolean(request.getParameter("on"));
-				VoteResult vr = d.users.voteFor(link, fullLink, ed, on);
+				VoteResult vr = d.users.voteFor(link, fullLink, ed.getKey(), on);
 				return vr;
 			}
 		});
@@ -167,7 +168,8 @@ public class JSONServlet extends HttpServlet {
 				String url = request.getParameter("url");
 				String title = request.getParameter("title");
 				Edition ed = d.editions.getCurrentEdition();
-				VoteResult vr = d.editions.submitStory(url, title, ed, d.user);
+				VoteResult vr = d.editions
+				.submitStory(url, title, ed.getKey(), d.user);
 				return vr;
 			}
 		});

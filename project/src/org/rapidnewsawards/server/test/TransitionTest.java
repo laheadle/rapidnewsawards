@@ -12,8 +12,6 @@ import org.rapidnewsawards.core.ScoreSpace;
 import org.rapidnewsawards.server.DAO;
 
 public class TransitionTest extends RNATest {
-	static int numEditions = 3;
-
 	@Test
 	public void testFinalEditionCurrent() {
 		for (int i = 0;i < numEditions - 1;i++) {
@@ -53,12 +51,20 @@ public class TransitionTest extends RNATest {
 		d.transition.doTransition(0);
 	}
 	
+	@Test(expected = IllegalStateException.class)
+	public void testNoNextTransition() throws Exception {
+		Periodical p = d.getPeriodical();
+		p.setcurrentEditionKey(Edition.getKey(2));
+		d.ofy().put(p);
+		d.transition.doTransition(0);
+	}
+	
 	@Test
 	public void testSetBalance() {
 		d.transition.doTransition(0);
-		d.transition.setBalance();
+		d.transition.setPeriodicalBalance();
 		ScoreSpace s = d.editions.getScoreSpace(Edition.getKey(0));
-		assertEquals(s.revenue, 0);
+		assertEquals(s.balance, 0);
 	}
 }
 

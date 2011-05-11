@@ -13,6 +13,8 @@ import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.Link;
 import org.rapidnewsawards.core.User;
 
+import com.googlecode.objectify.Key;
+
 
 @SuppressWarnings("serial")
 public class DoSomethingServlet extends HttpServlet {
@@ -41,7 +43,7 @@ public class DoSomethingServlet extends HttpServlet {
 	public void doThing() throws IOException {
 		PrintWriter out = response.getWriter();
 
-		Edition e = DAO.instance.editions.getCurrentEdition();
+		Key<Edition> e = DAO.instance.editions.getCurrentEdition().getKey();
 		
 		if (e == null) {
 			out.println("No current edition");
