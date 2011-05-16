@@ -10,6 +10,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.RNAException;
 
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.taskqueue.Queue;
@@ -26,11 +27,12 @@ public class TransitionTask  extends HttpServlet {
 	public static void scheduleTransition(Edition e) {
 		Queue queue = QueueFactory.getDefaultQueue();
 		queue.add(withUrl("/tasks/transition").method(TaskOptions.Method.GET)
-				.param("fun", "transition").param("fromEdition", e.id)
+				.param("fun", "transition")
+				.param("fromEdition", Integer.toString(e.getNumber()))
 				.etaMillis(e.end.getTime()));
 	}
 
-	// these are all called, directly or indirectly, by doTransition
+	// these are all called, in this order, directly or indirectly by doTransition
 
 	public static void updateAuthorities(Transaction txn, int nextEdition) {
 		Queue queue = QueueFactory.getDefaultQueue();
@@ -50,7 +52,8 @@ public class TransitionTask  extends HttpServlet {
 	public static void setSpaceBalance(Transaction txn, Edition e, int revenue) {
 		Queue queue = QueueFactory.getDefaultQueue();
 		queue.add(txn, withUrl("/tasks/transition").method(TaskOptions.Method.GET)
-				.param("fun", "setSpaceBalance").param("edition", e.id)
+				.param("fun", "setSpaceBalance")
+				.param("edition", Integer.toString(e.getNumber()))
 				.param("revenue", Integer.toString(revenue)));
 	}
 
@@ -63,6 +66,17 @@ public class TransitionTask  extends HttpServlet {
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
+		try {
+			_doGet(request, response);
+		} catch (RNAException e) {
+			// TODO chain
+			throw new IllegalStateException(e.message);
+		}
+	}
+
+	private void _doGet(HttpServletRequest request, HttpServletResponse response) 
+	throws RNAException {
+
 		String fun = request.getParameter("fun");
 		if (fun == null) {
 			throw new IllegalArgumentException("fun");
@@ -95,6 +109,7 @@ public class TransitionTask  extends HttpServlet {
 			d.transition.finishTransition();
 		}		
 	}
-
+	
+	
 
 }

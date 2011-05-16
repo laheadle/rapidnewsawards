@@ -1,5 +1,7 @@
 package org.rapidnewsawards.messages;
 
+import org.rapidnewsawards.core.Response;
+
 
 
 public class VoteResult {

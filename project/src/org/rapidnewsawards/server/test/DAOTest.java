@@ -6,6 +6,7 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.RNAException;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
@@ -38,13 +39,13 @@ public class DAOTest extends RNATest {
 		MakeDataServlet.makeData(2, 30 * 60 * MakeDataServlet.ONE_SECOND, null);
 	}
 
-	void verifyEdition() {
+	void verifyEdition() throws RNAException {
 		Edition e = DAO.instance.editions.getCurrentEdition();
 		assertNotNull(e);
 	}
 
 	@Test
-	public void testEditions() {
+	public void testEditions() throws RNAException {
 		verifyEdition();
 	}
 

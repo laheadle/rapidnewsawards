@@ -11,7 +11,7 @@ import com.googlecode.objectify.annotation.Cached;
 public class Edition implements Comparable<Edition> {
 	
 	@Id	
-	public String id;
+	private String id;
 	
 	public Date end;
 
@@ -22,7 +22,7 @@ public class Edition implements Comparable<Edition> {
 	public Edition() {}
 
 	public Edition(Date end, int number, Key<Periodical> periodical) {
-		this.id = ""+number;
+		this.id = Integer.toString(number);
 		this.periodical = periodical;
 		this.end = end;
 		this.number = number;
@@ -57,17 +57,38 @@ public class Edition implements Comparable<Edition> {
 		return getNextKey(id);
 	}
 
-	public static Key<Edition> getKey(String id) {
-		return new Key<Edition>(Edition.class, id);		
+	public static Key<Edition> getFinalKey(int numEditions) {
+		return createKey(numEditions - 1);
 	}
 
-	public static Key<Edition> getNextKey(String id) {
-		String nextId = new Integer(id) + 1 +"";
-		return getKey(nextId);		
+	// TODO 2.0 Move these into DAO
+	private static Key<Edition> getNearKey(String id, int diff) {
+		try {
+			int next = Integer.valueOf(id) + diff;
+			if (next < 0) {
+				throw new IllegalArgumentException("Illegal edition key");
+			}
+			return createKey(next);
+		}
+		catch (NumberFormatException e) {
+			throw new IllegalArgumentException("Illegal edition key");			
+		}
 	}
-	public static Key<Edition> getPreviousKey(String id) {
-		String prevId = new Integer(id) - 1 +"";
-		return getKey(prevId);		
+
+	private static Key<Edition> getNextKey(String id) {
+		return getNearKey(id, 1);
+	}
+
+	private static Key<Edition> getPreviousKey(String id) {
+		return getNearKey(id, -1);
+	}
+
+	public static Key<Edition> getPreviousKey(Key<Edition> e) {
+		return getPreviousKey(e.getName());		
+	}
+
+	public static Key<Edition> getNextKey(Key<Edition> e) {
+		return getNextKey(e.getName());
 	}
 
 	public static int getNumber(Key<Edition> e) {
@@ -77,13 +98,13 @@ public class Edition implements Comparable<Edition> {
 	public static boolean isFinal(Key<Edition> edition, int numEditions) {
 		return getNumber(edition)== numEditions - 1;
 	}	
-	
-	public static boolean isFinalOrBad(Key<Edition> e, int numEditions) {
+		
+	public static boolean isBad(Key<Edition> e, int numEditions) {
 		int number = getNumber(e);
-		return isFinal(e, numEditions) || number < 0 || number > numEditions -1;
+		return number < 0 || number > numEditions -1;
 	}
 
-	public static Key<Edition> getKey(int i) {
+	public static Key<Edition> createKey(int i) {
 		return new Key<Edition>(Edition.class, Integer.toString(i));
 	}
 
@@ -92,5 +113,7 @@ public class Edition implements Comparable<Edition> {
 
 	}
 
-
+	public int getNumber() {
+		return Edition.getNumber(this.getKey());
+	}
 }

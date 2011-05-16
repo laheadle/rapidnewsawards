@@ -6,7 +6,7 @@ import org.rapidnewsawards.core.User;
 
 public class StoryInfo {
 	public StoryInfo () {}
-	public String editionId;
+	public int editionId;
 	public User submitter;
 	public Link link;
 	public int score;

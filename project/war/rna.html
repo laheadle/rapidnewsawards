@@ -97,7 +97,7 @@
 
     <script type="text/template" id="followers-template">
       <div class="social-links spine">
-        followed by: 
+        Followed by: 
           <% if (followers.length == 0) { %>
   	    <%= 'nobody' %>
   	  <% } else {
@@ -174,7 +174,7 @@
 	  is <%= isEditor? 'an editor' : 'a judge' %> </span> </div> </script>
 
     <script type="text/template" id="is-following-template">
-      <span class="spine"> following </span>
+      <span class="spine"> Follow: </span>
       <input id="is-following" type="checkbox" 
 	     <%= isFollowing? 'checked="yes"' : '' %>> </input> </script>
 

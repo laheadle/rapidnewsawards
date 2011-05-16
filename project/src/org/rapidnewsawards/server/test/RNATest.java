@@ -2,6 +2,7 @@ package org.rapidnewsawards.server.test;
 
 import org.junit.After;
 import org.junit.Before;
+import org.rapidnewsawards.core.RNAException;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
@@ -28,7 +29,7 @@ public abstract class RNATest {
 		return d.users.findUserByLogin(name + "@gmail.com", "gmail.com"); 
 	}
 
-	public void doTransition() {
+	public void doTransition() throws RNAException {
 		d.transition.transitionEdition();
 	}
 

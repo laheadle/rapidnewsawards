@@ -6,7 +6,7 @@ import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.ScoreSpace;
 
 public class EditionMessage {
-	public final String id;
+	public final int id;
 	public final Date end;
 	public final int revenue;
 	public final int number;
@@ -15,7 +15,7 @@ public class EditionMessage {
 	public final int totalScore;
 
 	public EditionMessage(Edition e, ScoreSpace s) {
-		this.id = e.id;
+		this.id = e.getNumber();
 		this.end = e.end;
 		this.number =e.number;
 		this.totalSpend = s.totalSpend;

@@ -11,9 +11,10 @@ import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.EditionUserAuthority;
 import org.rapidnewsawards.core.Follow;
 import org.rapidnewsawards.core.Periodical;
+import org.rapidnewsawards.core.RNAException;
+import org.rapidnewsawards.core.Response;
 import org.rapidnewsawards.core.SocialEvent;
 import org.rapidnewsawards.core.User;
-import org.rapidnewsawards.messages.Response;
 import org.rapidnewsawards.server.DAO;
 
 public class SocialTest extends RNATest {
@@ -34,20 +35,20 @@ public class SocialTest extends RNATest {
 	}
 
 	@Test
-	public void transitionInProgressResponse()  {
+	public void transitionInProgressResponse() throws RNAException  {
 		Periodical p = d.getPeriodical();
 		p.inTransition = true;
 		d.ofy().put(p);
 
 		Response r = DAO.instance.social.doSocial(
-				mg.getKey(), jqp.getKey(), Edition.getKey(0), true);
+				mg.getKey(), jqp.getKey(), Edition.createKey(0), true);
 		
 		assertEquals(r, Response.TRANSITION_IN_PROGRESS);
 	}
 
 
 	@Test
-	public void testFollowResponse()  {				
+	public void testFollowResponse() throws RNAException  {				
 		Response r = DAO.instance.social.doSocial(
 				mg.getKey(), jqp.getKey(), e0.getKey(), true);
 		
@@ -56,7 +57,7 @@ public class SocialTest extends RNATest {
 
 
 	@Test
-	public void testUnFollowResponse()  {
+	public void testUnFollowResponse() throws RNAException  {
 		SocialEvent se = new SocialEvent(mg.getKey(), jqp.getKey(), 
 				e0.getKey(), new Date(), true);
 
@@ -71,7 +72,7 @@ public class SocialTest extends RNATest {
 
 
 	@Test
-	public void testCancelPendingFollowResponse()  {
+	public void testCancelPendingFollowResponse() throws RNAException  {
 		SocialEvent se = new SocialEvent(mg.getKey(), jqp.getKey(), 
 				e1.getKey(), new Date(), true);
 
@@ -86,7 +87,7 @@ public class SocialTest extends RNATest {
 
 
 	@Test
-	public void testCancelPendingUnFollowResponse()  {
+	public void testCancelPendingUnFollowResponse() throws RNAException  {
 		SocialEvent se = new SocialEvent(mg.getKey(), jqp.getKey(), 
 				e1.getKey(), new Date(), false);
 
@@ -101,7 +102,7 @@ public class SocialTest extends RNATest {
 
 
 	@Test
-	public void testNotAnEditorResponse()  {
+	public void testNotAnEditorResponse() throws RNAException  {
 		Response r = DAO.instance.social.doSocial(
 				jqp.getKey(), mg.getKey(), e0.getKey(), true);
 		
@@ -110,15 +111,16 @@ public class SocialTest extends RNATest {
 
 
 	@Test
-	public void testBadEditionResponse()  {
-		Response r = DAO.instance.social.doSocial(
-				jqp.getKey(), mg.getKey(), Edition.getKey(276), true);
+	public void testBadEditionResponse() throws RNAException  {
+		Response doSocial = DAO.instance.social.doSocial(
+				mg.getKey(), jqp.getKey(), Edition.createKey(276), true);
+		Response r = doSocial;
 		
-		assertEquals(r.s, Response.FORBIDDEN_DURING_FINAL.s);
+		assertEquals(r, Response.EDITION_NOT_CURRENT);
 	}
 
 	@Test
-	public void testAlreadyAboutToFollowResponse()  {
+	public void testAlreadyAboutToFollowResponse() throws RNAException  {
 		SocialEvent se = new SocialEvent(mg.getKey(), jqp.getKey(), 
 				e1.getKey(), new Date(), true);
 
@@ -132,21 +134,22 @@ public class SocialTest extends RNATest {
 	}
 
 	@Test
-	public void testAlreadyAboutToUnfollowResponse()  {
+	public void testAlreadyAboutToUnfollowResponse() throws RNAException  {
 		SocialEvent se = new SocialEvent(mg.getKey(), jqp.getKey(), 
 				e1.getKey(), new Date(), false);
 
 		d.ofy().put(se);
 		d.ofy().put(new Follow(mg.getKey(), jqp.getKey(), e0.getKey(), se.getKey()));
 
-		Response r = DAO.instance.social.doSocial(
+		Response doSocial = DAO.instance.social.doSocial(
 				mg.getKey(), jqp.getKey(), e0.getKey(), false);
+		Response r = doSocial;
 		
 		assertEquals(r, Response.ALREADY_ABOUT_TO_UNFOLLOW);
 	}
 
 	@Test
-	public void testNotFollowingResponse()  {
+	public void testNotFollowingResponse() throws RNAException  {
 		Response r = DAO.instance.social.doSocial(
 				mg.getKey(), jqp.getKey(), e0.getKey(), false);
 		
@@ -154,18 +157,18 @@ public class SocialTest extends RNATest {
 	}
 
 	@Test
-	public void testNoLongerCurrentResponse()  {
+	public void testNoLongerCurrentResponse() throws RNAException  {
 		Response r = DAO.instance.social.doSocial(
-				mg.getKey(), jqp.getKey(), Edition.getKey(1), true);
+				mg.getKey(), jqp.getKey(), Edition.createKey(1), true);
 
-		assertEquals(r, Response.NO_LONGER_CURRENT);
+		assertEquals(r, Response.EDITION_NOT_CURRENT);
 	}
 
 		
 	@Test
 	public void testWriteFollow() throws InterruptedException {
 		DAO.instance.social.writeSocialEvent(
-				mg.getKey(), jqp.getKey(), Edition.getKey(1), true);
+				mg.getKey(), jqp.getKey(), Edition.createKey(1), true);
 		Thread.sleep(200);
 		assertEquals(
 				d.ofy().query(Follow.class).ancestor(mg.getKey()).count(),

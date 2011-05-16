@@ -12,6 +12,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.RNAException;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.messages.Name;
 import org.rapidnewsawards.messages.RecentSocials;
@@ -25,6 +26,8 @@ import com.google.gson.Gson;
 import com.googlecode.objectify.Key;
 
 public class JSONServlet extends HttpServlet {
+	private static final String OK = "OK";
+	private static final String BAD_REQUEST = "BAD_REQUEST";
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(DoSomethingServlet.class
 			.getName());
@@ -44,7 +47,7 @@ public class JSONServlet extends HttpServlet {
 		}
 		
 		static {
-			defaults.put("edition", -1);
+			defaults.put("edition", DAO.Editions.CURRENT_OR_FINAL);
 			parsers.put(Integer.class, new Parser() {
 				public Object parse(String value) {
 					return Integer.decode(value);
@@ -66,12 +69,12 @@ public class JSONServlet extends HttpServlet {
 			return clazz.cast(parsers.get(clazz).parse(value));
 		}
 
-		public Object perform(HttpServletRequest request) {
+		public Object perform(HttpServletRequest request) throws RNAException {
 			this.request = request;
 			return this.getResult();
 		}
 
-		protected abstract Object getResult();
+		protected abstract Object getResult() throws RNAException;
 
 	}
 
@@ -81,37 +84,34 @@ public class JSONServlet extends HttpServlet {
 		commandsMap = new HashMap<String, AbstractCommand>();
 
 		commandsMap.put("topStories", new AbstractCommand() {
-			public Object getResult() {
+			@Override
+			public Object getResult() throws RNAException {
 				int edition = get("edition", Integer.class);
 				TopStories ts = d.editions.getTopStories(edition);
-				if (ts.edition == null) {
-					ts = d.editions.getTopStories(ts.numEditions - 1);
-				}
 				assert (ts.numEditions > 0 && ts.edition != null && ts.list != null);
 				return ts;
 			}
 		});
 
 		commandsMap.put("recentSocials", new AbstractCommand() {
-			public Object getResult() {
+			@Override
+			public Object getResult() throws RNAException {
 				int edition = get("edition", Integer.class);
 				// TODO BUG IN edition = 0
 				RecentSocials rs = d.social.getRecentSocials(edition);
-				// TODO Thinkme
-				if (rs.edition == null) {
-					rs = d.social.getRecentSocials(rs.numEditions - 1);
-				}
 				return rs;
 			}
 		});
 
 		commandsMap.put("allEditions", new AbstractCommand() {
+			@Override
 			public Object getResult() {
 				return d.editions.getAllEditions();
 			}
 		});
 
 		commandsMap.put("story", new AbstractCommand() {
+			@Override
 			public Object getResult() {
 				int edition = get("edition", Integer.class);
 				long link = get("linkId", Long.class);
@@ -120,20 +120,21 @@ public class JSONServlet extends HttpServlet {
 		});
 
 		commandsMap.put("recentFundings", new AbstractCommand() {
-			public Object getResult() {
-				RecentVotes rv = d.editions.getRecentVotes(get("edition",
-						Integer.class));
-				return rv;
+			@Override
+			public Object getResult() throws RNAException {
+				return d.editions.getRecentVotes(get("edition", Integer.class));
 			}
 		});
 
 		commandsMap.put("topJudges", new AbstractCommand() {
-			public Object getResult() {
+			@Override
+			public Object getResult() throws RNAException {
 				return d.editions.getTopJudges(get("edition", Integer.class));
 			}
 		});
 
 		commandsMap.put("grabTitle", new AbstractCommand() {
+			@Override
 			public Object getResult() {
 				String urlStr = request.getParameter("url");
 				return TitleGrabber.getTitle(urlStr);
@@ -141,7 +142,8 @@ public class JSONServlet extends HttpServlet {
 		});
 
 		commandsMap.put("voteFor", new AbstractCommand() {
-			public Object getResult() {
+			@Override
+			public Object getResult() throws RNAException {
 				// TODO call typed interface, standardize exceptions 
 				// -- e.g. BadRequestException(Response to client)
 				String link = request.getParameter("link");
@@ -154,7 +156,8 @@ public class JSONServlet extends HttpServlet {
 		});
 
 		commandsMap.put("welcomeUser", new AbstractCommand() {
-			public Object getResult() {
+			@Override
+			public Object getResult() throws RNAException {
 				// TODO test
 				if (d.user == null)
 					return null;
@@ -164,7 +167,8 @@ public class JSONServlet extends HttpServlet {
 		});
 
 		commandsMap.put("submitStory", new AbstractCommand() {
-			public Object getResult() {
+			@Override
+			public Object getResult() throws RNAException {
 				String url = request.getParameter("url");
 				String title = request.getParameter("title");
 				Edition ed = d.editions.getCurrentEdition();
@@ -174,6 +178,7 @@ public class JSONServlet extends HttpServlet {
 			}
 		});
 		commandsMap.put("sendLogoutURL", new AbstractCommand() {
+			@Override
 			public Object getResult() {
 				UserService userService = UserServiceFactory.getUserService();
 				String url = request.getParameter("url");
@@ -181,6 +186,7 @@ public class JSONServlet extends HttpServlet {
 			}
 		});
 		commandsMap.put("relatedUser", new AbstractCommand() {
+			@Override
 			public Object getResult() {
 				long userId = new Long(request.getParameter("id"));
 				return d.users.getRelatedUserInfo(Name.AGGREGATOR_NAME, d.user,
@@ -188,6 +194,7 @@ public class JSONServlet extends HttpServlet {
 			}
 		});
 		commandsMap.put("getFollowers", new AbstractCommand() {
+			@Override
 			public Object getResult() {
 				long userId = new Long(request.getParameter("id"));
 				return d.users.getFollowers(new Key<User>(User.class, userId));
@@ -195,9 +202,9 @@ public class JSONServlet extends HttpServlet {
 		});
 
 		commandsMap.put("doSocial", new AbstractCommand() {
-			public Object getResult() {
+			@Override
+			public Object getResult() throws RNAException {
 				String _to = request.getParameter("to");
-				String _edition = request.getParameter("edition");
 				Key<User> to = User.getKey(new Long(_to));
 				// TODO 2.0 pass in from client
 				Boolean on = new Boolean(request.getParameter("on"));
@@ -206,12 +213,14 @@ public class JSONServlet extends HttpServlet {
 		});
 
 		commandsMap.put("sendUser", new AbstractCommand() {
+			@Override
 			public Object getResult() {
 				return d.user;
 			}
 		});
 
 		commandsMap.put("sendLoginURL", new AbstractCommand() {
+			@Override
 			public Object getResult() {
 				String url = request.getParameter("url");
 				UserService userService = UserServiceFactory.getUserService();
@@ -220,6 +229,12 @@ public class JSONServlet extends HttpServlet {
 		});
 	}
 
+	class ResponseMessage {
+		public String status;
+		public String message;
+		public Object payload;
+	}
+	
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse resp)
 			throws ServletException, IOException {
@@ -234,7 +249,17 @@ public class JSONServlet extends HttpServlet {
 		AbstractCommand c = commandsMap.get(fun);
 		
 		// TODO CONCURRENT mod exceptions
-		out.println(g.toJson(c.perform(request)));
+		ResponseMessage re = new ResponseMessage();
+		try {
+			re.payload = c.perform(request);
+			re.status = OK;
+			out.println(g.toJson(re));
+		} catch (RNAException e) {
+			re.payload = null;
+			re.status = BAD_REQUEST;
+			re.message = e.message;
+			out.println(g.toJson(re));
+		}
 	}
 
 	public void doPost(HttpServletRequest request, HttpServletResponse response)

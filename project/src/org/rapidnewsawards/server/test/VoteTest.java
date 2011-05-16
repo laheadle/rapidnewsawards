@@ -11,17 +11,18 @@ import org.junit.Test;
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.EditionUserAuthority;
 import org.rapidnewsawards.core.Link;
+import org.rapidnewsawards.core.RNAException;
+import org.rapidnewsawards.core.Response;
 import org.rapidnewsawards.core.ScoreSpace;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.core.Vote;
-import org.rapidnewsawards.messages.Response;
 
 import com.googlecode.objectify.Key;
 
 public class VoteTest extends RNATest {
 	
 	@Test
-	public void testVotes() throws MalformedURLException {
+	public void testVotes() throws MalformedURLException, RNAException {
 
 		Key<Edition> e1 = d.editions.getCurrentEdition().getKey();		
 		User jqp = getUser(null);

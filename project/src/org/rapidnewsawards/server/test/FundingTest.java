@@ -9,11 +9,12 @@ import org.junit.Test;
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.EditionUserAuthority;
 import org.rapidnewsawards.core.Link;
+import org.rapidnewsawards.core.RNAException;
+import org.rapidnewsawards.core.Response;
 import org.rapidnewsawards.core.ScoreSpace;
 import org.rapidnewsawards.core.ScoredLink;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.core.Vote;
-import org.rapidnewsawards.messages.Response;
 
 import com.googlecode.objectify.Key;
 
@@ -21,8 +22,8 @@ import com.googlecode.objectify.Key;
 public class FundingTest extends RNATest {
 
 	@Test
-	public void testFunding() throws MalformedURLException {
-		Key<Edition> e1 = Edition.getKey(0);		
+	public void testFunding() throws MalformedURLException, RNAException {
+		Key<Edition> e1 = Edition.createKey(0);		
 		d.editions.setSpaceBalance(0, 1000);
 		User jqp = getUser(null);
 		EditionUserAuthority eua = d.ofy().query(EditionUserAuthority.class)

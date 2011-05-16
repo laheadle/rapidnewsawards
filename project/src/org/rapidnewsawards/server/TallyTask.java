@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.Link;
+import org.rapidnewsawards.core.RNAException;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.core.Vote;
 
@@ -101,7 +102,12 @@ public class TallyTask  extends HttpServlet {
 			d.tallyVote(vkey);
 		}
 		else if (fun.equals("releaseUserLock")) {
-			d.releaseUserLock();
+			try {
+				d.releaseUserLock();
+			} catch (RNAException e) {
+				// TODO chain
+				throw new IllegalStateException(e.message);
+			}
 		}
 	}
 

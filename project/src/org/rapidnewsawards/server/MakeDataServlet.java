@@ -15,18 +15,19 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.Periodical;
+import org.rapidnewsawards.core.RNAException;
+import org.rapidnewsawards.core.Response;
 import org.rapidnewsawards.core.Root;
 import org.rapidnewsawards.core.ScoreRoot;
 import org.rapidnewsawards.core.ScoreSpace;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.messages.Name;
-import org.rapidnewsawards.messages.Response;
 import org.rapidnewsawards.messages.VoteResult;
 
 import com.googlecode.objectify.Objectify;
 
 public class MakeDataServlet extends HttpServlet {
-	private static final String FIRST_EDITION = "0";
+	private static final int FIRST_EDITION = 0;
 	/**
 	 * 
 	 */
@@ -92,12 +93,15 @@ public class MakeDataServlet extends HttpServlet {
 			}
 		} catch (ParseException e) {
 			e.printStackTrace(out);
+		} catch (RNAException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
 		}
 		out.println("created " + numUsers.value + " users");
 		out.println("created " + numEditions + " editions");
 	}
 
-	private void makeLinks() {
+	private void makeLinks() throws RNAException {
 		Edition current = d.editions.getEdition(1);
 		User jq = d.users.findUserByLogin("johnqpublic@gmail.com", "gmail.com");
 		for (int i = 0;i < numLinks;i++) {
@@ -109,14 +113,14 @@ public class MakeDataServlet extends HttpServlet {
 		}
 	}
 
-	public static void welcome(User u, String nickname, int donation) {
+	public static void welcome(User u, String nickname, int donation) throws RNAException {
 		User olduser = d.user;
 		d.user = u;
 		d.users.welcomeUser(nickname, donation * 100);		
 		d.user = olduser;
 	}
 	public static void makeData (int editionCount, long periodSize, Cell<Integer> numUsers) 
-	throws ParseException {		
+	throws ParseException, RNAException {		
 		// add users to first edition
 		makeEditions(editionCount, periodSize);
 
@@ -232,7 +236,7 @@ public class MakeDataServlet extends HttpServlet {
 			
 		}
 		
-		p.setcurrentEditionKey(Edition.getKey(FIRST_EDITION));
+		p.setcurrentEditionKey(Edition.createKey(FIRST_EDITION));
 		o.put(p);
 
 		return editions;

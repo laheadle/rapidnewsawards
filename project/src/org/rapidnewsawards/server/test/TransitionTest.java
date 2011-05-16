@@ -8,12 +8,13 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.Periodical;
+import org.rapidnewsawards.core.RNAException;
 import org.rapidnewsawards.core.ScoreSpace;
 import org.rapidnewsawards.server.DAO;
 
 public class TransitionTest extends RNATest {
 	@Test
-	public void testFinalEditionCurrent() {
+	public void testFinalEditionCurrent() throws RNAException {
 		for (int i = 0;i < numEditions - 1;i++) {
 			doTransition();
 		}		
@@ -23,19 +24,19 @@ public class TransitionTest extends RNATest {
 	}
 
 	@Test
-	public void testTransition() {
+	public void testTransition() throws RNAException {
 		d.transition.doTransition(0);
 		assertFalse(d.getPeriodical().isFinished());
 		assertTrue(d.getPeriodical().inTransition);
 		assertFalse(d.getPeriodical().userlocked);
 	}
 
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = RNAException.class)
 	public void testBadCurrentTransition() throws Exception {
 		d.transition.doTransition(1);
 	}
 	
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = RNAException.class)
 	public void testDeadTransition() throws Exception {
 		Periodical p = d.getPeriodical();
 		p.setFinished();
@@ -43,7 +44,7 @@ public class TransitionTest extends RNATest {
 		d.transition.doTransition(0);
 	}
 	
-	@Test(expected = IllegalStateException.class)
+	@Test(expected = RNAException.class)
 	public void testNoCurrentTransition() throws Exception {
 		Periodical p = d.getPeriodical();
 		p.setcurrentEditionKey(null);
@@ -51,19 +52,20 @@ public class TransitionTest extends RNATest {
 		d.transition.doTransition(0);
 	}
 	
-	@Test(expected = IllegalStateException.class)
+	// TODO This should throw an unchecked exception
+	@Test(expected = RNAException.class)
 	public void testNoNextTransition() throws Exception {
 		Periodical p = d.getPeriodical();
-		p.setcurrentEditionKey(Edition.getKey(2));
+		p.setcurrentEditionKey(Edition.createKey(2));
 		d.ofy().put(p);
 		d.transition.doTransition(0);
 	}
 	
 	@Test
-	public void testSetBalance() {
+	public void testSetBalance() throws RNAException {
 		d.transition.doTransition(0);
 		d.transition.setPeriodicalBalance();
-		ScoreSpace s = d.editions.getScoreSpace(Edition.getKey(0));
+		ScoreSpace s = d.editions.getScoreSpace(Edition.createKey(0));
 		assertEquals(s.balance, 0);
 	}
 }

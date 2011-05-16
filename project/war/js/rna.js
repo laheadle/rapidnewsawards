@@ -72,23 +72,30 @@ window.initRNA = function () {
     Requester.prototype.request = function (method, attrs, success, err) {
 	log({info: 'doRequest: ' + JSON.stringify(attrs)});
 	var self = this;
-	var reactTo = function (data) { 
+	var reactTo = function (data) {
 	    var empty = !data || data == "" || data.match(/^[ \t\r\n]+/$);
 	    log(attrs.fun + ' returned ' + 
 		(empty? 'null' : JSON.stringify(data)));
+	    var bitOfProblem = 'bit of a problem...working on it.';
+	    var response = empty? {status: false, message: bitOfProblem} : JSON.parse(data);
+	    var payload = response.payload;
+	    if (response.status != 'OK') { 
+		var problem = 'there\'s a problem..working on it';
+		flashError(response.message || problem); 
+		return; 
+	    }
 	    try {
-		var arg = empty? undefined : JSON.parse(data);
 		if (!self.state.interrupted) {
-		    self.state = function () { 
-			var s = success(arg, self.state);
+		    self.state = function (state, payload) { 
+			var s = success(payload, state);
 			if (s == undefined) {
-			    return self.state;
+			    return state;
 			}
 			return s;
-		    }(); // ensure state
+		    }(self.state, payload); // ensure state
 		}
 		else {
-		    self.state = self.state.supercede(success, arg);
+		    self.state = self.state.supercede(success, payload);
 		}
 
 	    }

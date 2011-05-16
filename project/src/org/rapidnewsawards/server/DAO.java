@@ -17,6 +17,8 @@ import org.rapidnewsawards.core.EditionUserAuthority;
 import org.rapidnewsawards.core.Follow;
 import org.rapidnewsawards.core.Link;
 import org.rapidnewsawards.core.Periodical;
+import org.rapidnewsawards.core.RNAException;
+import org.rapidnewsawards.core.Response;
 import org.rapidnewsawards.core.Root;
 import org.rapidnewsawards.core.ScoreRoot;
 import org.rapidnewsawards.core.ScoreSpace;
@@ -31,7 +33,6 @@ import org.rapidnewsawards.messages.Name;
 import org.rapidnewsawards.messages.RecentSocials;
 import org.rapidnewsawards.messages.RecentVotes;
 import org.rapidnewsawards.messages.RelatedUserInfo;
-import org.rapidnewsawards.messages.Response;
 import org.rapidnewsawards.messages.SocialInfo;
 import org.rapidnewsawards.messages.StoryInfo;
 import org.rapidnewsawards.messages.TopJudges;
@@ -52,10 +53,15 @@ import com.googlecode.objectify.Query;
 import com.googlecode.objectify.util.DAOBase;
 
 public class DAO extends DAOBase {
+
 	public class Editions {
 
+		// TODO make enums
 		public static final int CURRENT = -1;
 		public static final int NEXT = -2;
+		public static final int FINAL = -3;
+		private static final int PREVIOUS = -4;
+		public static final int CURRENT_OR_FINAL = -5;
 
 		private EditionMessage makeEditionMessage(Edition e) {
 			return new EditionMessage(e,
@@ -72,52 +78,72 @@ public class DAO extends DAOBase {
 				spaces.put(s.id, s);
 			}
 			for (Edition e : ofy().query(Edition.class)) {
-				ll.add(new EditionMessage(e, spaces.get(e.id)));
+				ll.add(new EditionMessage(e, spaces.get(e.getNumber())));
 			}
-			Edition c = getCurrentEdition();
-			AllEditions ae = new AllEditions(ll, 
-					new EditionMessage(c, spaces.get(c.id)));
-			return ae;
+			
+			try {
+				Edition c = getCurrentEdition();
+				EditionMessage em = new EditionMessage(c, spaces.get(c.getNumber()));
+				return new AllEditions(ll, em);
+			} catch (RNAException e1) {
+				return new AllEditions(ll, null);
+			}
 		}
 
-		public Edition getCurrentEdition() {
+		public Edition getCurrentEdition() throws RNAException {
 			return getEdition(CURRENT);
 		}
 
 		/*
 		 * Get the requested edition
 		 * 
-		 * @param number the edition number requested, or CURRENT for current, or NEXT
-		 * for next
+		 * @param number the edition number requested
 		 */
-		public Edition getEdition(final int number) {
+		public Edition getEdition(final int edition) throws RNAException {
 
 			final Objectify o = ofy();
 
-			if (number == CURRENT) {
+			if (edition == CURRENT || edition == CURRENT_OR_FINAL) {
 				final Periodical p = getPeriodical();
-				if (p.isFinished())
-					throw new IllegalStateException("no current edition");
-
+				if (p.isFinished()) {
+					if (edition == CURRENT_OR_FINAL) {
+						return getEdition(FINAL);
+					}
+					else {
+						throw new RNAException("no current edition");
+					}
+				}
 				return o.get(p.getcurrentEditionKey());
 			}
 
-			else if (number == NEXT) {
+			else if (edition == NEXT) {
 				final Periodical p = getPeriodical();
 				if (p.isFinished()) {
-					throw new IllegalStateException(
+					throw new RNAException(
 							"Next edition requested for finished periodical");
 				}
-				Key<Edition> nextKey = Edition.getNextKey(p.getcurrentEditionKey().getName());
+				Key<Edition> nextKey = Edition.getNextKey(p.getcurrentEditionKey());
 				if (Edition.isAfterFinal(nextKey, getNumEditions())) {
-					throw new IllegalStateException(
+					throw new RNAException(
 					"Next edition requested after final Edition");					
 				}
 				return o.get(nextKey);
 			}
+			else if (edition == FINAL) {
+				return o.get(Edition.getFinalKey(getNumEditions()));
+			}
+			else if (edition == PREVIOUS) {
+				if (edition == 0) {
+					throw new RNAException("There is no previous edition");
+				}
+				final Periodical p = getPeriodical();
+				if (p.isFinished())	
+					return getEdition(FINAL);
+				return o.get(Edition.getPreviousKey(p.getcurrentEditionKey()));
+			}
 			else {
 				// TODO 2.0 this only works because we assume one periodical
-				return o.get(Edition.class, "" + number);
+				return o.get(Edition.class, "" + edition);
 			}
 		}
 
@@ -148,13 +174,6 @@ public class DAO extends DAOBase {
 
 			Collections.sort(result);
 			return result;
-		}
-
-		private Edition getLastEdition() {
-			Edition e;
-			e = ofy().find(
-					Edition.getPreviousKey("" + editions.getNumEditions()));
-			return e;
 		}
 
 		/*
@@ -228,7 +247,7 @@ public class DAO extends DAOBase {
 			return result;
 		}
 
-		public Edition getNextEdition() {
+		public Edition getNextEdition() throws RNAException {
 			return getEdition(NEXT);
 		}
 
@@ -242,7 +261,7 @@ public class DAO extends DAOBase {
 			return numEditions;
 		}
 
-		public RecentVotes getRecentVotes(int edition) {
+		public RecentVotes getRecentVotes(int edition) throws RNAException {
 			Edition e = getEdition(edition);
 			RecentVotes s = new RecentVotes();
 			s.edition = makeEditionMessage(e);
@@ -282,7 +301,7 @@ public class DAO extends DAOBase {
 			StoryInfo si = new StoryInfo();
 			si.link = link;
 			si.score = sl.score;
-			si.editionId = "" + editionNum;
+			si.editionId = editionNum;
 			si.submitter = ofy().get(link.submitter);
 			si.revenue = sl.funding;
 
@@ -292,7 +311,7 @@ public class DAO extends DAOBase {
 			return fsi;
 		}
 
-		public TopJudges getTopJudges(int edition) {
+		public TopJudges getTopJudges(int edition) throws RNAException {
 			Edition e = editions
 					.getEdition(edition);
 			TopJudges tj = new TopJudges();
@@ -302,7 +321,7 @@ public class DAO extends DAOBase {
 			return tj;
 		}
 
-		public TopStories getTopStories(int editionNum) {
+		public TopStories getTopStories(int editionNum) throws RNAException {
 			Edition e = editions.getEdition(editionNum);
 
 			TopStories result = new TopStories();
@@ -332,7 +351,7 @@ public class DAO extends DAOBase {
 				StoryInfo si = new StoryInfo();
 				si.link = linkMap.get(sl.link);
 				si.score = sl.score;
-				si.editionId = e.id;
+				si.editionId = e.getNumber();
 				si.submitter = userMap.get(si.link.submitter);
 				si.revenue = sl.funding;
 				stories.add(si);
@@ -342,7 +361,7 @@ public class DAO extends DAOBase {
 		}
 
 		public VoteResult submitStory(String url, String title,
-				Key<Edition> e, User submitter) {
+				Key<Edition> e, User submitter) throws RNAException {
 			// TODO put this and vote in transaction along with task
 			VoteResult vr = new VoteResult();
 
@@ -367,14 +386,6 @@ public class DAO extends DAOBase {
 				}
 			}
 			return vr;
-		}
-
-		private Edition getPreviousOrLastEdition(LockedPeriodical lp) {
-			Key<Edition> current = lp.periodical.getcurrentEditionKey();
-			if (current == null) {
-				return getLastEdition();
-			}
-			return ofy().find(Edition.getPreviousKey(current.getName()));
 		}
 
 		public LinkedList<User_Authority> getVoters(Key<Link> l, Key<Edition> e) {
@@ -409,21 +420,13 @@ public class DAO extends DAOBase {
 			Key<ScoreRoot> sroot = new Key<ScoreRoot>(ScoreRoot.class, key.getName());
 			Key<ScoreSpace> skey = new Key<ScoreSpace>(sroot,
 					ScoreSpace.class, key.getName());
-
-			if (ofy().find(sroot) == null) { throw new IllegalStateException(); }
-			if (ofy().find(skey) == null) { throw new IllegalStateException(); }
-
-			assert(ofy().find(sroot) != null);
-			assert(ofy().find(skey) != null);
-			ScoreSpace s = ofy().find(skey);
-			if (s == null) {
-				throw new IllegalStateException(
-						"no associated score space for edition "+ key);
-			}
+			ScoreSpace s;
+			if ((s = ofy().find(skey)) == null) { throw new IllegalStateException(); }
 			return s;
 		}
 
-		public void setSpaceBalance(int edition, int balance) {			
+		public void setSpaceBalance(int edition, int balance) {
+			assert(getPeriodical().inTransition);
 			ScoreSpace s = getScoreSpace(
 					new Key<Edition>(Edition.class, Integer.toString(edition)));
 			Objectify oTxn = fact().beginTransaction();
@@ -441,15 +444,15 @@ public class DAO extends DAOBase {
 
 		public void checkState() {
 			if (periodical.inTransition && periodical.userlocked) {
-				throw new IllegalStateException("deadlock!");				
+				throw new IllegalStateException();				
 			}
 		}
 		
-		public LockedPeriodical() {		
+		public LockedPeriodical() throws RNAException {		
 			Objectify oTxn = fact().beginTransaction();
 			Periodical p = oTxn.get(Periodical.getKey(periodicalName.name));
 			if (p.isFinished()) {
-				throw new IllegalStateException("The periodical is finished");
+				throw new RNAException("The periodical is finished");
 			}
 			this.transaction = oTxn;
 			this.periodical = p;
@@ -504,7 +507,7 @@ public class DAO extends DAOBase {
 		}
 
 		/* Wrapper which assumes a <from> of the current user */
-		public Response doSocial(Key<User> to, boolean on) {
+		public Response doSocial(Key<User> to, boolean on) throws RNAException {
 			if (user == null) {
 				log.warning("attempt to follow with null user");
 				return Response.ILLEGAL_OPERATION;
@@ -514,11 +517,12 @@ public class DAO extends DAOBase {
 		}
 		
 		/* Do a follow, unfollow, or cancel pending follow, unfollow */
-		public Response doSocial(Key<User> from, Key<User> to, Key<Edition> e, boolean on) {
+		public Response doSocial(Key<User> from, Key<User> to, Key<Edition> e, boolean on) 
+		throws RNAException {
 			
-			if (Edition.isFinalOrBad(e, editions.getNumEditions())) {
+			if (Edition.isFinal(e, editions.getNumEditions())){
 				log.warning(String.format(
-						"Attempted to socialize during illegal edition: User %s, Edition %s",
+						"Attempted to socialize during final edition: User %s, Edition %s",
 						user, e));
 				return Response.FORBIDDEN_DURING_FINAL;
 			}
@@ -566,7 +570,7 @@ public class DAO extends DAOBase {
 			if (!lp.periodical.getcurrentEditionKey().equals(e)) {
 				log.warning("Attempted to socialize in old edition");
 				lp.rollback(); socialTxn.getTxn().rollback();
-				return Response.NO_LONGER_CURRENT;
+				return Response.EDITION_NOT_CURRENT;
 			}
 
 			if (lp.periodical.inTransition) {
@@ -590,7 +594,7 @@ public class DAO extends DAOBase {
 				lp.setUserLock();
 				SocialTask.writeSocialEvent(
 						from, to, e, on, lp.transaction.getTxn());
-				lp.commit();
+				lp.commit(); socialTxn.getTxn().commit();
 				assert(!getPeriodical().inTransition);
 			}
 		}
@@ -609,7 +613,7 @@ public class DAO extends DAOBase {
 			}
 			eua.authority += amount;
 			txn.put(eua);
-			Key<Edition> next = Edition.getNextKey(edition.getName());
+			Key<Edition> next = Edition.getNextKey(edition);
 			if (Edition.isFinal(edition, editions.getNumEditions())) {
 				TallyTask.releaseUserLock(txn.getTxn());
 			}
@@ -628,7 +632,7 @@ public class DAO extends DAOBase {
 
 			// checks the next edition
 			return o.query(SocialEvent.class).ancestor(from).filter("judge", to)
-			.filter("edition", Edition.getNextKey(e.getName())).get();
+			.filter("edition", Edition.getNextKey(e)).get();
 		}
 
 		public Follow getFollow(Key<User> from, Key<User> to, Key<Edition> e, Objectify o) {
@@ -637,72 +641,69 @@ public class DAO extends DAOBase {
 			.ancestor(from).filter("judge", to).filter("edition", e).get();
 		}
 
-		public RecentSocials getRecentSocials(int edition) {
-			Edition current = null;
-			Edition next = null;
-
-			if (edition == Editions.CURRENT) {
-				current = editions.getEdition(Editions.CURRENT);
-				next = editions.getEdition(Editions.NEXT);
-			} else {
-				// next after edition
-				current = editions.getEdition(edition);
-				next = editions.getEdition(edition + 1);
-			}
+		public RecentSocials getRecentSocials(int edition) throws RNAException {
+			Edition preceeding = editions.getEdition(edition);
 
 			RecentSocials s = new RecentSocials();
-			s.edition = editions.makeEditionMessage(current);
+			s.edition = editions.makeEditionMessage(preceeding);
 			s.numEditions = editions.getNumEditions();
-			s.list = editions.getLatestEditor_Judges(next);
+
+			Edition succeeding = null;
+			if (!Edition.isFinal(preceeding.getKey(), editions.getNumEditions())) {
+				succeeding = 
+					ofy().get(Edition.getNextKey(preceeding.getKey()));
+			}
+			s.list = editions.getLatestEditor_Judges(succeeding);
 			return s;
 		}
 
 		public boolean isFollowingOrAboutToFollow(Key<User> from, Key<User> to) {
-			Edition e = editions.getEdition(Editions.CURRENT);
-			SocialEvent about = getAboutToSocial(from, to, e.getKey(), ofy());
-
-			if (about != null) {
-				return about.on;
-			} else {
-				Follow f = getFollow(from, to, e.getKey(), ofy());
-				return f != null;
+			Edition e;
+			try {
+				e = editions.getEdition(Editions.CURRENT);
+				SocialEvent about = getAboutToSocial(from, to, e.getKey(), ofy());
+				if (about != null) {
+					return about.on;
+				}
 			}
+			catch(RNAException ex) {
+				try {
+					e = editions.getEdition(Editions.FINAL);					
+				}
+				catch(Exception exc) {
+					throw new AssertionError(); // impossible
+				}
+			}
+			Follow f = getFollow(from, to, e.getKey(), ofy());
+			return f != null;
 		}
 
 	}
 
 	public class Transition {
 
-		public void doTransition(int editionNum) {
-			Edition from = editions.getEdition(editionNum);
-
+		public void doTransition(int editionNum) throws RNAException {
 			Edition current = editions.getCurrentEdition();
-			Edition next = editions.getNextEdition();
-
-			if (from == null) {
-				throw new IllegalStateException("Edition " + editionNum + " does not exist");
+			if (Edition.getNumber(current.getKey()) != editionNum) {
+				throw new RNAException(Integer.toString(editionNum) + " != " + current);
 			}
-			if (!from.equals(current)) {
-				throw new IllegalStateException("edition 1 not current (2 is): " + from + ", "
-						+ current);
-			}
-
-			if (next == null) {
+			if (Edition.isFinal(current.getKey(), editions.getNumEditions())) {
 				transition.finishPeriodical();
 				log.info("End of periodical; last edition is" + current);
-			} else {
+			}
+			else {
 				transition.transitionEdition();
 			}
 		}
 
-		public void finishPeriodical() {
+		public void finishPeriodical() throws RNAException {
 			LockedPeriodical lp = lockPeriodical();
 			final Periodical p = lp.periodical;
 			p.setFinished();
 			lp.commit();
 		}
 
-		public void setPeriodicalBalance() {
+		public void setPeriodicalBalance() throws RNAException {
 			assert(getPeriodical().inTransition);
 			LockedPeriodical lp = lockPeriodical();
 
@@ -724,19 +725,16 @@ public class DAO extends DAOBase {
 			if (p.isFinished()) {
 				log.warning("spending all remaining revenue");
 
-				e = editions.getLastEdition();
-				if (e == null) {
-					throw new IllegalStateException("no final edition");
-				}
+				e = editions.getEdition(Editions.FINAL);
 				s = editions.getScoreSpace(e.getKey());
 				assert (s != null);
 				s.balance = p.balance;
 				p.balance = 0;
 			} else {
-				e = editions.getPreviousOrLastEdition(lp);
+				e = editions.getEdition(Editions.PREVIOUS);
 
 				if (e == null) {
-					throw new IllegalStateException("no previous edition");
+					throw new RNAException("no previous edition");
 				}
 
 				s = editions.getScoreSpace(e.getKey());
@@ -755,7 +753,7 @@ public class DAO extends DAOBase {
 			log.info("balance: " + Periodical.moneyPrint(p.balance));
 		}
 
-		public void transitionEdition() {
+		public void transitionEdition() throws RNAException {
 
 			LockedPeriodical locked = lockPeriodical();
 
@@ -785,8 +783,9 @@ public class DAO extends DAOBase {
 			// Do it! Change current edition.
 			if (nextNum == n) {
 				p.setFinished();
-			} else if (nextNum > n || nextNum < 1) {
-				throw new IllegalStateException(String.format(
+			} else if (Edition.isBad(Edition.createKey(nextNum), n) || 
+					nextNum == 0) {
+				throw new RNAException(String.format(
 						"bug in edition numbers: %d > %d", nextNum, n));
 			} else {
 				p.setcurrentEditionKey(new Key<Edition>(Edition.class, ""
@@ -799,7 +798,7 @@ public class DAO extends DAOBase {
 			log.info(p.idName + ": New current Edition:" + nextNum);
 		}
 
-		public void finishTransition() {
+		public void finishTransition() throws RNAException {
 			assert(getPeriodical().inTransition);
 			// the final step in transition machinery!
 			LockedPeriodical lp = lockPeriodical();
@@ -947,7 +946,7 @@ public class DAO extends DAOBase {
 		}
 
 		public VoteResult voteFor(String link, String fullLink,
-				Key<Edition> edition, Boolean on) {
+				Key<Edition> edition, Boolean on) throws RNAException {
 			VoteResult vr = new VoteResult();
 			UserService userService = UserServiceFactory.getUserService();
 
@@ -979,10 +978,10 @@ public class DAO extends DAOBase {
 		 *            the edition during which the vote occurs
 		 * @param l
 		 *            the link voted for
-		 * @throws IllegalArgumentException
+		 * @throws RNAException 
 		 */
 		public Response voteFor(User u, Key<Edition> e, Link l, boolean on)
-				throws IllegalArgumentException {
+				throws RNAException {
 			// TODO only judges can vote, ditto for ed follows
 
 			assert(e != null);
@@ -999,7 +998,7 @@ public class DAO extends DAOBase {
 			if (!lp.periodical.getcurrentEditionKey().equals(e)) {
 				log.warning("Attempted to vote in old edition");
 				lp.rollback();
-				return Response.NO_LONGER_CURRENT;
+				return Response.EDITION_NOT_CURRENT;
 			}
 
 			if (lp.periodical.inTransition) {
@@ -1045,6 +1044,7 @@ public class DAO extends DAOBase {
 				TallyTask.tallyVote(txn.getTxn(), v);
 				txn.getTxn().commit();
 			} else {
+				// TODO this
 				throw new IllegalArgumentException("no negative voting yet");
 				/*
 				Vote v = ofy().query(Vote.class).filter("edition", ek)
@@ -1055,7 +1055,7 @@ public class DAO extends DAOBase {
 			}
 		}
 
-		public User welcomeUser(String nickname, int donation) {
+		public User welcomeUser(String nickname, int donation) throws RNAException {
 			// TODO Transactions!
 			user.nickname = nickname;
 			user.isInitialized = true;
@@ -1066,20 +1066,15 @@ public class DAO extends DAOBase {
 
 			Edition next = editions.getNextEdition();
 
-			if (next == null) {
-				log.warning("join failed");
-				return null;
-			} else {
-				// TODO double check they're not present
-				SocialEvent join = new SocialEvent(User.getRNAEditor(),
-						user.getKey(), next.getKey(), new Date(), true);
-				ofy().put(join);
-			}
-			
+			// TODO double check they're not present
+			SocialEvent join = new SocialEvent(User.getRNAEditor(),
+					user.getKey(), next.getKey(), new Date(), true);
+			ofy().put(join);
+				
 			for(int i = editions.getCurrentEdition().number;
 					i < editions.getNumEditions();
 					i++) {
-				Key<Edition> eKey = Edition.getKey(i);
+				Key<Edition> eKey = Edition.createKey(i);
 				ofy().put(new EditionUserAuthority(0, 
 						eKey, user.getKey()));
 			}
@@ -1150,15 +1145,10 @@ public class DAO extends DAOBase {
 	}
 
 	public Periodical getPeriodical() {
-		Periodical p = ofy().get(Periodical.getKey(periodicalName.name));
-		if (p == null) {
-			throw new IllegalStateException("no periodical");
-		}
-		return p;
+		return ofy().get(Periodical.getKey(periodicalName.name));
 	}
 
-
-	private LockedPeriodical lockPeriodical() {
+	private LockedPeriodical lockPeriodical() throws RNAException {
 		return new LockedPeriodical();
 	}
 
@@ -1192,7 +1182,7 @@ public class DAO extends DAOBase {
 		otx.getTxn().commit();
 	}
 
-	public void releaseUserLock() {
+	public void releaseUserLock() throws RNAException {
 		LockedPeriodical lp = lockPeriodical();
 		lp.releaseUserLock();
 		lp.commit();

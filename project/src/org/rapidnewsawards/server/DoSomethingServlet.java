@@ -11,6 +11,7 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.Link;
+import org.rapidnewsawards.core.RNAException;
 import org.rapidnewsawards.core.User;
 
 import com.googlecode.objectify.Key;
@@ -40,7 +41,7 @@ public class DoSomethingServlet extends HttpServlet {
 		}
 	}
 	
-	public void doThing() throws IOException {
+	public void doThing() throws IOException, RNAException {
 		PrintWriter out = response.getWriter();
 
 		Key<Edition> e = DAO.instance.editions.getCurrentEdition().getKey();
