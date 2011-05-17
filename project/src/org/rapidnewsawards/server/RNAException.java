@@ -1,4 +1,4 @@
-package org.rapidnewsawards.core;
+package org.rapidnewsawards.server;
 
 
 public class RNAException extends Exception {

@@ -7,7 +7,7 @@ import com.googlecode.objectify.annotation.Parent;
 
 public class ScoreSpace {
 	@Id
-	public String id;
+	private String id;
 
 	@Parent 
 	public Key<ScoreRoot> root;
@@ -20,6 +20,9 @@ public class ScoreSpace {
 
 	public int totalScore;
 
+	public boolean finished;
+	
+
 	public ScoreSpace() {}
 	
 	public ScoreSpace(String id) {
@@ -29,12 +32,17 @@ public class ScoreSpace {
 		this.totalScore = 0;
 		this.totalSpend = 0;
 		this.numFundedLinks = 0;
+		this.finished = false;
 	}
 
 	public static Key<ScoreSpace> keyFromEditionKey (Key<Edition> key) {
 		return new Key<ScoreSpace>(
 				new Key<ScoreRoot>(ScoreRoot.class, key.getName()),
 				ScoreSpace.class, key.getName());
+	}
+
+	public int getNumber() {
+		return Integer.valueOf(id);
 	}
 
 }

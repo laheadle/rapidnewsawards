@@ -6,10 +6,10 @@ import static org.junit.Assert.assertNotNull;
 import org.junit.Before;
 import org.junit.Test;
 import org.rapidnewsawards.core.Edition;
-import org.rapidnewsawards.core.RNAException;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
+import org.rapidnewsawards.server.RNAException;
 import org.rapidnewsawards.server.TitleGrabber;
 
 public class DAOTest extends RNATest {

@@ -18,7 +18,7 @@ public class Edition implements Comparable<Edition> {
 	public int number;
 	
 	public Key<Periodical> periodical;
-	
+
 	public Edition() {}
 
 	public Edition(Date end, int number, Key<Periodical> periodical) {

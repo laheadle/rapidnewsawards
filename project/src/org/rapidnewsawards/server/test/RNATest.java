@@ -2,10 +2,10 @@ package org.rapidnewsawards.server.test;
 
 import org.junit.After;
 import org.junit.Before;
-import org.rapidnewsawards.core.RNAException;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.MakeDataServlet;
+import org.rapidnewsawards.server.RNAException;
 
 import com.google.appengine.tools.development.testing.LocalDatastoreServiceTestConfig;
 import com.google.appengine.tools.development.testing.LocalServiceTestHelper;

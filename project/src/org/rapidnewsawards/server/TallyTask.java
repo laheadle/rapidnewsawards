@@ -3,6 +3,8 @@ package org.rapidnewsawards.server;
 import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withUrl;
 
 import java.io.IOException;
+import java.util.ConcurrentModificationException;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -11,7 +13,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.Link;
-import org.rapidnewsawards.core.RNAException;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.core.Vote;
 
@@ -23,7 +24,7 @@ import com.googlecode.objectify.Key;
 
 public class TallyTask  extends HttpServlet {
 	private static final long serialVersionUID = 1L;
-	//private static final Logger log = Logger.getLogger(TallyTask.class.getName());
+	private static final Logger log = Logger.getLogger(TallyTask.class.getName());
 	private static DAO d = DAO.instance;
 
 	public static void tallyVote(Transaction txn, Vote v) {
@@ -55,7 +56,30 @@ public class TallyTask  extends HttpServlet {
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
-		DAO.log.info("boo");
+		ConcurrentServletCommand command = new ConcurrentServletCommand() {
+			@Override
+			public Object perform(HttpServletRequest request, HttpServletResponse resp) 
+			throws RNAException {
+				_doGet(request, resp);
+				return Boolean.TRUE;
+			}
+		};
+		try {
+			command.run(request, response);
+			if (command.retries > 0) {
+				log.warning(String.format(
+						"command %s needed %d retries.", request, command.retries));
+			}			
+		} catch (RNAException e) {
+			// TODO chain
+			throw new IllegalStateException(e.message);
+		} catch (TooBusyException e) {
+			throw new ConcurrentModificationException("too many retries");
+		}
+	}
+
+	public void _doGet(HttpServletRequest request, HttpServletResponse response) {
+		DAO.log.info("tally: " + request.toString());
 		String fun = request.getParameter("fun");
 		if (fun == null) {
 			throw new IllegalArgumentException("fun");

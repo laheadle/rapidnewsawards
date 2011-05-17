@@ -82,7 +82,7 @@ window.initRNA = function () {
 	    if (response.status != 'OK') { 
 		var problem = 'there\'s a problem..working on it';
 		flashError(response.message || problem); 
-		return; 
+		return;
 	    }
 	    try {
 		if (!self.state.interrupted) {

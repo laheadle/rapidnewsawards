@@ -17,7 +17,6 @@ import org.rapidnewsawards.core.EditionUserAuthority;
 import org.rapidnewsawards.core.Follow;
 import org.rapidnewsawards.core.Link;
 import org.rapidnewsawards.core.Periodical;
-import org.rapidnewsawards.core.RNAException;
 import org.rapidnewsawards.core.Response;
 import org.rapidnewsawards.core.Root;
 import org.rapidnewsawards.core.ScoreRoot;
@@ -72,10 +71,10 @@ public class DAO extends DAOBase {
 		// TODO parameterize by periodical
 		public AllEditions getAllEditions() {
 			LinkedList<EditionMessage> ll = new LinkedList<EditionMessage>();
-			Map<String, ScoreSpace> spaces = 
-				new HashMap<String, ScoreSpace>(); 
+			Map<Integer, ScoreSpace> spaces = 
+				new HashMap<Integer, ScoreSpace>(); 
 			for (ScoreSpace s : ofy().query(ScoreSpace.class)) {
-				spaces.put(s.id, s);
+				spaces.put(s.getNumber(), s);
 			}
 			for (Edition e : ofy().query(Edition.class)) {
 				ll.add(new EditionMessage(e, spaces.get(e.getNumber())));
@@ -761,11 +760,15 @@ public class DAO extends DAOBase {
 
 			final Periodical p = locked.periodical;
 			
-			if (p.userlocked) { throw new ConcurrentModificationException(); }
+			if (p.userlocked) { 
+				locked.rollback();
+				throw new ConcurrentModificationException(); 
+			}
 
 			if (p.isFinished()) {
 				// DIE FOREVER
 				log.severe("tried to transition a dead periodical");
+				locked.rollback();
 				return;
 			}
 			
@@ -774,6 +777,7 @@ public class DAO extends DAOBase {
 			if (current == null) {
 				// DIE FOREVER
 				log.severe("no edition matching" + p.getcurrentEditionKey());
+				locked.rollback();
 				return;
 			}
 
@@ -785,6 +789,7 @@ public class DAO extends DAOBase {
 				p.setFinished();
 			} else if (Edition.isBad(Edition.createKey(nextNum), n) || 
 					nextNum == 0) {
+				locked.rollback();
 				throw new RNAException(String.format(
 						"bug in edition numbers: %d > %d", nextNum, n));
 			} else {

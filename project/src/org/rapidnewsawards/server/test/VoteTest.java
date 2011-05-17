@@ -11,11 +11,11 @@ import org.junit.Test;
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.EditionUserAuthority;
 import org.rapidnewsawards.core.Link;
-import org.rapidnewsawards.core.RNAException;
 import org.rapidnewsawards.core.Response;
 import org.rapidnewsawards.core.ScoreSpace;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.core.Vote;
+import org.rapidnewsawards.server.RNAException;
 
 import com.googlecode.objectify.Key;
 

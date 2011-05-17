@@ -11,11 +11,11 @@ import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.EditionUserAuthority;
 import org.rapidnewsawards.core.Follow;
 import org.rapidnewsawards.core.Periodical;
-import org.rapidnewsawards.core.RNAException;
 import org.rapidnewsawards.core.Response;
 import org.rapidnewsawards.core.SocialEvent;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.server.DAO;
+import org.rapidnewsawards.server.RNAException;
 
 public class SocialTest extends RNATest {
 	

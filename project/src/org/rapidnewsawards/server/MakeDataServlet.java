@@ -15,7 +15,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.Periodical;
-import org.rapidnewsawards.core.RNAException;
 import org.rapidnewsawards.core.Response;
 import org.rapidnewsawards.core.Root;
 import org.rapidnewsawards.core.ScoreRoot;

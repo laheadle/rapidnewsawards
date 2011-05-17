@@ -11,7 +11,6 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.Link;
-import org.rapidnewsawards.core.RNAException;
 import org.rapidnewsawards.core.User;
 
 import com.googlecode.objectify.Key;

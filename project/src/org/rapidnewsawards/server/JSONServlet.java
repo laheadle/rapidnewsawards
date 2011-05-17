@@ -12,7 +12,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.core.Edition;
-import org.rapidnewsawards.core.RNAException;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.messages.Name;
 import org.rapidnewsawards.messages.RecentSocials;
@@ -29,8 +28,9 @@ public class JSONServlet extends HttpServlet {
 	private static final String OK = "OK";
 	private static final String BAD_REQUEST = "BAD_REQUEST";
 	private static final long serialVersionUID = 1L;
-	private static final Logger log = Logger.getLogger(DoSomethingServlet.class
+	private static final Logger log = Logger.getLogger(JSONServlet.class
 			.getName());
+	private static final String TRY_AGAIN = "TRY_AGAIN";
 
 	private static abstract class Parser {
 		public abstract Object parse(String value);
@@ -72,6 +72,16 @@ public class JSONServlet extends HttpServlet {
 		public Object perform(HttpServletRequest request) throws RNAException {
 			this.request = request;
 			return this.getResult();
+		}
+
+		@Override
+		public String toString() {
+			if (this.request != null) {
+				return "Command " + this.request;
+			}
+			else {
+				return "Command <?>";
+			}
 		}
 
 		protected abstract Object getResult() throws RNAException;
@@ -246,18 +256,36 @@ public class JSONServlet extends HttpServlet {
 		}
 		JSONServlet.log.info("Json Function: " + fun);
 		Gson g = new Gson();
-		AbstractCommand c = commandsMap.get(fun);
+		final AbstractCommand c = commandsMap.get(fun);
 		
 		// TODO CONCURRENT mod exceptions
 		ResponseMessage re = new ResponseMessage();
 		try {
-			re.payload = c.perform(request);
+			ConcurrentServletCommand command = new ConcurrentServletCommand() {
+				@Override
+				public Object perform(HttpServletRequest request, HttpServletResponse resp) 
+				throws RNAException {
+					return c.perform(request);	
+				}
+			};
+			re.payload = command.run(request, resp);
+			if (command.retries > 0) {
+				log.warning(String.format(
+						"command %s needed %d retries.", c, command.retries));
+			}
 			re.status = OK;
 			out.println(g.toJson(re));
 		} catch (RNAException e) {
 			re.payload = null;
 			re.status = BAD_REQUEST;
 			re.message = e.message;
+			out.println(g.toJson(re));
+		}
+		catch (TooBusyException e) {
+			re.payload = null;
+			re.status = TRY_AGAIN;
+			re.message = "Things are busy...please try again!";
+			log.severe(String.format("%s command gave up after %d retries!", c, e.tries));
 			out.println(g.toJson(re));
 		}
 	}

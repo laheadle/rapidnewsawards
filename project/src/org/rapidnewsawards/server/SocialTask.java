@@ -3,6 +3,8 @@ package org.rapidnewsawards.server;
 import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withUrl;
 
 import java.io.IOException;
+import java.util.ConcurrentModificationException;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -21,6 +23,8 @@ import com.googlecode.objectify.Key;
 public class SocialTask extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static DAO d = DAO.instance;
+	private static final Logger log = Logger.getLogger(SocialTask.class
+			.getName());
 
 	public static void writeSocialEvent(Key<User> from, 
 			Key<User> to, Key<Edition> e, boolean on, 
@@ -49,6 +53,29 @@ public class SocialTask extends HttpServlet {
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
+		ConcurrentServletCommand command = new ConcurrentServletCommand() {
+			@Override
+			public Object perform(HttpServletRequest request, HttpServletResponse resp) 
+			throws RNAException {
+				_doGet(request, resp);
+				return Boolean.TRUE;
+			}
+		};
+		try {
+			command.run(request, response);
+			if (command.retries > 0) {
+				log.warning(String.format(
+						"command %s needed %d retries.", request, command.retries));
+			}			
+		} catch (RNAException e) {
+			// TODO chain
+			throw new IllegalStateException(e.message);
+		} catch (TooBusyException e) {
+			throw new ConcurrentModificationException("too many retries");
+		}
+	}
+
+	public void _doGet(HttpServletRequest request, HttpServletResponse response) {
 		String fun = request.getParameter("fun");
 		if (fun == null) {
 			throw new IllegalArgumentException("fun");

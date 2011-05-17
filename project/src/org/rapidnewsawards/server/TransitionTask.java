@@ -3,6 +3,8 @@ package org.rapidnewsawards.server;
 import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withUrl;
 
 import java.io.IOException;
+import java.util.ConcurrentModificationException;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -10,7 +12,6 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.core.Edition;
-import org.rapidnewsawards.core.RNAException;
 
 import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.taskqueue.Queue;
@@ -18,9 +19,8 @@ import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
 
 public class TransitionTask  extends HttpServlet {
-	/**
-	 * 
-	 */
+	private static final Logger log = Logger.getLogger(TransitionTask.class
+			.getName());
 	private static final long serialVersionUID = 1L;
 	private static DAO d = DAO.instance;
 
@@ -33,13 +33,6 @@ public class TransitionTask  extends HttpServlet {
 	}
 
 	// these are all called, in this order, directly or indirectly by doTransition
-
-	public static void updateAuthorities(Transaction txn, int nextEdition) {
-		Queue queue = QueueFactory.getDefaultQueue();
-		queue.add(txn, withUrl("/tasks/transition").method(TaskOptions.Method.GET)
-				.param("fun", "updateAuthorities")
-				.param("nextEdition", Integer.toString(nextEdition)));
-	}	
 
 	public static void setPeriodicalBalance(Transaction txn) {
 		Queue queue = QueueFactory.getDefaultQueue();
@@ -66,11 +59,25 @@ public class TransitionTask  extends HttpServlet {
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
+		ConcurrentServletCommand command = new ConcurrentServletCommand() {
+			@Override
+			public Object perform(HttpServletRequest request, HttpServletResponse resp) 
+			throws RNAException {
+				_doGet(request, resp);
+				return Boolean.TRUE;
+			}
+		};
 		try {
-			_doGet(request, response);
+			command.run(request, response);
+			if (command.retries > 0) {
+				log.warning(String.format(
+						"command %s needed %d retries.", request, command.retries));
+			}			
 		} catch (RNAException e) {
 			// TODO chain
 			throw new IllegalStateException(e.message);
+		} catch (TooBusyException e) {
+			throw new ConcurrentModificationException("too many retries");
 		}
 	}
 

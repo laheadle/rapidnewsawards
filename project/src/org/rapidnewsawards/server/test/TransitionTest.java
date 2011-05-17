@@ -8,9 +8,9 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.Periodical;
-import org.rapidnewsawards.core.RNAException;
 import org.rapidnewsawards.core.ScoreSpace;
 import org.rapidnewsawards.server.DAO;
+import org.rapidnewsawards.server.RNAException;
 
 public class TransitionTest extends RNATest {
 	@Test
