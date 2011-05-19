@@ -166,7 +166,7 @@ public class SocialTest extends RNATest {
 
 		
 	@Test
-	public void testWriteFollow() throws InterruptedException {
+	public void testWriteFollow() throws InterruptedException, RNAException {
 		DAO.instance.social.writeSocialEvent(
 				mg.getKey(), jqp.getKey(), Edition.createKey(1), true);
 		Thread.sleep(200);

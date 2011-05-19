@@ -4,6 +4,7 @@ import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withUrl;
 
 import java.io.IOException;
 import java.util.ConcurrentModificationException;
+import java.util.Date;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -30,6 +31,15 @@ public class TransitionTask  extends HttpServlet {
 				.param("fun", "transition")
 				.param("fromEdition", Integer.toString(e.getNumber()))
 				.etaMillis(e.end.getTime()));
+	}
+
+	public static void scheduleTransitionAt(Edition e, Date d) {
+		Queue queue = QueueFactory.getDefaultQueue();
+		queue.add(withUrl("/tasks/transition").method(TaskOptions.Method.GET)
+				.param("fun", "transition")
+				.param("fromEdition", Integer.toString(e.getNumber()))
+				.etaMillis(d.getTime()));
+
 	}
 
 	// these are all called, in this order, directly or indirectly by doTransition

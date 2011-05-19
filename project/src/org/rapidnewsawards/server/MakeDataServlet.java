@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.List;
+import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
@@ -26,10 +27,10 @@ import org.rapidnewsawards.messages.VoteResult;
 import com.googlecode.objectify.Objectify;
 
 public class MakeDataServlet extends HttpServlet {
+	private static final Logger log = Logger.getLogger(MakeDataServlet.class
+			.getName());
+	private static final int TEST_DONATION_AMOUNT = 5000;
 	private static final int FIRST_EDITION = 0;
-	/**
-	 * 
-	 */
 	private static final long serialVersionUID = 1L;
 	public static PrintWriter out;
 	public static boolean doFollow = false;
@@ -46,9 +47,12 @@ public class MakeDataServlet extends HttpServlet {
 	public final static long FIVE_MINUTES = 5 * ONE_MINUTE; 
 
 	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response)
-	throws ServletException, IOException {
-		out = response.getWriter();
+	public void doGet(HttpServletRequest request, HttpServletResponse response) {
+		try {
+			out = response.getWriter();
+		} catch (IOException e1) {
+			throw new AssertionError();
+		}
 		Cell<Integer> numUsers = new Cell<Integer>(null);
 		int numEditions = 5;
 		try {
@@ -74,17 +78,8 @@ public class MakeDataServlet extends HttpServlet {
 			makeData(numEditions, minutes * ONE_MINUTE, numUsers);
 
 			if (doTransition) {
-				
-				try { 
-					DAO.instance.transition.doTransition(0);
-				} catch (ConcurrentModificationException cme) {
-					try {
-						Thread.sleep(500);
-					} catch (InterruptedException e) {
-						e.printStackTrace();
-					}
-					DAO.instance.transition.doTransition(0);
-				}
+				Date da = new Date(new Date().getTime() + 500L);
+				TransitionTask.scheduleTransitionAt(d.editions.getEdition(0), da);
 			}
 			
 			if (numLinks > 0) {
@@ -130,11 +125,13 @@ public class MakeDataServlet extends HttpServlet {
 		User jq = makeJudge("johnqpublic@gmail.com");
 		User lyn = makeEditor("laheadle@gmail.com");		
 		makeEditor("steveouting@gmail.com");
-		welcome(lyn, "lyn", 5000);
-		welcome(jq, "john q public", 5000);
+		welcome(lyn, "lyn", TEST_DONATION_AMOUNT);
+		welcome(jq, "john q public", TEST_DONATION_AMOUNT);
 
-		if (numUsers != null)
-			numUsers.value = new Integer(6);
+		if (numUsers != null) {
+			int NUM_USERS = 6;
+			numUsers.value = new Integer(NUM_USERS);
+		}
 		
 		if (doFollow) {
 				d.user = lyn;

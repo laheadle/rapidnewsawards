@@ -39,9 +39,14 @@ public class VoteTest extends RNATest {
 		d.users.writeVote(jqp.getKey(), e1, l.getKey(), true);
 		assertTrue(d.users.hasVoted(jqp, e1, l));
 		Vote v = d.editions.getLatestUser_Vote_Links(e1).get(0).vote;
-		d.tallyVote(v.getKey());
 		ScoreSpace space = d.editions.getScoreSpace(v.edition);
+		space.balance = 100;
+		d.ofy().put(space);
+		d.tallyVote(v.getKey());
+		space = d.editions.getScoreSpace(v.edition);
 		assertEquals(space.totalScore, 1);
+		assertEquals(space.totalSpend, 100);
+		assertEquals(space.balance, 100);
 	}
 
 }

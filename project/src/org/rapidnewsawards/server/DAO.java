@@ -6,9 +6,11 @@ import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.logging.Logger;
 
 import org.rapidnewsawards.core.Donation;
@@ -480,19 +482,27 @@ public class DAO extends DAOBase {
 
 		public void writeSocialEvent(
 				final Key<User> from, final Key<User> to, final Key<Edition> e, 
-				boolean on) {
+				boolean on) throws RNAException {
 			assert(getPeriodical().userlocked);
 			assert(!getPeriodical().inTransition);
+			if (from.equals(to)) {
+				throw new RNAException("BUG! can't follow self");
+			}
 			final Objectify txn = fact().beginTransaction();
 			
 			SocialEvent social = new SocialEvent(from, to, e, new Date(), on);
 			txn.put(social);				
 
 			if (on) {
-				Query<Edition> eds = ofy().query(Edition.class).filter("id >=", e.getName());
+				Set<Key<Edition>> laters = new HashSet<Key<Edition>>();
+				for (Key<Edition> ek : ofy().query(Edition.class).fetchKeys()) {
+					if (Edition.getNumber(ek) >= Edition.getNumber(e)) {
+						laters.add(ek);
+					}
+				}
 				List<Follow> fols = new LinkedList<Follow>();
-				for (Key<Edition> ekey : eds.fetchKeys()) {
-					fols.add(new Follow(from, to, ekey, social.getKey()));
+				for (Key<Edition> later : laters) {
+					fols.add(new Follow(from, to, later, social.getKey()));
 				}
 				txn.put(fols);
 			}
@@ -512,6 +522,9 @@ public class DAO extends DAOBase {
 				return Response.ILLEGAL_OPERATION;
 			}
 			Key<User> from = user.getKey();
+			if (from.equals(to)) {
+				throw new RNAException("can't follow self");
+			}
 			return doSocial(from, to, editions.getEdition(Editions.CURRENT).getKey(), on);
 		}
 		
@@ -627,7 +640,7 @@ public class DAO extends DAOBase {
 			assert(o != null);
 
 			if (e == null)
-				return null;
+				throw new IllegalArgumentException();
 
 			// checks the next edition
 			return o.query(SocialEvent.class).ancestor(from).filter("judge", to)
@@ -704,6 +717,7 @@ public class DAO extends DAOBase {
 
 		public void setPeriodicalBalance() throws RNAException {
 			assert(getPeriodical().inTransition);
+			assert(Edition.getNumber(editions.getEdition(Editions.CURRENT).getKey()) > 0);
 			LockedPeriodical lp = lockPeriodical();
 
 			if (lp == null) {
@@ -722,34 +736,21 @@ public class DAO extends DAOBase {
 			ScoreSpace s;
 			
 			if (p.isFinished()) {
-				log.warning("spending all remaining revenue");
-
-				e = editions.getEdition(Editions.FINAL);
-				s = editions.getScoreSpace(e.getKey());
-				assert (s != null);
-				s.balance = p.balance;
-				p.balance = 0;
-			} else {
-				e = editions.getEdition(Editions.PREVIOUS);
-
-				if (e == null) {
-					throw new RNAException("no previous edition");
-				}
-
-				s = editions.getScoreSpace(e.getKey());
-				assert (s != null);
-				int n = editions.getNumEditions();
-				if (e.number > 0) {
-					s.balance = p.balance / (n - e.number);
-					p.balance -= s.balance;
-				}
+				TransitionTask.finish(lp.transaction.getTxn());
+				lp.commit();
 			}
-
-			TransitionTask.setSpaceBalance(lp.transaction.getTxn(), e, s.balance);
-			lp.commit();
-
-			log.info(e + ": revenue " + Periodical.moneyPrint(s.balance));
-			log.info("balance: " + Periodical.moneyPrint(p.balance));
+			else {
+				e = editions.getEdition(Editions.CURRENT);
+				s = editions.getScoreSpace(e.getKey());
+				int n = editions.getNumEditions();
+				assert (e.number > 0);
+				s.balance = p.balance / (n - e.number);
+				p.balance -= s.balance;
+				TransitionTask.setSpaceBalance(lp.transaction.getTxn(), e, s.balance);
+				lp.commit();
+				log.info(e + ": balance " + Periodical.moneyPrint(s.balance));
+				log.info("periodical balance: " + Periodical.moneyPrint(p.balance));				
+			}
 		}
 
 		public void transitionEdition() throws RNAException {
@@ -896,7 +897,7 @@ public class DAO extends DAOBase {
 		 * Return information about 'to' and his relation to 'from'
 		 */
 		public RelatedUserInfo getRelatedUserInfo(Name periodical, User from,
-				Key<User> to) {
+				Key<User> to) throws RNAException {
 			UserInfo ui = getUserInfo(periodical, to);
 			RelatedUserInfo rui = new RelatedUserInfo();
 			rui.userInfo = ui;
@@ -905,7 +906,7 @@ public class DAO extends DAOBase {
 			return rui;
 		}
 
-		public UserInfo getUserInfo(Name periodical, Key<User> user) {
+		public UserInfo getUserInfo(Name periodical, Key<User> user) throws RNAException {
 			UserInfo ui = new UserInfo();
 			try {
 				ui.user = ofy().get(user);
@@ -920,8 +921,7 @@ public class DAO extends DAOBase {
 				}
 				return ui;
 			} catch (NotFoundException e1) {
-				log.warning("Bad user info: " + user);
-				return null;
+				throw new RNAException("No such user exists");
 			}
 		}
 

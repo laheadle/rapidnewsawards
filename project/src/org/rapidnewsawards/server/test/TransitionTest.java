@@ -65,6 +65,8 @@ public class TransitionTest extends RNATest {
 	public void testSetBalance() throws RNAException {
 		d.transition.doTransition(0);
 		d.transition.setPeriodicalBalance();
+		d.editions.setSpaceBalance(1, 100);
+		d.transition.finishTransition();
 		ScoreSpace s = d.editions.getScoreSpace(Edition.createKey(0));
 		assertEquals(s.balance, 0);
 	}

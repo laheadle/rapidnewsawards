@@ -29,12 +29,11 @@ public class SocialTask extends HttpServlet {
 	public static void writeSocialEvent(Key<User> from, 
 			Key<User> to, Key<Edition> e, boolean on, 
 			Transaction txn) {
-
 		Queue queue = QueueFactory.getDefaultQueue();
 		queue.add(txn, withUrl("/tasks/social").method(TaskOptions.Method.GET)
 				.param("fun", "writeSocialEvent")
 				.param("from", Long.toString(from.getId()))
-				.param("to", Long.toString(from.getId()))
+				.param("to", Long.toString(to.getId()))
 				.param("e", e.getName())
 				.param("on", Boolean.toString(on)));
 	}
@@ -71,11 +70,14 @@ public class SocialTask extends HttpServlet {
 			// TODO chain
 			throw new IllegalStateException(e.message);
 		} catch (TooBusyException e) {
-			throw new ConcurrentModificationException("too many retries");
+			throw new ConcurrentModificationException(
+					String.format("command %s needed too many (%d) retries.", 
+							request, command.retries));
 		}
 	}
 
-	public void _doGet(HttpServletRequest request, HttpServletResponse response) {
+	public void _doGet(HttpServletRequest request, HttpServletResponse response) 
+	throws RNAException {
 		String fun = request.getParameter("fun");
 		if (fun == null) {
 			throw new IllegalArgumentException("fun");

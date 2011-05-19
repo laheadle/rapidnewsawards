@@ -920,7 +920,7 @@ $(function(){
 		}
 	    };
 	    doRequest({ fun: fun, 
-			ed: edNum || this.currentEdition}, 
+			edition: edNum || this.currentEdition}, 
 		      fetch);
 	},
 
@@ -959,7 +959,7 @@ $(function(){
 	story: function(edNum, linkId) {
 	    var self = this;
 	    doRequest({fun: 'story', 
-		       ed: edNum, 
+		       edition: edNum, 
 		       linkId: linkId}, 
 		      function(data) {
 			  self.setMainView(FullStoryView, data);

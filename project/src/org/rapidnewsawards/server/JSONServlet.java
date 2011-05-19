@@ -197,7 +197,7 @@ public class JSONServlet extends HttpServlet {
 		});
 		commandsMap.put("relatedUser", new AbstractCommand() {
 			@Override
-			public Object getResult() {
+			public Object getResult() throws RNAException {
 				long userId = new Long(request.getParameter("id"));
 				return d.users.getRelatedUserInfo(Name.AGGREGATOR_NAME, d.user,
 						new Key<User>(User.class, userId));
