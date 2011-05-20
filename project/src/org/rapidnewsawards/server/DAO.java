@@ -44,6 +44,7 @@ import org.rapidnewsawards.messages.User_Vote_Link;
 import org.rapidnewsawards.messages.VoteResult;
 import org.rapidnewsawards.messages.Vote_Link;
 
+import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
 import com.googlecode.objectify.Key;
@@ -428,12 +429,21 @@ public class DAO extends DAOBase {
 
 		public void setSpaceBalance(int edition, int balance) {
 			assert(getPeriodical().inTransition);
-			ScoreSpace s = getScoreSpace(
-					new Key<Edition>(Edition.class, Integer.toString(edition)));
+			ScoreSpace s = getScoreSpace(Edition.createKey(edition));
 			Objectify oTxn = fact().beginTransaction();
 			s.balance = balance;
 			oTxn.put(s);
 			TransitionTask.finish(oTxn.getTxn());
+			oTxn.getTxn().commit();
+		}
+
+
+		public void setEditionFinished(int edition) throws RNAException {
+			ScoreSpace s = getScoreSpace(Edition.createKey(edition));
+			s.finished = true;
+			Objectify oTxn = fact().beginTransaction();
+			oTxn.put(s);
+			TransitionTask.setPeriodicalBalance(oTxn.getTxn());
 			oTxn.getTxn().commit();
 		}
 
@@ -482,7 +492,7 @@ public class DAO extends DAOBase {
 
 		public void writeSocialEvent(
 				final Key<User> from, final Key<User> to, final Key<Edition> e, 
-				boolean on) throws RNAException {
+				boolean on, boolean cancelPending) throws RNAException {
 			assert(getPeriodical().userlocked);
 			assert(!getPeriodical().inTransition);
 			if (from.equals(to)) {
@@ -490,29 +500,72 @@ public class DAO extends DAOBase {
 			}
 			final Objectify txn = fact().beginTransaction();
 			
-			SocialEvent social = new SocialEvent(from, to, e, new Date(), on);
-			txn.put(social);				
+			Set<Key<Edition>> laters = getThisAndFutureEditionKeys(e);
 
-			if (on) {
-				Set<Key<Edition>> laters = new HashSet<Key<Edition>>();
-				for (Key<Edition> ek : ofy().query(Edition.class).fetchKeys()) {
-					if (Edition.getNumber(ek) >= Edition.getNumber(e)) {
-						laters.add(ek);
-					}
+			if (cancelPending) {
+				// cancel follow: delete future social, delete future follows
+				// cancel unfollow: delete future social, insert future follows
+				QueryResultIterable<SocialEvent> queryResult = txn.query(SocialEvent.class)
+				.ancestor(from).filter("judge", to).filter("edition", e)
+				.fetch();
+				assert(queryResult.iterator().hasNext());
+				SocialEvent social = queryResult.iterator().next();
+				assert(on ? !social.on : social.on);					
+				txn.delete(queryResult);
+				if (on) {
+					// cancel unfollow
+					assert(!social.on);					
+					insertFutureFollows(from, to, txn, laters, social);					
 				}
-				List<Follow> fols = new LinkedList<Follow>();
-				for (Key<Edition> later : laters) {
-					fols.add(new Follow(from, to, later, social.getKey()));
+				else {
+					// cancel follow
+					assert(social.on);
+					deleteFutureFollows(from, to, e, txn);
 				}
-				txn.put(fols);
 			}
 			else {
-				txn.delete(txn.query(Follow.class)
-						.ancestor(from).filter("to", to).filter("edition >=", e).fetchKeys());
+				// follow: insert future social event, insert future follows
+				// unfollow: insert future social event, delete future follows
+				SocialEvent social = new SocialEvent(from, to, e, new Date(), on);
+				txn.put(social);				
+
+				if (on) {
+					insertFutureFollows(from, to, txn, laters, social);
+				}
+				else {
+					deleteFutureFollows(from, to, e, txn);
+
+				}
 			}
 			int amount = on ? 1 : -1;
 			SocialTask.changePendingAuthority(to, e, amount, txn.getTxn());
 			txn.getTxn().commit();
+		}
+
+		private Set<Key<Edition>> getThisAndFutureEditionKeys(final Key<Edition> e) {
+			Set<Key<Edition>> result = new HashSet<Key<Edition>>();
+			for (Key<Edition> ek : ofy().query(Edition.class).fetchKeys()) {
+				if (Edition.getNumber(ek) >= Edition.getNumber(e)) {
+					result.add(ek);
+				}
+			}
+			return result;
+		}
+
+		private void deleteFutureFollows(final Key<User> from, final Key<User> to,
+				final Key<Edition> e, final Objectify txn) {
+			txn.delete(txn.query(Follow.class)
+					.ancestor(from).filter("judge", to).filter("edition >=", e).fetchKeys());
+		}
+
+		private void insertFutureFollows(final Key<User> from, final Key<User> to,
+				final Objectify txn, final Set<Key<Edition>> laters,
+				SocialEvent social) {
+			List<Follow> fols = new LinkedList<Follow>();
+			for (Key<Edition> later : laters) {
+				fols.add(new Follow(from, to, later, social.getKey()));
+			}
+			txn.put(fols);
 		}
 
 		/* Wrapper which assumes a <from> of the current user */
@@ -525,7 +578,8 @@ public class DAO extends DAOBase {
 			if (from.equals(to)) {
 				throw new RNAException("can't follow self");
 			}
-			return doSocial(from, to, editions.getEdition(Editions.CURRENT).getKey(), on);
+			return doSocial(from, to, editions.getEdition(
+					Editions.CURRENT_OR_FINAL).getKey(), on);
 		}
 		
 		/* Do a follow, unfollow, or cancel pending follow, unfollow */
@@ -605,7 +659,8 @@ public class DAO extends DAOBase {
 			} finally {
 				lp.setUserLock();
 				SocialTask.writeSocialEvent(
-						from, to, e, on, lp.transaction.getTxn());
+						from, to, Edition.getNextKey(e), on, 
+						aboutToSocial != null, lp.transaction.getTxn());
 				lp.commit(); socialTxn.getTxn().commit();
 				assert(!getPeriodical().inTransition);
 			}
@@ -669,7 +724,7 @@ public class DAO extends DAOBase {
 			return s;
 		}
 
-		public boolean isFollowingOrAboutToFollow(Key<User> from, Key<User> to) {
+		public boolean willBeFollowingNextEdition(Key<User> from, Key<User> to) {
 			Edition e;
 			try {
 				e = editions.getEdition(Editions.CURRENT);
@@ -744,11 +799,11 @@ public class DAO extends DAOBase {
 				s = editions.getScoreSpace(e.getKey());
 				int n = editions.getNumEditions();
 				assert (e.number > 0);
-				s.balance = p.balance / (n - e.number);
-				p.balance -= s.balance;
-				TransitionTask.setSpaceBalance(lp.transaction.getTxn(), e, s.balance);
+				int spaceBalance = p.balance / (n - e.number);
+				p.balance -= spaceBalance;
+				TransitionTask.setSpaceBalance(lp.transaction.getTxn(), e, spaceBalance);
 				lp.commit();
-				log.info(e + ": balance " + Periodical.moneyPrint(s.balance));
+				log.info(e + ": balance " + Periodical.moneyPrint(spaceBalance));
 				log.info("periodical balance: " + Periodical.moneyPrint(p.balance));				
 			}
 		}
@@ -773,14 +828,7 @@ public class DAO extends DAOBase {
 				return;
 			}
 			
-			Edition current = ofy().find(p.getcurrentEditionKey());
-
-			if (current == null) {
-				// DIE FOREVER
-				log.severe("no edition matching" + p.getcurrentEditionKey());
-				locked.rollback();
-				return;
-			}
+			Edition current = editions.getEdition(Editions.CURRENT);
 
 			int nextNum = current.number + 1;
 			int n = editions.getNumEditions();
@@ -794,12 +842,12 @@ public class DAO extends DAOBase {
 				throw new RNAException(String.format(
 						"bug in edition numbers: %d > %d", nextNum, n));
 			} else {
-				p.setcurrentEditionKey(new Key<Edition>(Edition.class, ""
-						+ nextNum));
+				p.setcurrentEditionKey(Edition.createKey(nextNum));
 			}
 
 			p.inTransition = true;
-			TransitionTask.setPeriodicalBalance(locked.transaction.getTxn());
+			TransitionTask.setEditionFinished(locked.transaction.getTxn(), 
+					current.getKey());
 			locked.commit();
 			log.info(p.idName + ": New current Edition:" + nextNum);
 		}
@@ -901,7 +949,7 @@ public class DAO extends DAOBase {
 			UserInfo ui = getUserInfo(periodical, to);
 			RelatedUserInfo rui = new RelatedUserInfo();
 			rui.userInfo = ui;
-			rui.isFollowing = from != null ? social.isFollowingOrAboutToFollow(
+			rui.isFollowing = from != null ? social.willBeFollowingNextEdition(
 					from.getKey(), to) : false;
 			return rui;
 		}

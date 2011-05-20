@@ -18,6 +18,7 @@ import com.google.appengine.api.datastore.Transaction;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
+import com.googlecode.objectify.Key;
 
 public class TransitionTask  extends HttpServlet {
 	private static final Logger log = Logger.getLogger(TransitionTask.class
@@ -42,11 +43,17 @@ public class TransitionTask  extends HttpServlet {
 
 	}
 
-	// these are all called, in this order, directly or indirectly by doTransition
+	// these are all called, in this order, directly or indirectly by transitionEdition
 
+	public static void setEditionFinished(Transaction txn, Key<Edition> e) {
+		Queue queue = QueueFactory.getDefaultQueue();
+		queue.add(txn, withUrl("/tasks/transition").method(TaskOptions.Method.GET)
+				.param("fun", "setEditionFinished")
+				.param("edition", Integer.toString(Edition.getNumber(e))));
+	}
+	
 	public static void setPeriodicalBalance(Transaction txn) {
 		Queue queue = QueueFactory.getDefaultQueue();
-		// no transaction, will retry if fails
 		queue.add(txn, withUrl("/tasks/transition").method(TaskOptions.Method.GET)
 				.param("fun", "setPeriodicalBalance"));		
 	}
@@ -106,6 +113,14 @@ public class TransitionTask  extends HttpServlet {
 			int from = Integer.valueOf(_from);
 			d.transition.doTransition(from);
 		}
+		else if (fun.equals("setEditionFinished")) {
+			String _edition = request.getParameter("edition");
+			if (_edition == null) {
+				throw new IllegalArgumentException("edition");
+			}
+			int edition = Integer.valueOf(_edition);
+			d.editions.setEditionFinished(edition);
+		}		
 		else if (fun.equals("setPeriodicalBalance")) {
 			d.transition.setPeriodicalBalance();
 		}		
@@ -126,7 +141,7 @@ public class TransitionTask  extends HttpServlet {
 			d.transition.finishTransition();
 		}		
 	}
-	
+
 	
 
 }

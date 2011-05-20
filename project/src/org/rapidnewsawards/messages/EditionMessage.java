@@ -13,6 +13,8 @@ public class EditionMessage {
 	public final int totalSpend;
 	public final int numFundedLinks;
 	public final int totalScore;
+	public final boolean finished;
+	
 
 	public EditionMessage(Edition e, ScoreSpace s) {
 		this.id = e.getNumber();
@@ -22,5 +24,6 @@ public class EditionMessage {
 		this.totalScore = s.totalScore;
 		this.numFundedLinks = s.numFundedLinks;
 		this.revenue = s.balance;
+		this.finished = s.finished;
 	}
 }

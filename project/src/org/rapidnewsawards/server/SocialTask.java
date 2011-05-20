@@ -28,13 +28,14 @@ public class SocialTask extends HttpServlet {
 
 	public static void writeSocialEvent(Key<User> from, 
 			Key<User> to, Key<Edition> e, boolean on, 
-			Transaction txn) {
+			boolean cancelPending, Transaction txn) {
 		Queue queue = QueueFactory.getDefaultQueue();
 		queue.add(txn, withUrl("/tasks/social").method(TaskOptions.Method.GET)
 				.param("fun", "writeSocialEvent")
 				.param("from", Long.toString(from.getId()))
 				.param("to", Long.toString(to.getId()))
 				.param("e", e.getName())
+				.param("cancelPending", Boolean.toString(cancelPending))
 				.param("on", Boolean.toString(on)));
 	}
 
@@ -102,12 +103,18 @@ public class SocialTask extends HttpServlet {
 				throw new IllegalArgumentException("on");
 			}
 			boolean on = Boolean.valueOf(_on);
+			String _cancelPending = request.getParameter("cancelPending");
+			if (_cancelPending == null) {
+				throw new IllegalArgumentException("cancelPending");
+			}
+			boolean cancelPending = Boolean.valueOf(_cancelPending);
 			d.social.writeSocialEvent( 
 					// TODO use factory methods for these
 					new Key<User>(User.class, from), 
 					new Key<User>(User.class, to), 
 					new Key<Edition>(Edition.class, e), 
-					on);
+					on, 
+					cancelPending);
 		}
 		else if (fun.equals("changePendingAuthority")) {
 			String _to = request.getParameter("to");

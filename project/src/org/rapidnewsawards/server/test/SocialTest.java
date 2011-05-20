@@ -168,14 +168,29 @@ public class SocialTest extends RNATest {
 	@Test
 	public void testWriteFollow() throws InterruptedException, RNAException {
 		DAO.instance.social.writeSocialEvent(
-				mg.getKey(), jqp.getKey(), Edition.createKey(1), true);
-		Thread.sleep(200);
+				mg.getKey(), jqp.getKey(), Edition.createKey(1), true, false);
 		assertEquals(
 				d.ofy().query(Follow.class).ancestor(mg.getKey()).count(),
 				2);
 		assertEquals(
 				d.ofy().query(Follow.class).filter("judge", jqp.getKey()).count(),
 				2);
+	}
+	
+	@Test
+	public void testWriteUnFollow() throws InterruptedException, RNAException {
+		DAO.instance.social.writeSocialEvent(
+				mg.getKey(), jqp.getKey(), Edition.createKey(1), true, false);
+		assertEquals(d.ofy().query(Follow.class).ancestor(mg.getKey())
+				.filter("judge", jqp.getKey()).count(), 2);
+		DAO.instance.social.writeSocialEvent(
+				mg.getKey(), jqp.getKey(), Edition.createKey(1), false, false);
+		assertEquals(
+				d.ofy().query(Follow.class).ancestor(mg.getKey()).count(),
+				0);
+		assertEquals(
+				d.ofy().query(Follow.class).filter("judge", jqp.getKey()).count(),
+				0);
 	}
 	
 	@Test

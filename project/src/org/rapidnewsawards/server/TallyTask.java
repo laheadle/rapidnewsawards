@@ -79,7 +79,6 @@ public class TallyTask  extends HttpServlet {
 	}
 
 	public void _doGet(HttpServletRequest request, HttpServletResponse response) {
-		DAO.log.info("tally: " + request.toString());
 		String fun = request.getParameter("fun");
 		if (fun == null) {
 			throw new IllegalArgumentException("fun");

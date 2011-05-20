@@ -53,11 +53,13 @@
 
     <script type="text/template" id="edition-header-template"> 
       <span id="edition-header"> <span class="number"> Number 
-	<%= number %>: </span> Awarding $<%= 100 / 100 %> 
+	<%= number %>: </span> <%= finished? 'Awarded' : 'Awarding' %> 
+	$<%= finished? (totalSpend / 100) : (revenue / 100) %> 
 	on <%= endStr %> </span> </script>
 
     <script type="text/template" id="signup-round-template"> 
-      <span id="edition-header"> <span class="signup"> Signup round: </span> ends
+      <span id="edition-header"> <span class="signup"> Signup round: </span> 
+	<%= finished? 'Ended' : 'Ends' %>
 	on <%= endStr %> </span> </script>
 
     <script type="text/template" id="edition-tabs-template"> 

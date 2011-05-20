@@ -470,6 +470,7 @@ $(function(){
 		doPostRequest({fun: 'doSocial', 
 			       to: self.user().id, on: fol},
 			      function(data) {
+				  // TODO Don't show 'success' for e.g. already about to unfollow
 				  flashLog({type: 'success',
 					    content: data || 'I got confused'});
 			      });
@@ -490,6 +491,8 @@ $(function(){
 	    }
 
 	    // isFollowing checkBox
+	    // TODO BUG: If the logged-in user request returns after the related user,
+	    // this may fail to show a checkbox for an editor.
 	    if (app.loginView.canFollow(u)) {
 		html += rMake('#is-following-template', u);
 	    }
