@@ -1123,12 +1123,14 @@ public class DAO extends DAOBase {
 					user.getKey(), next.getKey(), new Date(), true);
 			ofy().put(join);
 				
-			for(int i = editions.getCurrentEdition().number;
-					i < editions.getNumEditions();
-					i++) {
-				Key<Edition> eKey = Edition.createKey(i);
-				ofy().put(new EditionUserAuthority(0, 
-						eKey, user.getKey()));
+			if (!user.isEditor) {
+				for(int i = editions.getCurrentEdition().number;
+				i < editions.getNumEditions();
+				i++) {
+					Key<Edition> eKey = Edition.createKey(i);
+					ofy().put(new EditionUserAuthority(0, 
+							eKey, user.getKey()));
+				}
 			}
 			// TODO 2.0 not used 
 			/*
