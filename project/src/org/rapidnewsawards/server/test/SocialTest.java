@@ -14,6 +14,7 @@ import org.rapidnewsawards.core.Periodical;
 import org.rapidnewsawards.core.Response;
 import org.rapidnewsawards.core.SocialEvent;
 import org.rapidnewsawards.core.User;
+import org.rapidnewsawards.messages.TopJudges;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.RNAException;
 
@@ -194,8 +195,10 @@ public class SocialTest extends RNATest {
 	}
 	
 	@Test
-	public void testChangePendingAuthority() {
+	public void testChangePendingAuthority() throws RNAException {
 		d.social.changePendingAuthority(jqp.getKey(), e1.getKey(), 1);
+		assertEquals(true, d.editions.getTopJudges(1).list.size() > 0);
+
 		assertEquals(
 				d.ofy().query(EditionUserAuthority.class)
 				.ancestor(e1.getKey())

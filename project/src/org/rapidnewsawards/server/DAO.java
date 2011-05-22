@@ -157,7 +157,7 @@ public class DAO extends DAOBase {
 			ArrayList<Key<User>> judges = new ArrayList<Key<User>>();
 
 			for (EditionUserAuthority eua : ofy().query(
-					EditionUserAuthority.class).filter("edition", e.getKey())) {
+					EditionUserAuthority.class).ancestor(e.getKey())) {
 				authorities.put(eua.user, eua.authority);
 				judges.add(eua.user);
 			}
@@ -305,7 +305,7 @@ public class DAO extends DAOBase {
 			si.score = sl.score;
 			si.editionId = editionNum;
 			si.submitter = ofy().get(link.submitter);
-			si.revenue = sl.funding;
+			si.setFunding(sl.funding);
 
 			FullStoryInfo fsi = new FullStoryInfo();
 			fsi.info = si;
@@ -314,8 +314,7 @@ public class DAO extends DAOBase {
 		}
 
 		public TopJudges getTopJudges(int edition) throws RNAException {
-			Edition e = editions
-					.getEdition(edition);
+			Edition e = editions.getEdition(edition);
 			TopJudges tj = new TopJudges();
 			tj.edition = makeEditionMessage(e);
 			tj.numEditions = editions.getNumEditions();
@@ -355,7 +354,7 @@ public class DAO extends DAOBase {
 				si.score = sl.score;
 				si.editionId = e.getNumber();
 				si.submitter = userMap.get(si.link.submitter);
-				si.revenue = sl.funding;
+				si.setFunding(sl.funding);
 				stories.add(si);
 			}
 

@@ -3,6 +3,7 @@ package org.rapidnewsawards.messages;
 import java.util.Date;
 
 import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.Periodical;
 import org.rapidnewsawards.core.ScoreSpace;
 
 public class EditionMessage {
@@ -14,6 +15,8 @@ public class EditionMessage {
 	public final int numFundedLinks;
 	public final int totalScore;
 	public final boolean finished;
+	public final String totalSpendStr;
+	public final String revenueStr;
 	
 
 	public EditionMessage(Edition e, ScoreSpace s) {
@@ -24,6 +27,8 @@ public class EditionMessage {
 		this.totalScore = s.totalScore;
 		this.numFundedLinks = s.numFundedLinks;
 		this.revenue = s.balance;
+		this.revenueStr = Periodical.moneyPrint(this.revenue);
+		this.totalSpendStr = Periodical.moneyPrint(this.revenue);
 		this.finished = s.finished;
 	}
 }

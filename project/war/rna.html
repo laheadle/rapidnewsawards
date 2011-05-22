@@ -54,7 +54,7 @@
     <script type="text/template" id="edition-header-template"> 
       <span id="edition-header"> <span class="number"> Number 
 	<%= number %>: </span> <%= finished? 'Awarded' : 'Awarding' %> 
-	$<%= finished? (totalSpend / 100) : (revenue / 100) %> 
+	<%= finished? totalSpendStr : revenueStr %> 
 	on <%= endStr %> </span> </script>
 
     <script type="text/template" id="signup-round-template"> 
@@ -131,7 +131,7 @@
 
     <script type="text/template" id="full-story-template">
       <div class="spine">
-      <span class="revenue"> $<%= revenue %></span>
+      <span class="revenue"> <%= revenueStr %></span>
       <br>
       <h3> 
 	<a href="<%= link.url %>"> <%= link.title %> </a> </h3> 

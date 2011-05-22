@@ -76,7 +76,7 @@ public class Periodical {
 	}
 
 	public static String moneyPrint(int amount) {
-		return "$" + amount / 100 + "." + amount % 100;	
+		return "$" + amount / 100 + "." + String.format("%02d", amount % 100);	
 	}
 	
 }
