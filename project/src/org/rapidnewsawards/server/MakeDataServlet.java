@@ -124,9 +124,10 @@ public class MakeDataServlet extends HttpServlet {
 		makeEditor("ohthatmeg@gmail.com");
 		User jq = makeJudge("johnqpublic@gmail.com");
 		User lyn = makeEditor("laheadle@gmail.com");		
-		makeEditor("steveouting@gmail.com");
-		welcome(lyn, "lyn", TEST_DONATION_AMOUNT);
+		User so = makeJudge("steveouting@gmail.com");
+		welcome(lyn, "lyn", 0);
 		welcome(jq, "john q public", TEST_DONATION_AMOUNT);
+		welcome(so, "Steve Outing", 0);
 
 		if (numUsers != null) {
 			int NUM_USERS = 6;

@@ -162,19 +162,17 @@ public class DAO extends DAOBase {
 				judges.add(eua.user);
 			}
 
-			if (judges.size() == 0) {
-				log.warning("requested judges for empty edition " + e);
-				return result;
+			if (judges.size() > 0) {
+				Map<Key<User>, User> vmap = ofy().get(judges);
+
+				for (int i = 0; i < judges.size(); i++) {
+					result.add(new User_Authority(vmap.get(judges.get(i)),
+							authorities.get(judges.get(i))));
+				}
+
+				Collections.sort(result);
 			}
-
-			Map<Key<User>, User> vmap = ofy().get(judges);
-
-			for (int i = 0; i < judges.size(); i++) {
-				result.add(new User_Authority(vmap.get(judges.get(i)),
-						authorities.get(judges.get(i))));
-			}
-
-			Collections.sort(result);
+			
 			return result;
 		}
 
@@ -1225,6 +1223,7 @@ public class DAO extends DAOBase {
 		
 		if (sl == null) {
 			sl = new ScoredLink(v.edition, space.root, v.link, v.authority, fund);
+			space.numFundedLinks++;
 		}
 		else {
 			sl.score += v.authority;

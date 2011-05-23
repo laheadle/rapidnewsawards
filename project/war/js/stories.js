@@ -371,7 +371,7 @@ $(function(){
 	view: AuthorityView,
 
 	comparator: function(model) {
-	    return model.get('authority');
+	    return -model.get('authority');
 	}
 
     });

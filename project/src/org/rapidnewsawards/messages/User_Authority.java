@@ -10,7 +10,8 @@ public class User_Authority implements Comparable<User_Authority> {
 	public User_Authority() {};
 
 	public int compareTo(User_Authority ua) {
-		return authority.compareTo(ua.authority);
+		// descending
+		return - (authority.compareTo(ua.authority));
 	}
 
 }

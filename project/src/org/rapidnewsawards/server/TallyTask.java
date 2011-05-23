@@ -27,6 +27,17 @@ public class TallyTask  extends HttpServlet {
 	private static final Logger log = Logger.getLogger(TallyTask.class.getName());
 	private static DAO d = DAO.instance;
 
+	public static void writeVote(Transaction txn,
+			User u, Key<Edition> e, Link l, boolean on) {
+		Queue queue = QueueFactory.getDefaultQueue();
+		queue.add(txn, withUrl("/tasks/tally").method(TaskOptions.Method.GET)
+				.param("fun", "writeVote")
+				.param("user", Long.toString(u.id))
+				.param("edition", e.getName())
+				.param("link", Long.toString(l.id))
+				.param("on", Boolean.toString(on)));		
+	}
+
 	public static void tallyVote(Transaction txn, Vote v) {
 		Queue queue = QueueFactory.getDefaultQueue();
 		queue.add(txn, withUrl("/tasks/tally").method(TaskOptions.Method.GET)
@@ -39,17 +50,6 @@ public class TallyTask  extends HttpServlet {
 		Queue queue = QueueFactory.getDefaultQueue();
 		queue.add(txn, withUrl("/tasks/tally").method(TaskOptions.Method.GET)
 				.param("fun", "releaseUserLock"));
-	}
-
-	public static void writeVote(Transaction txn,
-			User u, Key<Edition> e, Link l, boolean on) {
-		Queue queue = QueueFactory.getDefaultQueue();
-		queue.add(txn, withUrl("/tasks/tally").method(TaskOptions.Method.GET)
-				.param("fun", "writeVote")
-				.param("user", Long.toString(u.id))
-				.param("edition", e.getName())
-				.param("link", Long.toString(l.id))
-				.param("on", Boolean.toString(on)));		
 	}
 
 	

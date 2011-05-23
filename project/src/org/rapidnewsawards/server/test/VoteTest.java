@@ -45,6 +45,7 @@ public class VoteTest extends RNATest {
 		d.tallyVote(v.getKey());
 		space = d.editions.getScoreSpace(v.edition);
 		assertEquals(space.totalScore, 1);
+		assertEquals(space.numFundedLinks, 1);
 		assertEquals(space.totalSpend, 100);
 		assertEquals(space.balance, 100);
 	}
