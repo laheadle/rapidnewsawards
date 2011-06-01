@@ -58,7 +58,7 @@ public class DAO extends DAOBase {
 
 	public class Editions {
 
-		// TODO make enums
+		// TODO 2.0 make enums
 		public static final int CURRENT = -1;
 		public static final int NEXT = -2;
 		public static final int FINAL = -3;
@@ -364,8 +364,17 @@ public class DAO extends DAOBase {
 			// TODO put this and vote in transaction along with task
 			VoteResult vr = new VoteResult();
 
+			if (url.length() > 499) {
+				vr.returnVal = Response.URL_TOO_LONG;
+				return vr;				
+			}
+			if (title.length() > 499) {
+				vr.returnVal = Response.TITLE_TOO_LONG;
+				return vr;				
+			}
 			if (submitter == null) {
 				vr.returnVal = Response.NOT_LOGGED_IN;
+				// TODO Think
 				vr.authUrl = null; // userService.createLoginURL(fullLink);
 				return vr;
 			}
@@ -375,7 +384,6 @@ public class DAO extends DAOBase {
 					vr.returnVal = users.voteFor(
 							submitter,
 							e, l, true);
-					vr.authUrl = null; // userService.createLogoutURL(home);
 				}
 				catch (MalformedURLException ex) {
 					// TODO Just Catch this in parent?

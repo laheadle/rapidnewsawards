@@ -107,7 +107,6 @@ public class JSONServlet extends HttpServlet {
 			@Override
 			public Object getResult() throws RNAException {
 				int edition = get("edition", Integer.class);
-				// TODO BUG IN edition = 0
 				RecentSocials rs = d.social.getRecentSocials(edition);
 				return rs;
 			}

@@ -88,7 +88,6 @@ public class MakeDataServlet extends HttpServlet {
 		} catch (ParseException e) {
 			e.printStackTrace(out);
 		} catch (RNAException e) {
-			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
 		out.println("created " + numUsers.value + " users");

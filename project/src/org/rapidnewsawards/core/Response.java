@@ -20,7 +20,9 @@ public enum Response {
 	FORBIDDEN_DURING_FINAL("You can't do that during the final edition"), 
 	NOT_AN_EDITOR("Only Editors can do this"), 
 	BAD_URL("Malformed URL"), IS_FINISHED("The last edition is finished"), 
-	ALREADY_ABOUT_TO_UNFOLLOW("Already about to unfollow");
+	ALREADY_ABOUT_TO_UNFOLLOW("Already about to unfollow"), 
+	URL_TOO_LONG("The URL is too long"), 
+	TITLE_TOO_LONG("The title is too long");
 
 
 public String s;
