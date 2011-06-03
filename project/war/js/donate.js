@@ -14,13 +14,17 @@ $(function(){
 	initialize: function() {
 	    var self = this;
 	    $('#submit').click(function() {
+		event.preventDefault();
 		window.doRequest({fun: 'donate', 
-				  webpage: self.get('webpage'),
+				  webPage: self.get('webPage'),
 				  name: self.get('name'),
 				  statement: self.get('statement'),
 				  donation: self.get('donation')},
 				 function (data) {
-				     alert('thank you!');
+				     window.flashLog({type:'success', content: 'Thank You!'});
+				 },
+				 function() { 
+				     window.flashLog({type:'error', content: 'Error'});
 				 });
 	    });
 	}

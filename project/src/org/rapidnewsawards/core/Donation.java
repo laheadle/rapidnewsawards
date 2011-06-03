@@ -25,5 +25,5 @@ public class Donation {
 		this.date = new Date();
 	}
 
-	public Donation() {}	
+	public Donation() {}
 }

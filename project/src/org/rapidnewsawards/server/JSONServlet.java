@@ -195,9 +195,9 @@ public class JSONServlet extends HttpServlet {
 				String name = request.getParameter("name");
 				String donation_ = request.getParameter("donation");
 				int donation = (int) Double.parseDouble(donation_) * 100;
-				String webpage = request.getParameter("webpage");
+				String webPage = request.getParameter("webPage");
 				String statement = request.getParameter("statement");
-				d.donate(new Donation(name, donation, webpage, statement));
+				d.donate(new Donation(name, donation, webPage, statement));
 				return Response.SUCCESS;
 			}
 		});

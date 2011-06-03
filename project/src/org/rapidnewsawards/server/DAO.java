@@ -1237,11 +1237,7 @@ public class DAO extends DAOBase {
 	}
 
 	public void donate(Donation donation) throws RNAException {
-		LockedPeriodical lp = lockPeriodical();
-		lp.periodical.balance += donation.amount;
-		lp.commit();
 		ofy().put(donation);
-		log.info("balance: " + Periodical.moneyPrint(lp.periodical.balance));
 	}
 
 }
