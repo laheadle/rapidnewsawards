@@ -1138,19 +1138,6 @@ public class DAO extends DAOBase {
 							eKey, user.getKey()));
 				}
 			}
-			// TODO 2.0 not used 
-			/*
-			LockedPeriodical lp = lockPeriodical();
-
-			lp.periodical.balance += donation;
-			lp.commit();
-
-			log.info("balance: " + Periodical.moneyPrint(lp.periodical.balance));
-						Donation don = new Donation(user.getKey(), donation);
-
-			ofy().put(don);
-
-			*/	
 			return user;
 		}
 
@@ -1247,6 +1234,14 @@ public class DAO extends DAOBase {
 		LockedPeriodical lp = lockPeriodical();
 		lp.releaseUserLock();
 		lp.commit();
+	}
+
+	public void donate(Donation donation) throws RNAException {
+		LockedPeriodical lp = lockPeriodical();
+		lp.periodical.balance += donation.amount;
+		lp.commit();
+		ofy().put(donation);
+		log.info("balance: " + Periodical.moneyPrint(lp.periodical.balance));
 	}
 
 }

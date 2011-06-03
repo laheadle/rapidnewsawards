@@ -11,16 +11,19 @@ import com.googlecode.objectify.Key;
 public class Donation {
 
 	@Id Long id;
+	public String webPage;
+	public String name;
+	public String statement;
+	public int amount;
+	public Date date;
 
-	public Donation(Key<User> user, int donation) {
-		this.user = user;
+	public Donation(String name, int donation, String webPage, String statement) {
+		this.name = name;
+		this.webPage = webPage;
+		this.statement = statement;
 		this.amount = donation;
 		this.date = new Date();
 	}
 
-	public Donation() {}
-	
-	public Key<User> user;
-	public int amount;
-	public Date date;
+	public Donation() {}	
 }

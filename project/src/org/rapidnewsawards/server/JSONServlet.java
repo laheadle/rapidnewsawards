@@ -11,7 +11,9 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.rapidnewsawards.core.Donation;
 import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.Response;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.messages.Name;
 import org.rapidnewsawards.messages.RecentSocials;
@@ -186,6 +188,20 @@ public class JSONServlet extends HttpServlet {
 				return vr;
 			}
 		});
+		
+		commandsMap.put("donate", new AbstractCommand() {
+			@Override
+			public Object getResult() throws RNAException {
+				String name = request.getParameter("name");
+				String donation_ = request.getParameter("donation");
+				int donation = (int) Double.parseDouble(donation_) * 100;
+				String webpage = request.getParameter("webpage");
+				String statement = request.getParameter("statement");
+				d.donate(new Donation(name, donation, webpage, statement));
+				return Response.SUCCESS;
+			}
+		});
+		
 		commandsMap.put("sendLogoutURL", new AbstractCommand() {
 			@Override
 			public Object getResult() {
