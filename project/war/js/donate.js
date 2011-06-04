@@ -15,13 +15,15 @@ $(function(){
 	    var self = this;
 	    $('#submit').click(function() {
 		event.preventDefault();
+		window.flashLog({type:'info', content: 'Submitting...'});
 		window.doRequest({fun: 'donate', 
 				  webPage: self.get('webPage'),
 				  name: self.get('name'),
 				  statement: self.get('statement'),
 				  donation: self.get('donation')},
 				 function (data) {
-				     window.flashLog({type:'success', content: 'Thank You!'});
+				     window.flashLog({type:'success', 
+						      content: 'Your information was saved. Thank You.'});
 				 },
 				 function() { 
 				     window.flashLog({type:'error', content: 'Error'});
