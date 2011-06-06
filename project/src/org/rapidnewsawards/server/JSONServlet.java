@@ -193,11 +193,11 @@ public class JSONServlet extends HttpServlet {
 			@Override
 			public Object getResult() throws RNAException {
 				String name = request.getParameter("name");
-				String donation_ = request.getParameter("donation");
-				int donation = (int) Double.parseDouble(donation_) * 100;
+				String donation = request.getParameter("donation");
 				String webPage = request.getParameter("webPage");
 				String statement = request.getParameter("statement");
-				d.donate(new Donation(name, donation, webPage, statement));
+				String consent = request.getParameter("consent");
+				d.donate(name, donation, webPage, statement, consent);
 				return Response.SUCCESS;
 			}
 		});

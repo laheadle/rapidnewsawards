@@ -47,6 +47,7 @@ import org.rapidnewsawards.messages.Vote_Link;
 import com.google.appengine.api.datastore.QueryResultIterable;
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.google.appengine.repackaged.com.google.common.base.Strings;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.NotFoundException;
 import com.googlecode.objectify.Objectify;
@@ -55,6 +56,10 @@ import com.googlecode.objectify.Query;
 import com.googlecode.objectify.util.DAOBase;
 
 public class DAO extends DAOBase {
+
+	private static final int HUGE_DONATION_DOLLARS = 5000;
+
+	private static final int CENTS_PER_DOLLAR = 100;
 
 	public class Editions {
 
@@ -1237,7 +1242,47 @@ public class DAO extends DAOBase {
 	}
 
 	public void donate(Donation donation) throws RNAException {
-		ofy().put(donation);
+	}
+
+	public void donate(String name, String donation, String webPage,
+			String statement, String consent) throws RNAException {
+		int amount;
+		try {
+			amount = (int) Double.parseDouble(donation);
+			if (amount > HUGE_DONATION_DOLLARS * CENTS_PER_DOLLAR) {
+				throw new RNAException("That amount is too high.");
+			}
+		}
+		catch (NumberFormatException e) {
+			throw new RNAException("Donation amount must be a number.");
+		}
+		if (Strings.isNullOrEmpty(name)) {
+			throw new RNAException("A name is required.");			
+		}
+		boolean c = Boolean.parseBoolean(consent);
+		if (!c) {
+			throw new RNAException("You did not check the consent form.");
+		}
+		Donation d = new Donation(name, amount, normalizeWebPage(webPage), statement);
+		ofy().put(d);
+	}
+
+	private String normalizeWebPage(String webPage) throws RNAException {
+		if (Strings.isNullOrEmpty(webPage)) {
+			return "";
+		}
+		try {
+			new java.net.URL(webPage);
+			return webPage;
+		} catch (MalformedURLException e) {
+			try {
+				String wp = "http://" + webPage;
+				new java.net.URL(wp);
+				return wp;
+			} catch (MalformedURLException mfe) {
+				throw new RNAException("Invalid web page: " + webPage);
+			}
+		}
 	}
 
 }

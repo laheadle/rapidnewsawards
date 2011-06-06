@@ -80,8 +80,7 @@ window.initRNA = function () {
 	    var response = empty? {status: false, message: bitOfProblem} : JSON.parse(data);
 	    var payload = response.payload;
 	    if (response.status != 'OK') { 
-		var problem = 'there\'s a problem..working on it';
-		flashError(response.message || problem); 
+		err(response);
 		return;
 	    }
 	    try {
@@ -100,16 +99,15 @@ window.initRNA = function () {
 
 	    }
 	    catch (e) {
-		if (err) {
-		    err(e);
-		}
-		else {
-		    flashError(e.toString());
-		}
+		reportError(attrs, e);
 	    }
 	};
 	method.apply($, ['JSONrpc', attrs, reactTo]);
     };
+
+    window.reportError = function(attrs, error) {
+	throw e;
+    }
 
     // ajax call where method is either $.get or $.post
     window.requester = new Requester;
@@ -172,5 +170,8 @@ window.initRNA = function () {
 	    .replace(/:[0-9][0-9]$/, '');
 	},
     };
+
+    $.ajaxSetup({timeout: 7000});
+    $('body').ajaxError(function() { flashError("Communication error.  Please Check your network connection."); });
 
 }
