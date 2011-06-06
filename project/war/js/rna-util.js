@@ -171,7 +171,7 @@ window.initRNA = function () {
 	},
     };
 
-    $.ajaxSetup({timeout: 7000});
+    $.ajaxSetup({timeout: 10000});
     $('body').ajaxError(function() { flashError("Communication error.  Please Check your network connection."); });
 
 }

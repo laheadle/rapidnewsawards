@@ -1241,14 +1241,11 @@ public class DAO extends DAOBase {
 		lp.commit();
 	}
 
-	public void donate(Donation donation) throws RNAException {
-	}
-
 	public void donate(String name, String donation, String webPage,
 			String statement, String consent) throws RNAException {
 		int amount;
 		try {
-			amount = (int) Double.parseDouble(donation);
+			amount = (int) (Double.parseDouble(donation) * 100);
 			if (amount > HUGE_DONATION_DOLLARS * CENTS_PER_DOLLAR) {
 				throw new RNAException("That amount is too high.");
 			}
