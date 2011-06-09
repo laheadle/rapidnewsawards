@@ -536,8 +536,12 @@ $(function(){
 	    this.$('form input[type=submit]').click(function (event) {
 		event.preventDefault();
 		var nickname = self.$('form input[name=nickname]').attr('value');
-		var webpage = self.$('form input[name=webpage]').attr('value');
-		doRequest({ fun: 'welcomeUser', nickname: nickname}, 
+		var webPage = self.$('form input[name=webPage]').attr('value');
+		var consent = self.$('form input[name=consent]').attr('checked');
+		doRequest({ fun: 'welcomeUser', 
+			    nickname: nickname, 
+			    webPage: webPage,
+			    consent: consent }, 
 			  function(data) {
 			      if (data) {
 				  app.loginView.model.set(data);
@@ -547,9 +551,9 @@ $(function(){
 				  flashError('failed to create account');
 			      }
 			  },
-			  function (err) {
-			      flashError(err.toString());
-			  });	
+			  function(response) {
+			      window.flashLog({type:'error', content: response.message});
+			  });
 	    });
 	},
 

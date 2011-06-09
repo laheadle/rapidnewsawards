@@ -11,13 +11,11 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.rapidnewsawards.core.Donation;
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.Response;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.messages.Name;
 import org.rapidnewsawards.messages.RecentSocials;
-import org.rapidnewsawards.messages.RecentVotes;
 import org.rapidnewsawards.messages.TopStories;
 import org.rapidnewsawards.messages.VoteResult;
 
@@ -33,6 +31,7 @@ public class JSONServlet extends HttpServlet {
 	private static final Logger log = Logger.getLogger(JSONServlet.class
 			.getName());
 	private static final String TRY_AGAIN = "TRY_AGAIN";
+	private static final String SERVER_ERROR = "SERVER_ERROR";
 
 	private static abstract class Parser {
 		public abstract Object parse(String value);
@@ -170,10 +169,10 @@ public class JSONServlet extends HttpServlet {
 			@Override
 			public Object getResult() throws RNAException {
 				// TODO test
-				if (d.user == null)
-					return null;
 				String nickname = request.getParameter("nickname");
-				return d.users.welcomeUser(nickname, 0);
+				String consent = request.getParameter("consent");
+				String webPage = request.getParameter("webPage");
+				return d.users.welcomeUser(nickname, consent, webPage);
 			}
 		});
 
@@ -302,6 +301,12 @@ public class JSONServlet extends HttpServlet {
 			re.message = "Things are busy...please try again!";
 			log.severe(String.format("%s command gave up after %d retries!", c, e.tries));
 			out.println(g.toJson(re));
+		}
+		catch (Exception e) {
+			re.payload = null;
+			re.status = SERVER_ERROR;
+			re.message = "";
+			out.println(g.toJson(re));			
 		}
 	}
 

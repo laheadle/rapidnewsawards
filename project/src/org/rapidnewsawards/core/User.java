@@ -24,6 +24,8 @@ public class User {
 	public boolean isInitialized;
 	
 	public boolean isEditor;
+
+	public String webPage;
 		
 	public User() {}
 	

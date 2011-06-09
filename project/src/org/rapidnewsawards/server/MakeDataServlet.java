@@ -4,12 +4,10 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
-import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.List;
 import java.util.logging.Logger;
 
-import javax.servlet.ServletException;
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
@@ -29,7 +27,6 @@ import com.googlecode.objectify.Objectify;
 public class MakeDataServlet extends HttpServlet {
 	private static final Logger log = Logger.getLogger(MakeDataServlet.class
 			.getName());
-	private static final int TEST_DONATION_AMOUNT = 5000;
 	private static final int FIRST_EDITION = 0;
 	private static final long serialVersionUID = 1L;
 	public static PrintWriter out;
@@ -106,10 +103,10 @@ public class MakeDataServlet extends HttpServlet {
 		}
 	}
 
-	public static void welcome(User u, String nickname, int donation) throws RNAException {
+	public static void welcome(User u, String nickname) throws RNAException {
 		User olduser = d.user;
 		d.user = u;
-		d.users.welcomeUser(nickname, donation * 100);		
+		d.users.welcomeUser(nickname, "true", "http://example.com");		
 		d.user = olduser;
 	}
 	public static void makeData (int editionCount, long periodSize, Cell<Integer> numUsers) 
@@ -124,9 +121,9 @@ public class MakeDataServlet extends HttpServlet {
 		User jq = makeJudge("johnqpublic@gmail.com");
 		User lyn = makeEditor("laheadle@gmail.com");		
 		User so = makeJudge("steveouting@gmail.com");
-		welcome(lyn, "lyn", 0);
-		welcome(jq, "john q public", TEST_DONATION_AMOUNT);
-		welcome(so, "Steve Outing", 0);
+		welcome(lyn, "lyn");
+		welcome(jq, "john q public");
+		welcome(so, "Steve Outing");
 
 		if (numUsers != null) {
 			int NUM_USERS = 6;

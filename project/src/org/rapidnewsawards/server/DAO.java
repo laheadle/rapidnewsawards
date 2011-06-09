@@ -766,7 +766,7 @@ public class DAO extends DAOBase {
 			}
 			if (Edition.isFinal(current.getKey(), editions.getNumEditions())) {
 				transition.finishPeriodical();
-				log.info("End of periodical; last edition is" + current);
+				log.info("End of periodical; last edition was " + current);
 			}
 			else {
 				transition.transitionEdition();
@@ -1020,6 +1020,11 @@ public class DAO extends DAOBase {
 				return vr;
 			}
 
+			if (Edition.getNumber(edition) == 0) {
+				vr.returnVal = Response.VOTING_FORBIDDEN_DURING_SIGNUP;
+				return vr;
+			}
+
 			Link l = ofy().query(Link.class).filter(Name.URL.name, link).get();
 			if (l == null) {
 				return null; // User must submit the link
@@ -1118,18 +1123,40 @@ public class DAO extends DAOBase {
 			}
 		}
 
-		public User welcomeUser(String nickname, int donation) throws RNAException {
+		public User welcomeUser(String nickname, String consent, String webPage) 
+		throws RNAException {
+			editions.getEdition(Editions.CURRENT);
 			// TODO Transactions!
+			if (user == null) {
+				throw new RNAException("You must log in first");
+			}
+			if (Strings.isNullOrEmpty(nickname)) {
+				throw new RNAException("A name or nickname is required.");			
+			}
+			if (Strings.isNullOrEmpty(webPage)) {
+				throw new RNAException("A web page is required so editors can get to know you.");			
+			}
+			boolean c = Boolean.parseBoolean(consent);
+			if (!c) {
+				throw new RNAException("You did not check the consent form.");
+			}
+			
 			user.nickname = nickname;
 			user.isInitialized = true;
-
+			user.webPage = normalizeWebPage(webPage);
+			
 			ofy().put(user);
+
+			// GO ahead and accept their changes, but this should not happen.
+			if (hasAlreadyJoined(user)) {
+				log.warning("user changed their information: " + user);
+				return user;
+			}
 
 			log.info("welcome: " + user);
 
 			Edition next = editions.getNextEdition();
 
-			// TODO double check they're not present
 			SocialEvent join = new SocialEvent(User.getRNAEditor(),
 					user.getKey(), next.getKey(), new Date(), true);
 			ofy().put(join);
@@ -1144,6 +1171,12 @@ public class DAO extends DAOBase {
 				}
 			}
 			return user;
+		}
+
+		private boolean hasAlreadyJoined(User u) {
+			return ofy().query(SocialEvent.class)
+					.ancestor(User.getRNAEditor()).filter("judge", u.getKey()).get()
+					!= null;
 		}
 
 	}
@@ -1243,16 +1276,7 @@ public class DAO extends DAOBase {
 
 	public void donate(String name, String donation, String webPage,
 			String statement, String consent) throws RNAException {
-		int amount;
-		try {
-			amount = (int) (Double.parseDouble(donation) * 100);
-			if (amount > HUGE_DONATION_DOLLARS * CENTS_PER_DOLLAR) {
-				throw new RNAException("That amount is too high.");
-			}
-		}
-		catch (NumberFormatException e) {
-			throw new RNAException("Donation amount must be a number.");
-		}
+		int amount = parseDonation(donation);
 		if (Strings.isNullOrEmpty(name)) {
 			throw new RNAException("A name is required.");			
 		}
@@ -1262,6 +1286,20 @@ public class DAO extends DAOBase {
 		}
 		Donation d = new Donation(name, amount, normalizeWebPage(webPage), statement);
 		ofy().put(d);
+	}
+
+	private int parseDonation(String donation) throws RNAException {
+		int amount;
+		try {
+			amount = (int) (Double.parseDouble(donation) * CENTS_PER_DOLLAR);
+			if (amount > HUGE_DONATION_DOLLARS * CENTS_PER_DOLLAR) {
+				throw new RNAException("That amount is too high.");
+			}
+		}
+		catch (NumberFormatException e) {
+			throw new RNAException("Donation amount must be a number.");
+		}
+		return amount;
 	}
 
 	private String normalizeWebPage(String webPage) throws RNAException {

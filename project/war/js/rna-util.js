@@ -79,8 +79,16 @@ window.initRNA = function () {
 	    var bitOfProblem = 'bit of a problem...working on it.';
 	    var response = empty? {status: false, message: bitOfProblem} : JSON.parse(data);
 	    var payload = response.payload;
-	    if (response.status != 'OK') { 
-		err(response);
+	    if (response.status === 'BAD_REQUEST') { 
+		if (err) { err(response); } else { flashError(response); }
+		return;
+	    }
+	    if (response.status === 'TRY_AGAIN') { 
+		flashInfo('The server is busy.  Pleasy try again');
+		return;
+	    }
+	    else if (response.status !== 'OK') {
+		flashError("Server Error.  We are looking into it, please try again in a bit.");
 		return;
 	    }
 	    try {

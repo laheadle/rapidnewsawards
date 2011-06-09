@@ -12,6 +12,9 @@ import com.googlecode.objectify.annotation.Parent;
 @Entity
 public class Periodical {
 
+	// 5k dollars (in pennies)
+	private static final int TEST_INITIAL_BALANCE = 500000;
+
 	private static final int ROOT_ID = 1;
 
 	private Key<Edition> currentEditionKey;
@@ -45,7 +48,7 @@ public class Periodical {
 		this.live = true;
 		this.idName = name.name;
 		// TODO Remove.
-		this.balance = 500000; // 5k dollars (in pennies)
+		this.balance = TEST_INITIAL_BALANCE;
 	}
 	
 	private static Key<Root> rootKey() {

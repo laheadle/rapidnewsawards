@@ -5,8 +5,6 @@ import java.util.Date;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
-import com.googlecode.objectify.Key;
-
 @Entity
 public class Donation {
 

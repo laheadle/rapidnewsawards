@@ -14,7 +14,6 @@ import org.rapidnewsawards.core.Periodical;
 import org.rapidnewsawards.core.Response;
 import org.rapidnewsawards.core.SocialEvent;
 import org.rapidnewsawards.core.User;
-import org.rapidnewsawards.messages.TopJudges;
 import org.rapidnewsawards.server.DAO;
 import org.rapidnewsawards.server.RNAException;
 
