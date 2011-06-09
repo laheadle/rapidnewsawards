@@ -24,7 +24,7 @@ $(function(){
 	    var setLink = function (data) {
 		if (data) {
 		    self.model.set({done: true,
-				    already: data.returnVal == 'ALREADY_VOTED'});
+				    result: data.returnVal});
 		}
 		else {
 		    self.model.unset('submitting', {silent: true});
@@ -47,7 +47,7 @@ $(function(){
 		}
 		else {
 		    self.model.set({user: {cid: 'guest'}});
-		    window.changeURL('sendLoginURL');
+		    window.redirectForLogin('sendLoginURL');
 		}
 	    };
 
@@ -76,8 +76,11 @@ $(function(){
 	    }
 	    else if (user.nickname) {
 		if (done) {
-		    if (this.model.get('already') == true) { 
+		    if (this.model.get('result') === 'ALREADY_VOTED') { 
 			this.show('you already voted for this story');
+		    }
+		    else if (this.model.get('result') === 'ONLY_JUDGES_CAN_VOTE') { 
+			this.show('Only judges can vote');
 		    }
 		    else {
 			this.show('your vote was counted!');

@@ -24,7 +24,8 @@ public enum Response {
 	ALREADY_ABOUT_TO_UNFOLLOW("Already about to unfollow"), 
 	URL_TOO_LONG("The URL is too long"), 
 	TITLE_TOO_LONG("The title is too long"), 
-	VOTING_FORBIDDEN_DURING_SIGNUP("Voting is not permitted during the signup round");
+	VOTING_FORBIDDEN_DURING_SIGNUP("Voting is not permitted during the signup round"), 
+	ONLY_JUDGES_CAN_VOTE("Only judges can vote");
 
 
 public String s;

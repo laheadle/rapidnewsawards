@@ -114,7 +114,7 @@ window.initRNA = function () {
     };
 
     window.reportError = function(attrs, error) {
-	throw e;
+	throw error;
     }
 
     // ajax call where method is either $.get or $.post

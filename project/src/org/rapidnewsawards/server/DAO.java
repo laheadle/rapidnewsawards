@@ -365,10 +365,20 @@ public class DAO extends DAOBase {
 		}
 
 		public VoteResult submitStory(String url, String title,
-				Key<Edition> e, User submitter) throws RNAException {
+				Key<Edition> e) throws RNAException {
 			// TODO put this and vote in transaction along with task
 			VoteResult vr = new VoteResult();
 
+			if (user == null) {
+				vr.returnVal = Response.NOT_LOGGED_IN;
+				// TODO Think
+				vr.authUrl = null; // userService.createLoginURL(fullLink);
+				return vr;
+			}
+			if (user.isEditor) {
+				vr.returnVal = Response.ONLY_JUDGES_CAN_VOTE;
+				return vr;
+			}
 			if (url.length() > 499) {
 				vr.returnVal = Response.URL_TOO_LONG;
 				return vr;				
@@ -377,23 +387,17 @@ public class DAO extends DAOBase {
 				vr.returnVal = Response.TITLE_TOO_LONG;
 				return vr;				
 			}
-			if (submitter == null) {
-				vr.returnVal = Response.NOT_LOGGED_IN;
-				// TODO Think
-				vr.authUrl = null; // userService.createLoginURL(fullLink);
-				return vr;
-			}
 			else {
 				try {
-					Link l = users.createLink(url, title, submitter.getKey());
+					Link l = users.createLink(url, title, user.getKey());
 					vr.returnVal = users.voteFor(
-							submitter,
+							user,
 							e, l, true);
 				}
 				catch (MalformedURLException ex) {
 					// TODO Just Catch this in parent?
 					// TODO Test on frontend
-					log.warning("bad url " + url + "submitted by " + submitter);
+					log.warning("bad url " + url + "submitted by " + user);
 					vr.returnVal = Response.BAD_URL;
 				}
 			}
@@ -1017,6 +1021,11 @@ public class DAO extends DAOBase {
 			if (user == null) {
 				vr.returnVal = Response.NOT_LOGGED_IN;
 				vr.authUrl = userService.createLoginURL(fullLink);
+				return vr;
+			}
+
+			if (user.isEditor) {
+				vr.returnVal = Response.ONLY_JUDGES_CAN_VOTE;
 				return vr;
 			}
 

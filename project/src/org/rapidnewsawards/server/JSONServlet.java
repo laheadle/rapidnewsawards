@@ -183,7 +183,7 @@ public class JSONServlet extends HttpServlet {
 				String title = request.getParameter("title");
 				Edition ed = d.editions.getCurrentEdition();
 				VoteResult vr = d.editions
-				.submitStory(url, title, ed.getKey(), d.user);
+				.submitStory(url, title, ed.getKey());
 				return vr;
 			}
 		});
