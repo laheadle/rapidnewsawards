@@ -208,6 +208,10 @@ h1.title {
     color: green;
 }
 
+.smallTime {
+    font-size: .5em;
+}
+
 .social, .story {
     color: black;
     font-size: 1.1em;

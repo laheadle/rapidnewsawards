@@ -101,6 +101,7 @@
     <script type="text/template" id="funding-template">
 	<li> 
 	  <!-- don't redisplay the username for personview -->
+	  <span class="smallTime"> <%= timeStr %></span> 
 	  <%= user ? rMake('#person-link-template', user) : "" %>
 	  funded 
 	  <a href="<%= link.url %>"> <%= link.title %> </a>
@@ -158,7 +159,8 @@
     <script type="text/template" id="collapsed-edition-template">
       <span> <a href="#topStories/<%= number %>"> Number 
 	  <%= number %> </a> awarded $<%= totalSpend / 100 %> to 
-	<%= numFundedLinks %> stories on <%= endStr %> </span> </script>
+	<%= numFundedLinks %> <%= numFundedLinks == 1? 'story' : 'stories' %> 
+	on <%= endStr %> </span> </script>
 
     <script type="text/template" id="collapsed-signup-round-template">
       <span> <a href="#recentSocials/<%= number %>"> Signup round </a> 
@@ -170,12 +172,12 @@
 	published, <%= remaining %> remaining. </span> </script>
 
     <script type="text/template" id="follow-template">
-      <%= subjectLink %>
+      <span class="smallTime"> <%= timeStr %> </span> <%= subjectLink %> 
       <span> <%= on? 'decided to follow' : 'decided to unfollow' %> </span>
-      <%= objectLink %>.</script>
+      <%= objectLink %> </script>
 
     <script type="text/template" id="welcome-template">
-      <span>Welcome, </span> 
+      <span class="smallTime"> <%= timeStr %> </span> <span>Welcome, </span> 
       <%= objectLink %>.</script>
 
     <script type="text/template" id="person-template">

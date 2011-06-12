@@ -199,17 +199,19 @@ public class DAO extends DAOBase {
 			Query<SocialEvent> q = ofy().query(SocialEvent.class)
 					.filter("edition", e.getKey()).order("-time");
 
+			ArrayList<Date> times = new ArrayList<Date>();
 			for (SocialEvent event : q) {
 				editors.add(event.editor);
 				judges.add(event.judge);
 				bools.add(event.on);
+				times.add(event.time);
 			}
 			Map<Key<User>, User> umap = ofy().get(editors);
 			Map<Key<User>, User> lmap = ofy().get(judges);
 
 			for (int i = 0; i < editors.size(); i++) {
 				result.add(new SocialInfo(umap.get(editors.get(i)), lmap
-						.get(judges.get(i)), bools.get(i)));
+						.get(judges.get(i)), bools.get(i), times.get(i)));
 			}
 
 			return result;
