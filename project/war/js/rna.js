@@ -371,7 +371,7 @@ $(function(){
 	view: AuthorityView,
 
 	comparator: function(model) {
-	    return -model.get('authority');
+	    return -model.get('funded');
 	}
 
     });
@@ -936,6 +936,8 @@ $(function(){
 			  function (userAuth) {
 			      var a = _.clone(userAuth.user);
 			      a.authority = userAuth.authority;
+			      a.funded = userAuth.funded;
+			      a.fundedStr = userAuth.fundedStr;
 			      return a;
 			  });
 	},

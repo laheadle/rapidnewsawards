@@ -23,16 +23,24 @@ public class Vote {
 	
 	@Id 
 	public Long id;
+
+	public int fund;
 	
 	public Vote() {}
 	
-	public Vote(Key<User> voter, Key<Edition> edition, Key<Link> link, Date time, int authority) {
+	public Vote(Key<User> voter, Key<Edition> edition, Key<Link> link, 
+			Date time, int authority) {
 		this.voter = voter;
 		this.edition = edition;
 		this.link = link;
 		this.time = time;
 		this.authority = authority;
+		this.fund = 0;
 	}
 	
 	public Key<Vote> getKey() { return new Key<Vote>(voter, Vote.class, id); }
+
+	public void setFund(int fund) {
+		this.fund = fund;
+	}
 }

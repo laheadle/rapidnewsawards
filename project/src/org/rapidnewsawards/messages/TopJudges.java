@@ -5,5 +5,5 @@ import java.util.LinkedList;
 public class TopJudges {
 		public int numEditions;
 		public EditionMessage edition;
-		public LinkedList<User_Authority> list;
+		public LinkedList<JudgeInfluenceMessage> list;
 }

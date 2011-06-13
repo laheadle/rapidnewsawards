@@ -9,7 +9,7 @@ import java.net.MalformedURLException;
 
 import org.junit.Test;
 import org.rapidnewsawards.core.Edition;
-import org.rapidnewsawards.core.EditionUserAuthority;
+import org.rapidnewsawards.core.JudgeInfluence;
 import org.rapidnewsawards.core.Link;
 import org.rapidnewsawards.core.Response;
 import org.rapidnewsawards.core.ScoreSpace;
@@ -26,10 +26,10 @@ public class VoteTest extends RNATest {
 
 		Key<Edition> e1 = d.editions.getCurrentEdition().getKey();		
 		User jqp = getUser(null);
-		EditionUserAuthority eua = d.ofy().query(EditionUserAuthority.class)
+		JudgeInfluence eua = d.ofy().query(JudgeInfluence.class)
 		.ancestor(e1).filter("user", jqp.getKey()).get();
 		d.ofy().delete(eua);
-		d.ofy().put(new EditionUserAuthority(1, 
+		d.ofy().put(new JudgeInfluence(1, 
 				e1, jqp.getKey()));
 
 		Link l = d.users.createLink("http://example.com", "title", jqp.getKey());

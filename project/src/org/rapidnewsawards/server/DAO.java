@@ -15,7 +15,7 @@ import java.util.logging.Logger;
 
 import org.rapidnewsawards.core.Donation;
 import org.rapidnewsawards.core.Edition;
-import org.rapidnewsawards.core.EditionUserAuthority;
+import org.rapidnewsawards.core.JudgeInfluence;
 import org.rapidnewsawards.core.Follow;
 import org.rapidnewsawards.core.Link;
 import org.rapidnewsawards.core.Periodical;
@@ -39,7 +39,7 @@ import org.rapidnewsawards.messages.StoryInfo;
 import org.rapidnewsawards.messages.TopJudges;
 import org.rapidnewsawards.messages.TopStories;
 import org.rapidnewsawards.messages.UserInfo;
-import org.rapidnewsawards.messages.User_Authority;
+import org.rapidnewsawards.messages.JudgeInfluenceMessage;
 import org.rapidnewsawards.messages.User_Vote_Link;
 import org.rapidnewsawards.messages.VoteResult;
 import org.rapidnewsawards.messages.Vote_Link;
@@ -155,24 +155,27 @@ public class DAO extends DAOBase {
 		}
 
 		// fixme refactor with getvoters
-		public LinkedList<User_Authority> getJudges(Edition e) {
-			LinkedList<User_Authority> result = new LinkedList<User_Authority>();
+		public LinkedList<JudgeInfluenceMessage> getJudges(Edition e) {
+			LinkedList<JudgeInfluenceMessage> result = new LinkedList<JudgeInfluenceMessage>();
 
 			Map<Key<User>, Integer> authorities = new HashMap<Key<User>, Integer>();
+			Map<Key<User>, Integer> funds = new HashMap<Key<User>, Integer>();
 			ArrayList<Key<User>> judges = new ArrayList<Key<User>>();
 
-			for (EditionUserAuthority eua : ofy().query(
-					EditionUserAuthority.class).ancestor(e.getKey())) {
-				authorities.put(eua.user, eua.authority);
-				judges.add(eua.user);
+			for (JudgeInfluence ji : ofy().query(
+					JudgeInfluence.class).ancestor(e.getKey())) {
+				authorities.put(ji.user, ji.authority);
+				funds.put(ji.user, ji.funded);
+				judges.add(ji.user);
 			}
 
 			if (judges.size() > 0) {
 				Map<Key<User>, User> vmap = ofy().get(judges);
 
 				for (int i = 0; i < judges.size(); i++) {
-					result.add(new User_Authority(vmap.get(judges.get(i)),
-							authorities.get(judges.get(i))));
+					result.add(new JudgeInfluenceMessage(vmap.get(judges.get(i)),
+							authorities.get(judges.get(i)),
+							funds.get(judges.get(i))));
 				}
 
 				Collections.sort(result);
@@ -406,8 +409,8 @@ public class DAO extends DAOBase {
 			return vr;
 		}
 
-		public LinkedList<User_Authority> getVoters(Key<Link> l, Key<Edition> e) {
-			LinkedList<User_Authority> result = new LinkedList<User_Authority>();
+		public LinkedList<JudgeInfluenceMessage> getVoters(Key<Link> l, Key<Edition> e) {
+			LinkedList<JudgeInfluenceMessage> result = new LinkedList<JudgeInfluenceMessage>();
 
 			Map<Key<User>, Integer> authorities = new HashMap<Key<User>, Integer>();
 			ArrayList<Key<User>> voters = new ArrayList<Key<User>>();
@@ -426,8 +429,9 @@ public class DAO extends DAOBase {
 			Map<Key<User>, User> vmap = ofy().get(voters);
 
 			for (int i = 0; i < voters.size(); i++) {
-				result.add(new User_Authority(vmap.get(voters.get(i)),
-						authorities.get(voters.get(i))));
+				result.add(new JudgeInfluenceMessage(vmap.get(voters.get(i)),
+						// TODO 2.0 Add Funding here.
+						authorities.get(voters.get(i)), 0));
 			}
 
 			Collections.sort(result);
@@ -688,14 +692,14 @@ public class DAO extends DAOBase {
 			assert(!getPeriodical().inTransition);
 
 			Objectify txn = fact().beginTransaction();
-			EditionUserAuthority eua = txn.query(EditionUserAuthority.class).ancestor(edition)
+			JudgeInfluence ji = txn.query(JudgeInfluence.class).ancestor(edition)
 			.filter("user", judge).get();
-			if (eua == null) {
+			if (ji == null) {
 				assert(amount > 0);
-				eua = new EditionUserAuthority(0, edition, judge);
+				ji = new JudgeInfluence(0, edition, judge);
 			}
-			eua.authority += amount;
-			txn.put(eua);
+			ji.authority += amount;
+			txn.put(ji);
 			Key<Edition> next = Edition.getNextKey(edition);
 			if (Edition.isFinal(edition, editions.getNumEditions())) {
 				TallyTask.releaseUserLock(txn.getTxn());
@@ -1116,8 +1120,8 @@ public class DAO extends DAOBase {
 			Objectify txn = fact().beginTransaction();
 			if (on) {
 				// TODO pass in date
-				int authority = ofy().query(EditionUserAuthority.class).ancestor(ek)
-				.filter("user", uk).get().authority;
+				JudgeInfluence ji = getJudgeInfluence(ofy(), uk, ek);
+				int authority = ji.authority;
 				Vote v = new Vote(uk, ek, lk, new Date(), authority);
 				txn.put(v);
 				TallyTask.tallyVote(txn.getTxn(), v);
@@ -1132,6 +1136,12 @@ public class DAO extends DAOBase {
 				// TODO pass in actual values -- vote is gone!
 				TallyTask.tallyVote(txn.getTxn(), v); */
 			}
+		}
+
+		private JudgeInfluence getJudgeInfluence(Objectify ofy, Key<User> uk, Key<Edition> ek) {
+			JudgeInfluence ji = ofy.query(JudgeInfluence.class).ancestor(ek)
+			.filter("user", uk).get();
+			return ji;
 		}
 
 		public User welcomeUser(String nickname, String consent, String webPage) 
@@ -1177,7 +1187,7 @@ public class DAO extends DAOBase {
 				i < editions.getNumEditions();
 				i++) {
 					Key<Edition> eKey = Edition.createKey(i);
-					ofy().put(new EditionUserAuthority(0, 
+					ofy().put(new JudgeInfluence(0, 
 							eKey, user.getKey()));
 				}
 			}
@@ -1195,7 +1205,7 @@ public class DAO extends DAOBase {
 	static {
 		ObjectifyService.factory().register(Donation.class);
 		ObjectifyService.factory().register(Edition.class);
-		ObjectifyService.factory().register(EditionUserAuthority.class);
+		ObjectifyService.factory().register(JudgeInfluence.class);
 		ObjectifyService.factory().register(Follow.class);
 		ObjectifyService.factory().register(Link.class);
 		ObjectifyService.factory().register(Periodical.class);
@@ -1252,6 +1262,7 @@ public class DAO extends DAOBase {
 		return (int) (score / (double) totalScore * editionFunds);
 	}
 
+	/* Increment the ScoreSpace (score and fund) for this edition */
 	public void tallyVote(Key<Vote> vote) {
 		assert(getPeriodical().userlocked);
 		Vote v = ofy().get(vote);
@@ -1275,10 +1286,21 @@ public class DAO extends DAOBase {
 		}
 		otx.put(sl);
 		otx.put(space);
-		TallyTask.releaseUserLock(otx.getTxn());
+		TallyTask.addJudgeFunding(otx.getTxn(), v, fund);
 		otx.getTxn().commit();
 	}
 
+	public void addJudgeFunding(Key<Vote> vkey, int fund) {
+		assert(getPeriodical().userlocked);
+		Vote v = ofy().get(vkey);
+		Objectify otx = fact().beginTransaction();
+		JudgeInfluence ji = users.getJudgeInfluence(otx, v.voter, v.edition);
+		ji.funded += fund;
+		otx.put(ji);
+		TallyTask.releaseUserLock(otx.getTxn());
+		otx.getTxn().commit();
+	}
+	
 	public void releaseUserLock() throws RNAException {
 		LockedPeriodical lp = lockPeriodical();
 		lp.releaseUserLock();
@@ -1330,5 +1352,4 @@ public class DAO extends DAOBase {
 			}
 		}
 	}
-
 }

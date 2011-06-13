@@ -74,7 +74,7 @@ $(function(){
 	    if (!user) {
 		this.show('fetching user info...');
 	    }
-	    else if (user.nickname) {
+	    else if (user.nickname && user.isInitialized) {
 		if (done) {
 		    if (this.model.get('result') === 'ALREADY_VOTED') { 
 			this.show('you already voted for this story');
@@ -108,14 +108,19 @@ $(function(){
 		    });
 		    this.$('input[name=guessTitle]').click(function (event) {
 			event.preventDefault();
+			flashInfo('Guessing...');
 			doRequest({fun: 'grabTitle',
 				   url: self.$('input[name=url]').attr('value')},
 				  function (data) {
+				      flashInfo('');
 				      self.model.set({title: data});
 				  });
 		    });
 		    return this;
 		}
+	    }
+	    else {
+		this.show("You must finish registering your account before you can vote.");
 	    }
 	},	
     });

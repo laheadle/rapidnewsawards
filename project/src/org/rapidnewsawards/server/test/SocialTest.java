@@ -8,7 +8,7 @@ import java.util.Date;
 
 import org.junit.Test;
 import org.rapidnewsawards.core.Edition;
-import org.rapidnewsawards.core.EditionUserAuthority;
+import org.rapidnewsawards.core.JudgeInfluence;
 import org.rapidnewsawards.core.Follow;
 import org.rapidnewsawards.core.Periodical;
 import org.rapidnewsawards.core.Response;
@@ -199,7 +199,7 @@ public class SocialTest extends RNATest {
 		assertEquals(true, d.editions.getTopJudges(1).list.size() > 0);
 
 		assertEquals(
-				d.ofy().query(EditionUserAuthority.class)
+				d.ofy().query(JudgeInfluence.class)
 				.ancestor(e1.getKey())
 				.filter("user", jqp.getKey())
 				.get()
