@@ -55,6 +55,15 @@ public class TallyTask  extends HttpServlet {
 				.param("user", Long.toString(v.voter.getId())));
 	}
 
+	public static void addEditorFunding(Transaction txn, Vote v, int fund) {
+		Queue queue = QueueFactory.getDefaultQueue();
+		queue.add(txn, withUrl("/tasks/tally").method(TaskOptions.Method.GET)
+				.param("fun", "addEditorFunding")
+				.param("vote", v.id.toString())
+				.param("fund", Integer.toString(fund))
+				.param("user", Long.toString(v.voter.getId())));
+	}
+
 	public static void releaseUserLock(Transaction txn) {
 		Queue queue = QueueFactory.getDefaultQueue();
 		queue.add(txn, withUrl("/tasks/tally").method(TaskOptions.Method.GET)
@@ -152,6 +161,27 @@ public class TallyTask  extends HttpServlet {
 			Key<Vote> vkey = new Key<Vote>(ukey, Vote.class, voteId);
 
 			d.addJudgeFunding(vkey, fund);
+		}
+		else if (fun.equals("addEditorFunding")) {
+			String votestr = request.getParameter("vote");
+			String fundstr = request.getParameter("fund");
+			String userstr = request.getParameter("user");
+			if (votestr == null) {
+				throw new IllegalArgumentException("vote");
+			}
+			if (fundstr == null) {
+				throw new IllegalArgumentException("fund");
+			}
+			if (userstr == null) {
+				throw new IllegalArgumentException("user");
+			}
+			long voteId = Long.valueOf(votestr);
+			int fund = Integer.valueOf(fundstr);
+			long userId = Long.valueOf(userstr);
+			Key<User> ukey = new Key<User>(User.class, userId);
+			Key<Vote> vkey = new Key<Vote>(ukey, Vote.class, voteId);
+
+			d.addEditorFunding(vkey, fund);
 		}
 		else if (fun.equals("releaseUserLock")) {
 			try {

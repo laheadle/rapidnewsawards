@@ -15,6 +15,8 @@ import java.util.logging.Logger;
 
 import org.rapidnewsawards.core.Donation;
 import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.EditorInfluence;
+import org.rapidnewsawards.core.FollowedBy;
 import org.rapidnewsawards.core.JudgeInfluence;
 import org.rapidnewsawards.core.Follow;
 import org.rapidnewsawards.core.Link;
@@ -557,9 +559,51 @@ public class DAO extends DAOBase {
 
 				}
 			}
-			int amount = on ? 1 : -1;
-			SocialTask.changePendingAuthority(to, e, amount, txn.getTxn());
+			SocialTask.writeFutureFollowedBys(to, from, e, on, txn.getTxn());
 			txn.getTxn().commit();
+		}
+
+		public void writeFutureFollowedBys(
+				final Key<User> judge, final Key<User> editor, final Key<Edition> e, 
+				boolean on) throws RNAException {
+			assert(getPeriodical().userlocked);
+			assert(!getPeriodical().inTransition);
+			if (editor.equals(judge)) {
+				throw new RNAException("BUG! can't follow self");
+			}
+			final Objectify txn = fact().beginTransaction();
+
+			Set<Key<Edition>> laters = getThisAndFutureEditionKeys(e);
+
+			// follow or cancel unfollow: insert future followedbys
+			if (on) {
+				insertFutureFollowedBys(judge, editor, txn, laters);					
+			}
+			// unfollow or cancel follow: delete future followedbys
+			else {
+				deleteFutureFollowedBys(judge, editor, e, txn);
+			}
+
+			int amount = on ? 1 : -1;
+			SocialTask.changePendingAuthority(judge, e, amount, txn.getTxn());
+			txn.getTxn().commit();
+		}
+
+		
+		private void deleteFutureFollowedBys(Key<User> judge, Key<User> editor,
+				Key<Edition> e, Objectify txn) {
+			txn.delete(txn.query(FollowedBy.class)
+					.ancestor(judge).filter("editor", editor)
+					.filter("edition >=", e).fetchKeys());
+		}
+
+		private void insertFutureFollowedBys(Key<User> judge, Key<User> editor,
+				Objectify txn, Set<Key<Edition>> laters) {
+			List<FollowedBy> fols = new LinkedList<FollowedBy>();
+			for (Key<Edition> later : laters) {
+				fols.add(new FollowedBy(judge, editor, later));
+			}
+			txn.put(fols);
 		}
 
 		private Set<Key<Edition>> getThisAndFutureEditionKeys(final Key<Edition> e) {
@@ -808,7 +852,6 @@ public class DAO extends DAOBase {
 			}
 
 			Edition e;
-			ScoreSpace s;
 			
 			if (p.isFinished()) {
 				TransitionTask.finish(lp.transaction.getTxn());
@@ -816,7 +859,6 @@ public class DAO extends DAOBase {
 			}
 			else {
 				e = editions.getEdition(Editions.CURRENT);
-				s = editions.getScoreSpace(e.getKey());
 				int n = editions.getNumEditions();
 				assert (e.number > 0);
 				int spaceBalance = p.balance / (n - e.number);
@@ -916,7 +958,7 @@ public class DAO extends DAOBase {
 
 		public LinkedList<User> getFollowers(Key<User> judge) {
 			LinkedList<Key<User>> keys = new LinkedList<Key<User>>();
-			for (Follow f : ofy().query(Follow.class).filter("judge", judge)) {
+			for (FollowedBy f : ofy().query(FollowedBy.class).ancestor(judge)) {
 				keys.push(f.editor);
 			}
 			LinkedList<User> editors = new LinkedList<User>();
@@ -1205,8 +1247,9 @@ public class DAO extends DAOBase {
 	static {
 		ObjectifyService.factory().register(Donation.class);
 		ObjectifyService.factory().register(Edition.class);
-		ObjectifyService.factory().register(JudgeInfluence.class);
 		ObjectifyService.factory().register(Follow.class);
+		ObjectifyService.factory().register(FollowedBy.class);
+		ObjectifyService.factory().register(JudgeInfluence.class);
 		ObjectifyService.factory().register(Link.class);
 		ObjectifyService.factory().register(Periodical.class);
 		ObjectifyService.factory().register(Root.class);
@@ -1297,10 +1340,26 @@ public class DAO extends DAOBase {
 		JudgeInfluence ji = users.getJudgeInfluence(otx, v.voter, v.edition);
 		ji.funded += fund;
 		otx.put(ji);
-		TallyTask.releaseUserLock(otx.getTxn());
+		TallyTask.addEditorFunding(otx.getTxn(), v, fund);
 		otx.getTxn().commit();
 	}
 	
+	public void addEditorFunding(Key<Vote> vkey, int fund) {
+		assert(getPeriodical().userlocked);
+		Vote v = ofy().get(vkey);
+		Objectify otx = fact().beginTransaction();
+		Set<EditorInfluence> eiset = new HashSet<EditorInfluence>();
+		for (FollowedBy fb : otx.query(FollowedBy.class).ancestor(v.voter)
+				.filter("edition", v.edition)) {
+			EditorInfluence ei = otx.query(EditorInfluence.class)
+			.ancestor(v.edition).filter("editor", fb.editor).get();
+			ei.funded += fund;
+			eiset.add(ei);
+		}
+		otx.put(eiset);
+		TallyTask.releaseUserLock(otx.getTxn());		
+	}
+
 	public void releaseUserLock() throws RNAException {
 		LockedPeriodical lp = lockPeriodical();
 		lp.releaseUserLock();
@@ -1352,4 +1411,5 @@ public class DAO extends DAOBase {
 			}
 		}
 	}
+
 }

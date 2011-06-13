@@ -39,6 +39,17 @@ public class SocialTask extends HttpServlet {
 				.param("on", Boolean.toString(on)));
 	}
 
+	public static void writeFutureFollowedBys(Key<User> judge, Key<User> editor,
+			Key<Edition> e, boolean on, Transaction txn) {
+		Queue queue = QueueFactory.getDefaultQueue();
+		queue.add(txn, withUrl("/tasks/social").method(TaskOptions.Method.GET)
+				.param("fun", "writeFutureFollowedBys")
+				.param("judge", Long.toString(judge.getId()))
+				.param("editor", Long.toString(editor.getId()))
+				.param("e", e.getName())
+				.param("on", Boolean.toString(on)));		
+	}
+
 	public static void changePendingAuthority(Key<User> to,
 			Key<Edition> e, int amount, Transaction txn) {
 		Queue queue = QueueFactory.getDefaultQueue();
@@ -116,6 +127,33 @@ public class SocialTask extends HttpServlet {
 					on, 
 					cancelPending);
 		}
+		if (fun.equals("writeFutureFollowedBys")) {
+			String _judge = request.getParameter("judge");
+			if (_judge == null) {
+				throw new IllegalArgumentException("judge");
+			}
+			long judge = Long.valueOf(_judge);
+			String _editor = request.getParameter("editor");
+			if (_editor == null) {
+				throw new IllegalArgumentException("editor");
+			}
+			long editor = Long.valueOf(_editor);
+			String e = request.getParameter("e");
+			if (e == null) {
+				throw new IllegalArgumentException("e");
+			}
+			String _on = request.getParameter("on");
+			if (_on == null) {
+				throw new IllegalArgumentException("on");
+			}
+			boolean on = Boolean.valueOf(_on);
+			d.social.writeFutureFollowedBys( 
+					// TODO use factory methods for these
+					new Key<User>(User.class, judge), 
+					new Key<User>(User.class, editor), 
+					new Key<Edition>(Edition.class, e), 
+					on);
+		}
 		else if (fun.equals("changePendingAuthority")) {
 			String _to = request.getParameter("to");
 			if (_to == null) {
@@ -136,4 +174,5 @@ public class SocialTask extends HttpServlet {
 					amount);
 		}
 	}
+
 }

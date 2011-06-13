@@ -8,6 +8,7 @@ import java.util.Date;
 
 import org.junit.Test;
 import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.FollowedBy;
 import org.rapidnewsawards.core.JudgeInfluence;
 import org.rapidnewsawards.core.Follow;
 import org.rapidnewsawards.core.Periodical;
@@ -190,6 +191,32 @@ public class SocialTest extends RNATest {
 				0);
 		assertEquals(
 				d.ofy().query(Follow.class).filter("judge", jqp.getKey()).count(),
+				0);
+	}
+	
+	@Test
+	public void testWriteFutureFollowedBys() throws InterruptedException, RNAException {
+		DAO.instance.social.writeFutureFollowedBys(jqp.getKey(), mg.getKey(),
+				Edition.createKey(1), true);
+		assertEquals(
+				d.ofy().query(FollowedBy.class).ancestor(jqp.getKey()).count(),
+				2);
+		assertEquals(
+				d.ofy().query(FollowedBy.class).filter("editor", mg.getKey()).count(),
+				2);
+	}
+	
+	@Test
+	public void testDeleteFutureFollowedBys() throws InterruptedException, RNAException {
+		DAO.instance.social.writeFutureFollowedBys(jqp.getKey(), mg.getKey(),
+				Edition.createKey(1), true);
+		DAO.instance.social.writeFutureFollowedBys(jqp.getKey(), mg.getKey(),
+				Edition.createKey(1), false);
+		assertEquals(
+				d.ofy().query(FollowedBy.class).ancestor(jqp.getKey()).count(),
+				0);
+		assertEquals(
+				d.ofy().query(FollowedBy.class).filter("editor", mg.getKey()).count(),
 				0);
 	}
 	
