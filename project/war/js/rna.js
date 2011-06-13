@@ -68,11 +68,21 @@ $(function(){
 	},
 
 	stories: function() {
-	    app.hashTopStories(this.edition.number);
+	    if ($('#editionTabsMinor .top').hasClass('selected')) {
+		app.hashTopStories(this.edition.number);
+	    }
+	    else {
+		app.hashRecentFundings(this.edition.number);
+	    }
 	},
 
 	network: function() {
-	    app.hashNetwork(this.edition.number);
+	    if ($('#editionTabsMinor .top').hasClass('selected')) {
+		app.hashTopAuthorities(this.edition.number);
+	    }
+	    else {
+		app.hashNetwork(this.edition.number);
+	    }
 	},
 
 	render: function() {
@@ -392,6 +402,7 @@ $(function(){
 	    options.list = (options.order == 'top'? 
 			    new AuthoritiesList : new SocialList);
 	    this.order = options.order;
+	    this.influence = options.influence;
 	    // run super.initialize
 	    Backbone.View.apply(this.constructor.__super__, [options]);
 	    // bind this.render
@@ -415,7 +426,12 @@ $(function(){
 		{topSelected: this.order == 'top'? 'selected' : 'unselected',
 		 recentSelected: this.order == 'recent'? 'selected' : 'unselected'};
 	    this.$('#editionTabsMinor').html(rMake('#network-order-tab-template', args));
-
+	    if (this.order == 'top') {
+		var iargs = 
+		    {judgeSelected: this.influence == 'judge'? 'selected' : 'unselected',
+		     editorSelected: this.influence == 'editor'? 'selected' : 'unselected'};
+		this.$('#influenceTab').html(rMake('#influence-tab-template', iargs));
+	    }
 	    if (this.list.length == 0) {
 		if (this.order == 'top') {
 		    // fixme display 0 judges if there's nothing else.
@@ -907,23 +923,27 @@ $(function(){
 
 	currentEdition: -1,
 
-	_edition: function(edNum, fun, order, view, getAttrs) {	    
+	_edition: function(edNum, fun, order, view, getAttrs, inits) {	    
 	    var self = this;
 	    var fetch = function(data) { 
 		if (data && data.edition) {
 		    // fixme main list doesn't immediately update 
 		    // with welcome message after join
 		    data.edition = window.Utils.processEdition(data.edition);
-		    self.setEditionView(view,
-					{order: order,
-					 edition: data.edition,
-					 numEditions: data.numEditions,
-					 storiesSelected: view === StoriesView ?
- 					 'selected' : 'unselected',
-					 networkSelected: view === NetworkView ?
-					 'selected' : 'unselected',
-					 getAttrs: getAttrs,
-					 data: data.list});
+		    var initParams = 
+			{order: order,
+			 edition: data.edition,
+			 numEditions: data.numEditions,
+			 storiesSelected: view === StoriesView ?
+ 			 'selected' : 'unselected',
+			 networkSelected: view === NetworkView ?
+			 'selected' : 'unselected',
+			 getAttrs: getAttrs,
+			 data: data.list};
+		    for (var i in inits) {
+			initParams[i] = inits[i];
+		    }
+		    self.setEditionView(view, initParams);
 		}
 	    };
 	    doRequest({ fun: fun, 
@@ -939,7 +959,8 @@ $(function(){
 			      a.funded = userAuth.funded;
 			      a.fundedStr = userAuth.fundedStr;
 			      return a;
-			  });
+			  },
+			  {influence: 'judge'});
 	},
 
 	recentSocials: function(edNum) {
