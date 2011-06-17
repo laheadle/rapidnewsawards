@@ -386,6 +386,46 @@ $(function(){
 
     });
 
+    window.TopEditor = Backbone.Model.extend({
+
+    });
+
+    window.TopEditorView = Backbone.View.extend({
+
+	tagName:  "li",
+	className: "story", // fixme
+
+	events: {
+	    "click a": 'person'
+	}, 
+
+	initialize: function() {
+	    var self = this;
+	    this.model.bind('change', function () { self.render() });
+	    this.model.view = this;
+	},
+
+	person: function() {
+	    app.hashPerson(this.model.get('id'));
+	},
+
+	render: function() {
+	    $(this.el).html(rMake('#top-editor-template', this.model.toJSON()));
+	    return this;
+	},	
+    });
+
+
+    window.TopEditorsList = Backbone.Collection.extend({
+	model: TopEditor,
+	view: TopEditorView,
+
+	comparator: function(model) {
+	    return -model.get('funded');
+	}
+
+    });
+
     window.NetworkView = EditionView.extend({
 
 	bindEvents: function () {
@@ -396,11 +436,16 @@ $(function(){
 	    this.$("a.recent").click(function(event) {
 		self.recentSocials();
 	    });
+	    this.$("a.editor").click(function(event) {
+		self.topEditors();
+	    });
 	},
 
 	constructor: function (options) {
 	    options.list = (options.order == 'top'? 
-			    new AuthoritiesList : new SocialList);
+			    (options.influence == 'judge' ? new AuthoritiesList 
+			     : new TopEditorsList)
+			    : new SocialList);
 	    this.order = options.order;
 	    this.influence = options.influence;
 	    // run super.initialize
@@ -414,6 +459,10 @@ $(function(){
 
 	topAuthorities: function() {
 	    window.app.hashTopAuthorities(this.edition.number);
+	},
+
+	topEditors: function() {
+	    window.app.hashTopEditors(this.edition.number);
 	},
 
 	recentSocials: function() {
@@ -434,8 +483,8 @@ $(function(){
 	    }
 	    if (this.list.length == 0) {
 		if (this.order == 'top') {
-		    // fixme display 0 judges if there's nothing else.
-		    this.appendElt(rMake('#none-followed-template'));
+		    this.appendElt(this.make("li", {class: 'empty'}, 
+					     "No funding has occurred during this edition."));
 		}
 		else {
 		    this.appendElt(this.make("li", {class: 'empty'}, 
@@ -878,6 +927,7 @@ $(function(){
 	    "createAccount/:andThen": "createAccount",
 	    "recentSocials/:ed": "recentSocials",
 	    "topAuthorities/:ed": "topAuthorities",
+	    "topEditors/:ed": "topEditors",
 	    "recentFundings/:ed": "recentFundings",
 	    "topStories/:ed": "topStories",
 	    "person/:pe": "person",
@@ -961,6 +1011,17 @@ $(function(){
 			      return a;
 			  },
 			  {influence: 'judge'});
+	},
+
+	topEditors: function(edNum) {
+	    this._edition(edNum, 'topEditors', 'top', NetworkView,
+			  function (userAuth) {
+			      var a = _.clone(userAuth.user);
+			      a.funded = userAuth.funded;
+			      a.fundedStr = userAuth.fundedStr;
+			      return a;
+			  },
+			  {influence: 'editor'});
 	},
 
 	recentSocials: function(edNum) {
@@ -1081,6 +1142,10 @@ $(function(){
 
 	hashTopAuthorities: function(ed) {
 	    this.setHash( 'topAuthorities/' + (ed || ''));
+	},
+
+	hashTopEditors: function(ed) {
+	    this.setHash( 'topEditors/' + (ed || ''));
 	},
 
 	hashRecentSocials: function(ed) {

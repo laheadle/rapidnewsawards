@@ -5,6 +5,7 @@ import java.io.PrintWriter;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.HashSet;
 import java.util.List;
 import java.util.logging.Logger;
 
@@ -13,6 +14,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.EditorInfluence;
 import org.rapidnewsawards.core.Periodical;
 import org.rapidnewsawards.core.Response;
 import org.rapidnewsawards.core.Root;
@@ -37,6 +39,8 @@ public class MakeDataServlet extends HttpServlet {
 	
 	// don't set up tasks if testing (set by test case)
 	public static boolean testing = false;
+	private static HashSet<User> editors;
+	private static ArrayList<Edition> editions;
 	
 	public final static long ONE_SECOND = 1000; 
 	public final static long ONE_MINUTE = 60 * 1000; 	
@@ -50,6 +54,7 @@ public class MakeDataServlet extends HttpServlet {
 		} catch (IOException e1) {
 			throw new AssertionError();
 		}
+		editors = new HashSet<User>();
 		Cell<Integer> numUsers = new Cell<Integer>(null);
 		int numEditions = 5;
 		try {
@@ -130,7 +135,14 @@ public class MakeDataServlet extends HttpServlet {
 			int NUM_USERS = 6;
 			numUsers.value = new Integer(NUM_USERS);
 		}
-		
+
+		// EditorInflucne
+		for (Edition e : editions) {
+			for (User ed : editors) {
+				d.ofy().put(new EditorInfluence(e.getKey(), ed.getKey()));
+			}
+		}
+
 		if (doFollow) {
 				d.user = lyn;
 				Response r = d.social.doSocial(jq.getKey(), true);
@@ -150,6 +162,9 @@ public class MakeDataServlet extends HttpServlet {
 		Objectify o = DAO.instance.ofy();
 		User u = new User(email, "gmail.com", isEditor);
 		o.put(u);
+		if (isEditor) {
+			editors.add(u);
+		}
 		return u;		
 	}
 
@@ -196,7 +211,7 @@ public class MakeDataServlet extends HttpServlet {
 			}
 		}
 
-		ArrayList<Edition> editions = new ArrayList<Edition>();
+		editions = new ArrayList<Edition>();
 		for(int i1 = 0;i1 < editionCount;i1++) {
 			editions.add(new makeEd(periodSize, p).make());
 		}

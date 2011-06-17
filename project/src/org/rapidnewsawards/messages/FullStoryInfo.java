@@ -4,5 +4,5 @@ import java.util.LinkedList;
 
 public class FullStoryInfo {
 	public StoryInfo info;
-	public LinkedList<JudgeInfluenceMessage> funds;
+	public LinkedList<InfluenceMessage> funds;
 }

@@ -136,6 +136,13 @@ public class JSONServlet extends HttpServlet {
 			}
 		});
 
+		commandsMap.put("topEditors", new AbstractCommand() {
+			@Override
+			public Object getResult() throws RNAException {
+				return d.editions.getTopEditors(get("edition", Integer.class));
+			}
+		});
+
 		commandsMap.put("topJudges", new AbstractCommand() {
 			@Override
 			public Object getResult() throws RNAException {

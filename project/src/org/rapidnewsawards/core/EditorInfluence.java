@@ -14,4 +14,12 @@ public class EditorInfluence {
 	@Parent
 	public Key<Edition> edition;
 	public Key<User> editor;
+	
+	public EditorInfluence() {}
+	
+	public EditorInfluence(Key<Edition> edition, Key<User> editor) {
+		this.edition = edition;
+		this.editor = editor;
+		funded = 0;
+	}
 }

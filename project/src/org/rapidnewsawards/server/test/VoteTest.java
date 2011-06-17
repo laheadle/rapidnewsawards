@@ -26,9 +26,9 @@ public class VoteTest extends RNATest {
 
 		Key<Edition> e1 = d.editions.getCurrentEdition().getKey();		
 		User jqp = getUser(null);
-		JudgeInfluence eua = d.ofy().query(JudgeInfluence.class)
+		JudgeInfluence inf = d.ofy().query(JudgeInfluence.class)
 		.ancestor(e1).filter("user", jqp.getKey()).get();
-		d.ofy().delete(eua);
+		d.ofy().delete(inf);
 		d.ofy().put(new JudgeInfluence(1, 
 				e1, jqp.getKey()));
 
@@ -48,6 +48,12 @@ public class VoteTest extends RNATest {
 		assertEquals(space.numFundedLinks, 1);
 		assertEquals(space.totalSpend, 100);
 		assertEquals(space.balance, 100);
+		d.addJudgeFunding(v.getKey(), 100);
+		JudgeInfluence ji = d.users.getJudgeInfluence(d.ofy(), v.voter, v.edition);
+		assertEquals(ji.funded, 100);
+		//d.addEditorFunding(v.getKey(), 100);
+		//EditorInfluence ei = d.users.getEditorInfluence(d.ofy(), v.voter, v.edition);
+		//assertEquals(ei.funded, 100);				
 	}
 
 }

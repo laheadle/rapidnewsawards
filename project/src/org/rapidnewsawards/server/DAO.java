@@ -16,9 +16,9 @@ import java.util.logging.Logger;
 import org.rapidnewsawards.core.Donation;
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.EditorInfluence;
+import org.rapidnewsawards.core.Follow;
 import org.rapidnewsawards.core.FollowedBy;
 import org.rapidnewsawards.core.JudgeInfluence;
-import org.rapidnewsawards.core.Follow;
 import org.rapidnewsawards.core.Link;
 import org.rapidnewsawards.core.Periodical;
 import org.rapidnewsawards.core.Response;
@@ -32,16 +32,17 @@ import org.rapidnewsawards.core.Vote;
 import org.rapidnewsawards.messages.AllEditions;
 import org.rapidnewsawards.messages.EditionMessage;
 import org.rapidnewsawards.messages.FullStoryInfo;
+import org.rapidnewsawards.messages.InfluenceMessage;
 import org.rapidnewsawards.messages.Name;
 import org.rapidnewsawards.messages.RecentSocials;
 import org.rapidnewsawards.messages.RecentVotes;
 import org.rapidnewsawards.messages.RelatedUserInfo;
 import org.rapidnewsawards.messages.SocialInfo;
 import org.rapidnewsawards.messages.StoryInfo;
+import org.rapidnewsawards.messages.TopEditors;
 import org.rapidnewsawards.messages.TopJudges;
 import org.rapidnewsawards.messages.TopStories;
 import org.rapidnewsawards.messages.UserInfo;
-import org.rapidnewsawards.messages.JudgeInfluenceMessage;
 import org.rapidnewsawards.messages.User_Vote_Link;
 import org.rapidnewsawards.messages.VoteResult;
 import org.rapidnewsawards.messages.Vote_Link;
@@ -156,9 +157,9 @@ public class DAO extends DAOBase {
 			}
 		}
 
-		// fixme refactor with getvoters
-		public LinkedList<JudgeInfluenceMessage> getJudges(Edition e) {
-			LinkedList<JudgeInfluenceMessage> result = new LinkedList<JudgeInfluenceMessage>();
+		// TODO refactor with getvoters
+		public LinkedList<InfluenceMessage> getJudges(Edition e) {
+			LinkedList<InfluenceMessage> result = new LinkedList<InfluenceMessage>();
 
 			Map<Key<User>, Integer> authorities = new HashMap<Key<User>, Integer>();
 			Map<Key<User>, Integer> funds = new HashMap<Key<User>, Integer>();
@@ -175,9 +176,37 @@ public class DAO extends DAOBase {
 				Map<Key<User>, User> vmap = ofy().get(judges);
 
 				for (int i = 0; i < judges.size(); i++) {
-					result.add(new JudgeInfluenceMessage(vmap.get(judges.get(i)),
+					result.add(new InfluenceMessage(vmap.get(judges.get(i)),
 							authorities.get(judges.get(i)),
 							funds.get(judges.get(i))));
+				}
+
+				Collections.sort(result);
+			}
+			
+			return result;
+		}
+
+		// TODO refactor with getvoters
+		public LinkedList<InfluenceMessage> getTopEditors(Edition e) {
+			LinkedList<InfluenceMessage> result = new LinkedList<InfluenceMessage>();
+
+			Map<Key<User>, Integer> funds = new HashMap<Key<User>, Integer>();
+			ArrayList<Key<User>> editors = new ArrayList<Key<User>>();
+
+			for (EditorInfluence ei : ofy().query(
+					EditorInfluence.class).ancestor(e.getKey())) {
+				funds.put(ei.editor, ei.funded);
+				editors.add(ei.editor);
+			}
+
+			if (editors.size() > 0) {
+				Map<Key<User>, User> vmap = ofy().get(editors);
+
+				for (int i = 0; i < editors.size(); i++) {
+					result.add(new InfluenceMessage(vmap.get(editors.get(i)),
+							0,
+							funds.get(editors.get(i))));
 				}
 
 				Collections.sort(result);
@@ -332,6 +361,16 @@ public class DAO extends DAOBase {
 			return tj;
 		}
 
+		public TopEditors getTopEditors(int edition) throws RNAException {
+			Edition e = editions.getEdition(edition);
+			TopEditors tj = new TopEditors();
+			tj.edition = makeEditionMessage(e);
+			tj.numEditions = editions.getNumEditions();
+			tj.list = getTopEditors(e);
+			return tj;
+		}
+
+		
 		public TopStories getTopStories(int editionNum) throws RNAException {
 			Edition e = editions.getEdition(editionNum);
 
@@ -411,8 +450,8 @@ public class DAO extends DAOBase {
 			return vr;
 		}
 
-		public LinkedList<JudgeInfluenceMessage> getVoters(Key<Link> l, Key<Edition> e) {
-			LinkedList<JudgeInfluenceMessage> result = new LinkedList<JudgeInfluenceMessage>();
+		public LinkedList<InfluenceMessage> getVoters(Key<Link> l, Key<Edition> e) {
+			LinkedList<InfluenceMessage> result = new LinkedList<InfluenceMessage>();
 
 			Map<Key<User>, Integer> authorities = new HashMap<Key<User>, Integer>();
 			ArrayList<Key<User>> voters = new ArrayList<Key<User>>();
@@ -431,7 +470,7 @@ public class DAO extends DAOBase {
 			Map<Key<User>, User> vmap = ofy().get(voters);
 
 			for (int i = 0; i < voters.size(); i++) {
-				result.add(new JudgeInfluenceMessage(vmap.get(voters.get(i)),
+				result.add(new InfluenceMessage(vmap.get(voters.get(i)),
 						// TODO 2.0 Add Funding here.
 						authorities.get(voters.get(i)), 0));
 			}
@@ -1180,10 +1219,16 @@ public class DAO extends DAOBase {
 			}
 		}
 
-		private JudgeInfluence getJudgeInfluence(Objectify ofy, Key<User> uk, Key<Edition> ek) {
+		public JudgeInfluence getJudgeInfluence(Objectify ofy, Key<User> uk, Key<Edition> ek) {
 			JudgeInfluence ji = ofy.query(JudgeInfluence.class).ancestor(ek)
 			.filter("user", uk).get();
 			return ji;
+		}
+
+		public EditorInfluence getEditorInfluence(Objectify ofy, Key<User> editor, Key<Edition> ek) {
+			EditorInfluence ei = ofy.query(EditorInfluence.class).ancestor(ek)
+			.filter("editor", editor).get();
+			return ei;
 		}
 
 		public User welcomeUser(String nickname, String consent, String webPage) 
@@ -1247,6 +1292,7 @@ public class DAO extends DAOBase {
 	static {
 		ObjectifyService.factory().register(Donation.class);
 		ObjectifyService.factory().register(Edition.class);
+		ObjectifyService.factory().register(EditorInfluence.class);
 		ObjectifyService.factory().register(Follow.class);
 		ObjectifyService.factory().register(FollowedBy.class);
 		ObjectifyService.factory().register(JudgeInfluence.class);
@@ -1340,24 +1386,37 @@ public class DAO extends DAOBase {
 		JudgeInfluence ji = users.getJudgeInfluence(otx, v.voter, v.edition);
 		ji.funded += fund;
 		otx.put(ji);
-		TallyTask.addEditorFunding(otx.getTxn(), v, fund);
+		TallyTask.findEditorsToFund(otx.getTxn(), v, fund);
 		otx.getTxn().commit();
 	}
 	
-	public void addEditorFunding(Key<Vote> vkey, int fund) {
+	public void findEditorsToFund(Key<Vote> vkey, int fund) {
 		assert(getPeriodical().userlocked);
 		Vote v = ofy().get(vkey);
 		Objectify otx = fact().beginTransaction();
-		Set<EditorInfluence> eiset = new HashSet<EditorInfluence>();
+		Set<Key<User>> editors = new HashSet<Key<User>>();
 		for (FollowedBy fb : otx.query(FollowedBy.class).ancestor(v.voter)
 				.filter("edition", v.edition)) {
-			EditorInfluence ei = otx.query(EditorInfluence.class)
-			.ancestor(v.edition).filter("editor", fb.editor).get();
-			ei.funded += fund;
+			editors.add(fb.editor);
+		}
+		TallyTask.addEditorFunding(otx.getTxn(), editors, v.edition, fund);
+		otx.getTxn().commit();
+	}
+
+	public void addEditorFunding(Set<Key<User>> editors, Key<Edition> edition, int fund) {
+		assert(fund % editors.size() == 0);
+		Objectify otx = fact().beginTransaction();
+		Set<EditorInfluence> eiset = new HashSet<EditorInfluence>();
+		for (Key<User> editor : editors) {
+			EditorInfluence ei = otx.query(EditorInfluence.class).ancestor(edition)
+			.filter("editor", editor).get();
+			// TODO Write a test for this invariant that checks this and judge influence
+			ei.funded += fund / editors.size();
 			eiset.add(ei);
 		}
 		otx.put(eiset);
 		TallyTask.releaseUserLock(otx.getTxn());		
+		otx.getTxn().commit();
 	}
 
 	public void releaseUserLock() throws RNAException {

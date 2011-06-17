@@ -8,9 +8,9 @@ import java.util.Date;
 
 import org.junit.Test;
 import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.Follow;
 import org.rapidnewsawards.core.FollowedBy;
 import org.rapidnewsawards.core.JudgeInfluence;
-import org.rapidnewsawards.core.Follow;
 import org.rapidnewsawards.core.Periodical;
 import org.rapidnewsawards.core.Response;
 import org.rapidnewsawards.core.SocialEvent;

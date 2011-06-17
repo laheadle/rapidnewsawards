@@ -4,6 +4,9 @@ import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withUrl;
 
 import java.io.IOException;
 import java.util.ConcurrentModificationException;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.StringTokenizer;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -55,13 +58,23 @@ public class TallyTask  extends HttpServlet {
 				.param("user", Long.toString(v.voter.getId())));
 	}
 
-	public static void addEditorFunding(Transaction txn, Vote v, int fund) {
+	public static void findEditorsToFund(Transaction txn, Vote v, int fund) {
 		Queue queue = QueueFactory.getDefaultQueue();
 		queue.add(txn, withUrl("/tasks/tally").method(TaskOptions.Method.GET)
-				.param("fun", "addEditorFunding")
+				.param("fun", "findEditorsToFund")
 				.param("vote", v.id.toString())
 				.param("fund", Integer.toString(fund))
 				.param("user", Long.toString(v.voter.getId())));
+	}
+
+	public static void addEditorFunding(Transaction txn, Set<Key<User>> editors, 
+			Key<Edition> edition, int fund) {
+		Queue queue = QueueFactory.getDefaultQueue();
+		queue.add(txn, withUrl("/tasks/tally").method(TaskOptions.Method.GET)
+				.param("fun", "addEditorFunding")
+				.param("editors", encodeUsers(editors))
+				.param("edition", edition.getName())
+				.param("fund", Integer.toString(fund)));
 	}
 
 	public static void releaseUserLock(Transaction txn) {
@@ -162,7 +175,7 @@ public class TallyTask  extends HttpServlet {
 
 			d.addJudgeFunding(vkey, fund);
 		}
-		else if (fun.equals("addEditorFunding")) {
+		else if (fun.equals("findEditorsToFund")) {
 			String votestr = request.getParameter("vote");
 			String fundstr = request.getParameter("fund");
 			String userstr = request.getParameter("user");
@@ -181,7 +194,24 @@ public class TallyTask  extends HttpServlet {
 			Key<User> ukey = new Key<User>(User.class, userId);
 			Key<Vote> vkey = new Key<Vote>(ukey, Vote.class, voteId);
 
-			d.addEditorFunding(vkey, fund);
+			d.findEditorsToFund(vkey, fund);
+		}
+		else if (fun.equals("addEditorFunding")) {
+			String editorsstr = request.getParameter("editors");
+			String editionstr = request.getParameter("edition");
+			String fundstr = request.getParameter("fund");
+			if (editorsstr == null) {
+				throw new IllegalArgumentException("editors");
+			}
+			if (editionstr == null) {
+				throw new IllegalArgumentException("edition");
+			}
+			if (fundstr == null) {
+				throw new IllegalArgumentException("fund");
+			}
+			Set<Key<User>> editors = decodeUsers(editorsstr);
+			int fund = Integer.valueOf(fundstr);
+			d.addEditorFunding(editors, Edition.createKey(Integer.parseInt(editionstr)), fund);
 		}
 		else if (fun.equals("releaseUserLock")) {
 			try {
@@ -191,6 +221,30 @@ public class TallyTask  extends HttpServlet {
 				throw new IllegalStateException(e.message);
 			}
 		}
+	}
+
+	private static String encodeUsers(Set<Key<User>> editors) {
+		String result = null;
+		int count = 0;
+		for (Key<User> k : editors) {
+			if (count++ == 0) {
+				 result = Long.toString(k.getId());
+			}
+			else {
+				result += Long.toString(k.getId());
+			}
+		}
+		return result;
+	}
+
+	private Set<Key<User>> decodeUsers(String editorsstr) {
+		StringTokenizer tok = new StringTokenizer(editorsstr);
+		Set<Key<User>> result = new HashSet<Key<User>>();
+		while (tok.hasMoreTokens()) {
+			long id = Long.parseLong(tok.nextToken());
+			result.add(new Key<User>(User.class, id));
+		}
+		return result;
 	}
 
 }
