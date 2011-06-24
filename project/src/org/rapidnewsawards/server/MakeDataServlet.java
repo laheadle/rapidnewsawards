@@ -27,8 +27,6 @@ import org.rapidnewsawards.messages.VoteResult;
 import com.googlecode.objectify.Objectify;
 
 public class MakeDataServlet extends HttpServlet {
-	private static final Logger log = Logger.getLogger(MakeDataServlet.class
-			.getName());
 	private static final int FIRST_EDITION = 0;
 	private static final long serialVersionUID = 1L;
 	public static PrintWriter out;

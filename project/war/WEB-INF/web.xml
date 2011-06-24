@@ -4,6 +4,24 @@
     "http://java.sun.com/dtd/web-app_2_3.dtd">
 
 <web-app>
+  <filter> 
+    <filter-name>AuthFilter</filter-name> 
+    <filter-class>org.rapidnewsawards.server.AuthFilter</filter-class> 
+    <init-param>
+      <param-name>adminEmail</param-name>
+      <param-value>laheadle@gmail.com</param-value>
+    </init-param>
+  </filter> 
+  <filter-mapping> 
+    <filter-name>AuthFilter</filter-name> 
+    <url-pattern>/*</url-pattern> 
+  </filter-mapping> 
+
+	<servlet>
+		<servlet-name>killDataServlet</servlet-name>
+		<servlet-class>org.rapidnewsawards.server.KillDataServlet</servlet-class>
+	</servlet>
+
 
 	<servlet>
 		<servlet-name>JSONServlet</servlet-name>
@@ -15,10 +33,6 @@
 		<servlet-class>org.rapidnewsawards.server.MakeDataServlet</servlet-class>
 	</servlet>
 
-	<servlet>
-		<servlet-name>killDataServlet</servlet-name>
-		<servlet-class>org.rapidnewsawards.server.KillDataServlet</servlet-class>
-	</servlet>
 
 	<servlet>
 		<servlet-name>doSomethingServlet</servlet-name>
@@ -37,6 +51,12 @@
 		<servlet-name>socialTask</servlet-name>
 		<servlet-class>org.rapidnewsawards.server.SocialTask</servlet-class>
 	</servlet>
+
+
+	<servlet-mapping>
+		<servlet-name>killDataServlet</servlet-name>
+		<url-pattern>/killData</url-pattern>
+	</servlet-mapping>
 
 	<servlet-mapping>
 		<servlet-name>transitionTask</servlet-name>
@@ -66,37 +86,24 @@
 		<url-pattern>/makeData</url-pattern>
 	</servlet-mapping>
 
-	<servlet-mapping>
-		<servlet-name>killDataServlet</servlet-name>
-		<url-pattern>/killData</url-pattern>
-	</servlet-mapping>
 
-  <filter> 
-    <filter-name>AuthFilter</filter-name> 
-    <filter-class>org.rapidnewsawards.server.AuthFilter</filter-class> 
-    <init-param>
-      <param-name>adminEmail</param-name>
-      <param-value>laheadle@gmail.com</param-value>
-    </init-param>
-  </filter> 
-  <filter-mapping> 
-    <filter-name>AuthFilter</filter-name> 
-    <url-pattern>/*</url-pattern> 
-  </filter-mapping> 
   
+
+  <welcome-file-list>
+		<welcome-file>index.jsp</welcome-file>
+		<welcome-file>index.html</welcome-file>
+		<welcome-file>rna.html</welcome-file>
+  </welcome-file-list>
+
   <security-constraint>
         <web-resource-collection>
+            <web-resource-name> Tasks </web-resource-name>
             <url-pattern>/tasks/*</url-pattern>
         </web-resource-collection>
         <auth-constraint>
             <role-name>admin</role-name>
         </auth-constraint>
-    </security-constraint>
+  </security-constraint>
     
-	<welcome-file-list>
-		<welcome-file>index.jsp</welcome-file>
-		<welcome-file>index.html</welcome-file>
-		<welcome-file>rna.html</welcome-file>
-	</welcome-file-list>
 
 </web-app>
