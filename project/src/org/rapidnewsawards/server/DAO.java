@@ -504,7 +504,12 @@ public class DAO extends DAOBase {
 			s.finished = true;
 			Objectify oTxn = fact().beginTransaction();
 			oTxn.put(s);
-			TransitionTask.setPeriodicalBalance(oTxn.getTxn());
+			if (getPeriodical().isFinished()) {
+				TransitionTask.finish(oTxn.getTxn());
+			}
+			else {
+				TransitionTask.setPeriodicalBalance(oTxn.getTxn());
+			}
 			oTxn.getTxn().commit();
 		}
 
@@ -523,7 +528,7 @@ public class DAO extends DAOBase {
 		public LockedPeriodical() throws RNAException {		
 			Objectify oTxn = fact().beginTransaction();
 			Periodical p = oTxn.get(Periodical.getKey(periodicalName.name));
-			if (p.isFinished()) {
+			if (p.isFinished() && !p.inTransition) {
 				throw new RNAException("The periodical is finished");
 			}
 			this.transaction = oTxn;
@@ -857,24 +862,14 @@ public class DAO extends DAOBase {
 			if (Edition.getNumber(current.getKey()) != editionNum) {
 				throw new RNAException(Integer.toString(editionNum) + " != " + current);
 			}
-			if (Edition.isFinal(current.getKey(), editions.getNumEditions())) {
-				transition.finishPeriodical();
-				log.info("End of periodical; last edition was " + current);
-			}
 			else {
 				transition.transitionEdition();
 			}
 		}
 
-		public void finishPeriodical() throws RNAException {
-			LockedPeriodical lp = lockPeriodical();
-			final Periodical p = lp.periodical;
-			p.setFinished();
-			lp.commit();
-		}
-
 		public void setPeriodicalBalance() throws RNAException {
 			assert(getPeriodical().inTransition);
+			assert(!getPeriodical().isFinished());
 			assert(Edition.getNumber(editions.getEdition(Editions.CURRENT).getKey()) > 0);
 			LockedPeriodical lp = lockPeriodical();
 
@@ -892,21 +887,15 @@ public class DAO extends DAOBase {
 
 			Edition e;
 			
-			if (p.isFinished()) {
-				TransitionTask.finish(lp.transaction.getTxn());
-				lp.commit();
-			}
-			else {
-				e = editions.getEdition(Editions.CURRENT);
-				int n = editions.getNumEditions();
-				assert (e.number > 0);
-				int spaceBalance = p.balance / (n - e.number);
-				p.balance -= spaceBalance;
-				TransitionTask.setSpaceBalance(lp.transaction.getTxn(), e, spaceBalance);
-				lp.commit();
-				log.info(e + ": balance " + Periodical.moneyPrint(spaceBalance));
-				log.info("periodical balance: " + Periodical.moneyPrint(p.balance));				
-			}
+			e = editions.getEdition(Editions.CURRENT);
+			int n = editions.getNumEditions();
+			assert (e.number > 0);
+			int spaceBalance = p.balance / (n - e.number);
+			p.balance -= spaceBalance;
+			TransitionTask.setSpaceBalance(lp.transaction.getTxn(), e, spaceBalance);
+			lp.commit();
+			log.info(e + ": balance " + Periodical.moneyPrint(spaceBalance));
+			log.info("periodical balance: " + Periodical.moneyPrint(p.balance));				
 		}
 
 		public void transitionEdition() throws RNAException {
@@ -937,6 +926,7 @@ public class DAO extends DAOBase {
 			// Do it! Change current edition.
 			if (nextNum == n) {
 				p.setFinished();
+				log.info("End of periodical; last edition was " + current);
 			} else if (Edition.isBad(Edition.createKey(nextNum), n) || 
 					nextNum == 0) {
 				locked.rollback();
@@ -944,13 +934,13 @@ public class DAO extends DAOBase {
 						"bug in edition numbers: %d > %d", nextNum, n));
 			} else {
 				p.setcurrentEditionKey(Edition.createKey(nextNum));
+				log.info(p.idName + ": New current Edition:" + nextNum);
 			}
 
 			p.inTransition = true;
 			TransitionTask.setEditionFinished(locked.transaction.getTxn(), 
 					current.getKey());
 			locked.commit();
-			log.info(p.idName + ": New current Edition:" + nextNum);
 		}
 
 		public void finishTransition() throws RNAException {

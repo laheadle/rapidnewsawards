@@ -80,7 +80,7 @@ window.initRNA = function () {
 	    var response = empty? {status: false, message: bitOfProblem} : JSON.parse(data);
 	    var payload = response.payload;
 	    if (response.status === 'BAD_REQUEST') { 
-		if (err) { err(response); } else { flashError(response); }
+		if (err) { err(response); } else { flashError(response.message); }
 		return;
 	    }
 	    if (response.status === 'TRY_AGAIN') { 

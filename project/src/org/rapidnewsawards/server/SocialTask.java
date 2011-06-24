@@ -79,8 +79,7 @@ public class SocialTask extends HttpServlet {
 						"command %s needed %d retries.", request, command.retries));
 			}			
 		} catch (RNAException e) {
-			// TODO chain
-			throw new IllegalStateException(e.message);
+			throw new IllegalStateException(e);
 		} catch (TooBusyException e) {
 			throw new ConcurrentModificationException(
 					String.format("command %s needed too many (%d) retries.", 

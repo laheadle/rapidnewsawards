@@ -971,7 +971,7 @@ $(function(){
 	    Backbone.history.start();
 	},
 
-	currentEdition: -1,
+	currentOrFinalEdition: -5,
 
 	_edition: function(edNum, fun, order, view, getAttrs, inits) {	    
 	    var self = this;
@@ -997,7 +997,7 @@ $(function(){
 		}
 	    };
 	    doRequest({ fun: fun, 
-			edition: edNum || this.currentEdition}, 
+			edition: edNum || this.currentOrFinalEdition}, 
 		      fetch);
 	},
 
