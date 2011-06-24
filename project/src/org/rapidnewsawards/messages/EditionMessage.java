@@ -28,7 +28,7 @@ public class EditionMessage {
 		this.numFundedLinks = s.numFundedLinks;
 		this.revenue = s.balance;
 		this.revenueStr = Periodical.moneyPrint(this.revenue);
-		this.totalSpendStr = Periodical.moneyPrint(this.revenue);
+		this.totalSpendStr = Periodical.moneyPrint(this.totalSpend);
 		this.finished = s.finished;
 	}
 }
