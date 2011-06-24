@@ -1426,6 +1426,7 @@ public class DAO extends DAOBase {
 			throw new RNAException("You did not check the consent form.");
 		}
 		Donation d = new Donation(name, amount, normalizeWebPage(webPage), statement);
+		log.info("Donation succeeded");
 		ofy().put(d);
 	}
 
