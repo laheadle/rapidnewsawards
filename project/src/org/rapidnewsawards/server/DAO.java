@@ -346,6 +346,10 @@ public class DAO extends DAOBase {
 			si.submitter = ofy().get(link.submitter);
 			si.setFunding(sl.funding);
 
+			if (user != null) {
+				si.userIsFunding = users.hasVoted(user, editionKey, link);
+			}
+
 			FullStoryInfo fsi = new FullStoryInfo();
 			fsi.info = si;
 			fsi.funds = getVoters(linkKey, editionKey);
@@ -1099,6 +1103,10 @@ public class DAO extends DAOBase {
 				vr.returnVal = Response.NOT_LOGGED_IN;
 				vr.authUrl = userService.createLoginURL(fullLink);
 				return vr;
+			}
+
+			if (!on) {
+				throw new RNAException("Vote Cancel Not Implemented");
 			}
 
 			if (user.isEditor) {

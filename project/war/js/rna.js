@@ -39,8 +39,8 @@ $(function(){
 	    var self = this;
 	    this.list.bind('add',     function () { self.addOne() });
 	    this.list.bind('refresh', function () { self.addAll() });
-	    $(this.el).append(this.make('div', {id: 'bodyLine', class: 'hugeBottom'}));
-	    $(this.el).append(this.make('ul', {class: 'spine large'}));
+	    $(this.el).append(this.make('div', {id: 'bodyLine', 'class': 'hugeBottom'}));
+	    $(this.el).append(this.make('ul', {'class': 'spine large'}));
 	},
 
 	addOne: function(model) {
@@ -88,7 +88,7 @@ $(function(){
 	render: function() {
 	    // these go above the edition list, so they are prepended
 	    // fixme change to a table
-	    var div = this.make("div", {class: "editionTabs large"});
+	    var div = this.make("div", {'class': "editionTabs large"});
 	    $(div).html(rMake('#edition-tabs-template', 
 			      {storiesSelected: this.storiesSelected,
 			       networkSelected: this.networkSelected}));
@@ -239,7 +239,7 @@ $(function(){
 		var message = this.edition.number > 0 ?
 		    "The judges have not funded this edition." :
 		    "Funding will begin after the signup round.";
-		this.appendElt(this.make("li", {class: 'empty'}, 
+		this.appendElt(this.make("li", {'class': 'empty'}, 
 					 message));
 	    }
 	    return this;
@@ -483,11 +483,11 @@ $(function(){
 	    }
 	    if (this.list.length == 0) {
 		if (this.order == 'top') {
-		    this.appendElt(this.make("li", {class: 'empty'}, 
+		    this.appendElt(this.make("li", {'class': 'empty'}, 
 					     "No funding has occurred during this edition."));
 		}
 		else {
-		    this.appendElt(this.make("li", {class: 'empty'}, 
+		    this.appendElt(this.make("li", {'class': 'empty'}, 
 					     "The network has not changed during this edition."));
 		}
 	    }
@@ -508,7 +508,7 @@ $(function(){
 	    this.model.bind('change', function () { self.render() });
 	    this.model.view = this;
 	    // fixme refactor
-	    $(this.el).append(this.make('ul', {class: 'spine large'}));
+	    $(this.el).append(this.make('ul', {'class': 'spine large'}));
 	    // add fundings list
 	    this.list = 
 		new GenList({parent: this, 
@@ -679,7 +679,7 @@ $(function(){
 	    this.model.bind('change', function () { self.render() });
 	    this.model.view = this;	    
 	    // fixme refactor
-	    $(this.el).append(this.make('ul', {class: 'spine large'}));
+	    $(this.el).append(this.make('ul', {'class': 'spine large'}));
 	    // add StoryFundingsList
 	    this.list = 
 		new GenList({parent: this, 
@@ -726,7 +726,30 @@ $(function(){
 	    $(this.el).prepend(rMake('#full-story-template', 
 				     // story info
 				     _copy));
+	    this.bindEvents(this);
+	},
+
+	bindEvents: function(self) {
+	    this.$('#is-funding').click(function (event) {
+		var on = $(this).is(':checked');
+		doPostRequest({fun: 'voteFor', 
+			       link: self.model.get('info').link.url,
+			       fullLink: "",
+			       on: on},
+			      function(data) {
+				  // TODO Don't show 'success' for errors
+				  if (data.returnVal === 'SUCCESS') {
+				      flashLog({type: 'success',
+						content: data.returnVal || 'I got confused'});
+				  }
+				  else {
+				      flashLog({type: 'error',
+						content: data.returnVal || 'I got confused'});
+				  }
+			      });
+	    });
 	}
+
     });
 
 
@@ -785,8 +808,8 @@ $(function(){
 	initialize: function(attrs) {
 	    this.current = attrs.current;
 	    // fixme refactor
-	    $(this.el).append(this.make('div', {class: 'volumeHeader large'}));
-	    $(this.el).append(this.make('ul', {class: 'spine large'}));
+	    $(this.el).append(this.make('div', {'class': 'volumeHeader large'}));
+	    $(this.el).append(this.make('ul', {'class': 'spine large'}));
 	    this.glist = 
 		new GenList({parent: this, 
 			     list: new EditionList});

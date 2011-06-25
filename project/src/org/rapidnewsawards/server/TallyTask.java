@@ -26,6 +26,7 @@ import com.google.appengine.api.taskqueue.TaskOptions;
 import com.googlecode.objectify.Key;
 
 public class TallyTask  extends HttpServlet {
+	private static final String DELIMIT = ",";
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(TallyTask.class.getName());
 	private static DAO d = DAO.instance;
@@ -230,14 +231,14 @@ public class TallyTask  extends HttpServlet {
 				 result = Long.toString(k.getId());
 			}
 			else {
-				result += Long.toString(k.getId());
+				result += DELIMIT + Long.toString(k.getId());
 			}
 		}
 		return result;
 	}
 
 	private Set<Key<User>> decodeUsers(String editorsstr) {
-		StringTokenizer tok = new StringTokenizer(editorsstr);
+		StringTokenizer tok = new StringTokenizer(editorsstr, DELIMIT);
 		Set<Key<User>> result = new HashSet<Key<User>>();
 		while (tok.hasMoreTokens()) {
 			long id = Long.parseLong(tok.nextToken());

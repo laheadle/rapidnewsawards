@@ -120,6 +120,7 @@ public class JSONServlet extends HttpServlet {
 			}
 		});
 
+		// TODO 2.0 Rename to getStory
 		commandsMap.put("story", new AbstractCommand() {
 			@Override
 			public Object getResult() {

@@ -150,13 +150,17 @@
 
     <script type="text/template" id="full-story-template">
       <div class="spine">
-      <span class="revenue"> <%= fundingStr %></span>
-      <br>
-      <h3> 
-	<a href="<%= link.url %>"> <%= link.title %> </a> </h3> 
-      <span> 
-	submitted by <%= rMake('#person-link-template', submitter) %> 
-      from <%= link.domain %> </span> </div> </script>
+	<span class="revenue"> <%= fundingStr %></span>
+	<br>
+	<h3> 
+	  <a href="<%= link.url %>"> <%= link.title %> </a> </h3> 
+	<span> 
+	  submitted by <%= rMake('#person-link-template', submitter) %> 
+	  from <%= link.domain %> </span> <br>
+    
+	<span> Fund this story: </span>
+	<input id="is-funding" type="checkbox" 
+	       <%= userIsFunding? 'checked="yes"' : '' %>> </input> </div> </script>
 
     <script type="text/template" id="story-template">
      <div class="fatBottom">

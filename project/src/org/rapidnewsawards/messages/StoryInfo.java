@@ -20,6 +20,7 @@ public class StoryInfo {
 	public Link link;
 	public int score;
 	private int funding;
+	public boolean userIsFunding;
 	
 	// only read by clients
 	@SuppressWarnings("unused")
