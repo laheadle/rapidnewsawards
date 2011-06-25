@@ -17,7 +17,7 @@ $(function(){
 
 	initialize: function() {
 	    var self = this;
-	    $('#submit').click(function() {
+	    $('#submit').click(function(event) {
 		event.preventDefault();
 		window.flashLog({type:'notice', content: 'Submitting...'});
 		window.doRequest({fun: 'donate', 

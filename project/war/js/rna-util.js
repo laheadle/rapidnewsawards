@@ -73,7 +73,7 @@ window.initRNA = function () {
 	log({info: 'doRequest: ' + JSON.stringify(attrs)});
 	var self = this;
 	var reactTo = function (data) {
-	    var empty = !data || data == "" || data.match(/^[ \t\r\n]+/$);
+	    var empty = !data || data == "" || data.match(/^[ \t\r\n]+$/);
 	    log(attrs.fun + ' returned ' + 
 		(empty? 'null' : JSON.stringify(data)));
 	    var bitOfProblem = 'bit of a problem...working on it.';

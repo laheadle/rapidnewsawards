@@ -23,12 +23,6 @@
 	</servlet>
 
 	<servlet>
-		<servlet-name>showDonorsServlet</servlet-name>
-		<servlet-class>org.rapidnewsawards.server.ShowDonorsServlet</servlet-class>
-	</servlet>
-
-
-	<servlet>
 		<servlet-name>JSONServlet</servlet-name>
 		<servlet-class>org.rapidnewsawards.server.JSONServlet</servlet-class>
 	</servlet>
@@ -61,11 +55,6 @@
 	<servlet-mapping>
 		<servlet-name>killDataServlet</servlet-name>
 		<url-pattern>/killData</url-pattern>
-	</servlet-mapping>
-
-	<servlet-mapping>
-		<servlet-name>showDonorsServlet</servlet-name>
-		<url-pattern>/showDonors</url-pattern>
 	</servlet-mapping>
 
 	<servlet-mapping>
