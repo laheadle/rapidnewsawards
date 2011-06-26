@@ -230,7 +230,7 @@ public class SocialTest extends RNATest {
 				.ancestor(e1.getKey())
 				.filter("user", jqp.getKey())
 				.get()
-				.authority,
+				.score,
 				1);
 	}
 

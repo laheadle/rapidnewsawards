@@ -73,9 +73,9 @@ public class DAO extends DAOBase {
 		private static final int PREVIOUS = -4;
 		public static final int CURRENT_OR_FINAL = -5;
 
-		private EditionMessage makeEditionMessage(Edition e) {
+		private EditionMessage makeEditionMessage(Objectify ofy, Edition e) {
 			return new EditionMessage(e,
-					ofy().get(ScoreSpace.keyFromEditionKey(e.getKey())));		
+					ofy.get(ScoreSpace.keyFromEditionKey(e.getKey())));		
 		}
 
 
@@ -158,26 +158,29 @@ public class DAO extends DAOBase {
 		}
 
 		// TODO refactor with getvoters
-		public LinkedList<InfluenceMessage> getJudges(Edition e) {
+		public LinkedList<InfluenceMessage> getJudges(Objectify txn, Edition e) {
 			LinkedList<InfluenceMessage> result = new LinkedList<InfluenceMessage>();
 
-			Map<Key<User>, Integer> authorities = new HashMap<Key<User>, Integer>();
 			Map<Key<User>, Integer> funds = new HashMap<Key<User>, Integer>();
 			ArrayList<Key<User>> judges = new ArrayList<Key<User>>();
 
-			for (JudgeInfluence ji : ofy().query(
+			// TODO give two types the same parent -- RACE CONDITION HERE
+			ScoreSpace space = getScoreSpace(txn, e.getKey());
+			txn.getTxn().commit();
+			
+			txn = fact().beginTransaction();
+			for (JudgeInfluence ji : txn.query(
 					JudgeInfluence.class).ancestor(e.getKey())) {
-				authorities.put(ji.user, ji.authority);
-				funds.put(ji.user, ji.funded);
+				funds.put(ji.user, funding(ji.score, space.totalScore, space.balance));
 				judges.add(ji.user);
 			}
+			txn.getTxn().commit();
 
 			if (judges.size() > 0) {
 				Map<Key<User>, User> vmap = ofy().get(judges);
 
 				for (int i = 0; i < judges.size(); i++) {
 					result.add(new InfluenceMessage(vmap.get(judges.get(i)),
-							authorities.get(judges.get(i)),
 							funds.get(judges.get(i))));
 				}
 
@@ -188,24 +191,29 @@ public class DAO extends DAOBase {
 		}
 
 		// TODO refactor with getvoters
-		public LinkedList<InfluenceMessage> getTopEditors(Edition e) {
+		public LinkedList<InfluenceMessage> getTopEditors(Objectify txn, Edition e) {
 			LinkedList<InfluenceMessage> result = new LinkedList<InfluenceMessage>();
 
 			Map<Key<User>, Integer> funds = new HashMap<Key<User>, Integer>();
 			ArrayList<Key<User>> editors = new ArrayList<Key<User>>();
 
-			for (EditorInfluence ei : ofy().query(
+			ScoreSpace space = getScoreSpace(txn, e.getKey());
+			txn.getTxn().commit();
+			
+			txn = fact().beginTransaction();
+			// TODO PARENT
+			for (EditorInfluence ei : txn.query(
 					EditorInfluence.class).ancestor(e.getKey())) {
-				funds.put(ei.editor, ei.funded);
+				funds.put(ei.editor, funding(ei.score, space.totalScore, space.balance));
 				editors.add(ei.editor);
 			}
+			txn.getTxn().commit();
 
 			if (editors.size() > 0) {
 				Map<Key<User>, User> vmap = ofy().get(editors);
 
 				for (int i = 0; i < editors.size(); i++) {
 					result.add(new InfluenceMessage(vmap.get(editors.get(i)),
-							0,
 							funds.get(editors.get(i))));
 				}
 
@@ -305,25 +313,25 @@ public class DAO extends DAOBase {
 		public RecentVotes getRecentVotes(int edition) throws RNAException {
 			Edition e = getEdition(edition);
 			RecentVotes s = new RecentVotes();
-			s.edition = makeEditionMessage(e);
+			// no aggregate score info needed
+			s.edition = makeEditionMessage(ofy(), e);
 			s.numEditions = getNumEditions();
 			s.list = getLatestUser_Vote_Links(e.getKey());
 			return s;
 		}
 
-		public ScoredLink getScoredLink(Key<Edition> e, Key<Link> l) {
-			return ofy().query(ScoredLink.class).filter("edition", e)
+		public ScoredLink getScoredLink(Objectify ofy, Key<Edition> e, Key<Link> l) {
+			return ofy.query(ScoredLink.class).ancestor(ScoreRoot.keyFromEditionKey(e))
 					.filter("link", l).get();
 		}
 
-		public LinkedList<ScoredLink> getScoredLinks(Edition e, int minScore) {
+		public LinkedList<ScoredLink> getScoredLinks(Objectify ofy, Edition e, int minScore) {
 			LinkedList<ScoredLink> result = new LinkedList<ScoredLink>();
 			if (e == null)
 				return result;
 
-			for (ScoredLink sl : ofy().query(ScoredLink.class)
-					.filter("edition", e.getKey()).filter("score >=", minScore)
-					.order("-score")) {
+			for (ScoredLink sl : ofy.query(ScoredLink.class).ancestor(ScoreRoot.keyFromEditionKey(e.getKey()))
+					.filter("score >=", minScore).order("-score")) {
 				result.add(sl);
 			}
 			return result;
@@ -334,19 +342,21 @@ public class DAO extends DAOBase {
 			Key<Edition> editionKey = Edition.createKey(editionNum);
 
 			// Edition e = getEdition(Name.AGGREGATOR_NAME, editionNum, null);
-			ScoredLink sl = editions.getScoredLink(editionKey, linkKey);
+			Objectify txn = fact().beginTransaction();
+			ScoredLink sl = editions.getScoredLink(txn, editionKey, linkKey);
 
 			Link link = ofy().find(linkKey);
 			if (link == null) {
 				throw new RNAException("Story Link not found");
 			}
 
+			ScoreSpace space = getScoreSpace(txn, editionKey);
 			StoryInfo si = new StoryInfo();
 			si.link = link;
 			si.score = sl.score;
 			si.editionId = editionNum;
 			si.submitter = ofy().get(link.submitter);
-			si.setFunding(sl.funding);
+			si.setFunding(funding(sl.score, space.totalScore, space.balance));
 			si.isCurrent = editions.getEdition(CURRENT).getKey().equals(editionKey);
 			
 			if (user != null) {
@@ -362,31 +372,33 @@ public class DAO extends DAOBase {
 		public TopJudges getTopJudges(int edition) throws RNAException {
 			Edition e = editions.getEdition(edition);
 			TopJudges tj = new TopJudges();
-			tj.edition = makeEditionMessage(e);
+			Objectify txn = fact().beginTransaction();
+			tj.edition = makeEditionMessage(txn, e);
 			tj.numEditions = editions.getNumEditions();
-			tj.list = getJudges(e);
+			tj.list = getJudges(txn, e);
 			return tj;
 		}
 
 		public TopEditors getTopEditors(int edition) throws RNAException {
 			Edition e = editions.getEdition(edition);
 			TopEditors tj = new TopEditors();
-			tj.edition = makeEditionMessage(e);
+			Objectify txn = fact().beginTransaction();
+			tj.edition = makeEditionMessage(txn, e);
 			tj.numEditions = editions.getNumEditions();
-			tj.list = getTopEditors(e);
+			tj.list = getTopEditors(txn, e);
 			return tj;
 		}
 
 		
 		public TopStories getTopStories(int editionNum) throws RNAException {
 			Edition e = editions.getEdition(editionNum);
-
+			Objectify txn = fact().beginTransaction();
 			TopStories result = new TopStories();
 			LinkedList<StoryInfo> stories = new LinkedList<StoryInfo>();
-			result.edition = makeEditionMessage(e);
+			result.edition = makeEditionMessage(txn, e);
 			result.numEditions = editions.getNumEditions();
 			result.list = stories;
-			LinkedList<ScoredLink> scored = editions.getScoredLinks(e, 1);
+			LinkedList<ScoredLink> scored = editions.getScoredLinks(txn, e, 1);
 			LinkedList<Key<Link>> linkKeys = new LinkedList<Key<Link>>();
 
 			for (ScoredLink sl : scored) {
@@ -404,13 +416,16 @@ public class DAO extends DAOBase {
 
 			Map<Key<User>, User> userMap = ofy().get(submitterKeys);
 
+			ScoreSpace space = getScoreSpace(txn, e.getKey());
+			txn.getTxn().commit();
+
 			for (ScoredLink sl : scored) {
 				StoryInfo si = new StoryInfo();
 				si.link = linkMap.get(sl.link);
 				si.score = sl.score;
 				si.editionId = e.getNumber();
 				si.submitter = userMap.get(si.link.submitter);
-				si.setFunding(sl.funding);
+				si.setFunding(funding(sl.score, space.totalScore, space.balance));
 				stories.add(si);
 			}
 
@@ -474,31 +489,32 @@ public class DAO extends DAOBase {
 				return result;
 			}
 
+			Objectify txn = fact().beginTransaction();
+			ScoreSpace space = getScoreSpace(txn, e);
 			Map<Key<User>, User> vmap = ofy().get(voters);
 
 			for (int i = 0; i < voters.size(); i++) {
 				result.add(new InfluenceMessage(vmap.get(voters.get(i)),
-						// TODO 2.0 Add Funding here.
-						authorities.get(voters.get(i)), 0));
+						funding(authorities.get(voters.get(i)), space.totalScore, space.balance)));
 			}
-
+			txn.getTxn().commit();
 			Collections.sort(result);
 			return result;
 		}
 
-		public ScoreSpace getScoreSpace(Key<Edition> key) {
+		public ScoreSpace getScoreSpace(Objectify ofy, Key<Edition> key) {
 			Key<ScoreRoot> sroot = new Key<ScoreRoot>(ScoreRoot.class, key.getName());
 			Key<ScoreSpace> skey = new Key<ScoreSpace>(sroot,
 					ScoreSpace.class, key.getName());
 			ScoreSpace s;
-			if ((s = ofy().find(skey)) == null) { throw new IllegalStateException(); }
+			if ((s = ofy.find(skey)) == null) { throw new IllegalStateException(); }
 			return s;
 		}
 
 		public void setSpaceBalance(int edition, int balance) {
 			assert(getPeriodical().inTransition);
-			ScoreSpace s = getScoreSpace(Edition.createKey(edition));
 			Objectify oTxn = fact().beginTransaction();
+			ScoreSpace s = getScoreSpace(oTxn, Edition.createKey(edition));
 			s.balance = balance;
 			oTxn.put(s);
 			TransitionTask.finish(oTxn.getTxn());
@@ -507,9 +523,9 @@ public class DAO extends DAOBase {
 
 
 		public void setEditionFinished(int edition) throws RNAException {
-			ScoreSpace s = getScoreSpace(Edition.createKey(edition));
-			s.finished = true;
 			Objectify oTxn = fact().beginTransaction();
+			ScoreSpace s = getScoreSpace(oTxn, Edition.createKey(edition));
+			s.finished = true;
 			oTxn.put(s);
 			if (getPeriodical().isFinished()) {
 				TransitionTask.finish(oTxn.getTxn());
@@ -827,7 +843,8 @@ public class DAO extends DAOBase {
 			Edition preceeding = editions.getEdition(edition);
 
 			RecentSocials s = new RecentSocials();
-			s.edition = editions.makeEditionMessage(preceeding);
+			// No transaction because no aggregate score data needed
+			s.edition = editions.makeEditionMessage(ofy(), preceeding);
 			s.numEditions = editions.getNumEditions();
 
 			Edition succeeding = null;
@@ -1089,10 +1106,6 @@ public class DAO extends DAOBase {
 
 		private boolean isEditor(Key<User> from) {
 			User u = ofy().find(from);
-			if (u == null) {
-				log.severe("bad input");
-				return false;
-			}
 			return u.isEditor;
 		}
 
@@ -1108,10 +1121,6 @@ public class DAO extends DAOBase {
 				return vr;
 			}
 
-			if (!on) {
-				throw new RNAException("Vote Cancel Not Implemented");
-			}
-			
 			if (user.isEditor) {
 				vr.returnVal = Response.ONLY_JUDGES_CAN_VOTE;
 				return vr;
@@ -1134,22 +1143,9 @@ public class DAO extends DAOBase {
 			return vr;
 		}
 
-		/**
-		 * Store a new vote in the DB by a user for a link
-		 * 
-		 * @param r
-		 *            the user voting
-		 * @param e
-		 *            the edition during which the vote occurs
-		 * @param l
-		 *            the link voted for
-		 * @throws RNAException 
-		 */
 		public Response voteFor(User u, Key<Edition> e, Link l, boolean on)
 				throws RNAException {
-			// TODO only judges can vote, ditto for ed follows
-
-			assert(e != null);
+			assert(e != null && l != null);
 			
 			// obtain lock
 			LockedPeriodical lp = lockPeriodical();
@@ -1357,26 +1353,24 @@ public class DAO extends DAOBase {
 		assert(getPeriodical().userlocked);
 		Vote v = ofy().get(vote);
 		Objectify otx = fact().beginTransaction();
-		ScoreSpace space = editions.getScoreSpace(v.edition);
+		ScoreSpace space = editions.getScoreSpace(otx, v.edition);
 		
 		ScoredLink sl = otx.query(ScoredLink.class)
 		.ancestor(space.root).filter("link", v.link).get();
 		
 		space.totalScore += v.authority;
-		int fund = funding(v.authority, space.totalScore, space.balance);
-		space.totalSpend += fund;
+		space.totalSpend = funding(space.totalScore, space.totalScore, space.balance);
 		
 		if (sl == null) {
-			sl = new ScoredLink(v.edition, space.root, v.link, v.authority, fund);
+			sl = new ScoredLink(v.edition, space.root, v.link, v.authority);
 			space.numFundedLinks++;
 		}
 		else {
 			sl.score += v.authority;
-			sl.funding += fund;
 		}
 		otx.put(sl);
 		otx.put(space);
-		TallyTask.addJudgeFunding(otx.getTxn(), v, fund);
+		TallyTask.addJudgeFunding(otx.getTxn(), v, v.authority);
 		otx.getTxn().commit();
 	}
 
@@ -1385,7 +1379,7 @@ public class DAO extends DAOBase {
 		Vote v = ofy().get(vkey);
 		Objectify otx = fact().beginTransaction();
 		JudgeInfluence ji = users.getJudgeInfluence(otx, v.voter, v.edition);
-		ji.funded += fund;
+		ji.score += fund;
 		otx.put(ji);
 		TallyTask.findEditorsToFund(otx.getTxn(), v, fund);
 		otx.getTxn().commit();
@@ -1412,7 +1406,7 @@ public class DAO extends DAOBase {
 			EditorInfluence ei = otx.query(EditorInfluence.class).ancestor(edition)
 			.filter("editor", editor).get();
 			// TODO Write a test for this invariant that checks this and judge influence
-			ei.funded += fund / editors.size();
+			ei.score += 1;
 			eiset.add(ei);
 		}
 		otx.put(eiset);

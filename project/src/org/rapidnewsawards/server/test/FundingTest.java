@@ -40,12 +40,12 @@ public class FundingTest extends RNATest {
 		assertTrue(d.users.hasVoted(jqp, e1, l));
 		Vote v = d.editions.getLatestUser_Vote_Links(e1).get(0).vote;
 		d.tallyVote(v.getKey());
-		ScoreSpace space = d.editions.getScoreSpace(v.edition);
+		ScoreSpace space = d.editions.getScoreSpace(d.ofy(), v.edition);
 		assertEquals(space.totalScore, 1);
 		assertEquals(space.totalSpend, 1000);
 		ScoredLink sl = d.ofy().query(ScoredLink.class)
 		.ancestor(space.root).filter("link", v.link).get();
-		assertEquals(sl.funding, 1000);		
+		assertEquals(sl.score, 1000);
 
 	}
 

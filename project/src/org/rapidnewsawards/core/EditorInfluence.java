@@ -6,13 +6,11 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Parent;
 
 public class EditorInfluence {
-	@Id
-	public Long id;
+	@Id public Long id;
 
-	public int funded;
+	public int score;
 	
-	@Parent
-	public Key<Edition> edition;
+	@Parent public Key<Edition> edition;
 	public Key<User> editor;
 	
 	public EditorInfluence() {}
@@ -20,6 +18,6 @@ public class EditorInfluence {
 	public EditorInfluence(Key<Edition> edition, Key<User> editor) {
 		this.edition = edition;
 		this.editor = editor;
-		funded = 0;
+		score = 0;
 	}
 }

@@ -684,39 +684,7 @@ $(function(){
 	    this.list = 
 		new GenList({parent: this, 
 			     list: new StoryFundingsList});
-	    var self = this;
-	    var dollars = function(storyInfo, fund) {
-		if (storyInfo.score == 0) { return 0; }
-		return (storyInfo.funding / storyInfo.score) 
-		    * fund.authority / 100;
-	    };
-
-	    var pennies = function(storyInfo, fund) {
-		if (storyInfo.score == 0) { return 0; }
-		return (storyInfo.funding / storyInfo.score) 
-		    * fund.authority % 100;
-	    };
-
-	    var pennyString = function(storyInfo, fund) {
-		var a = ""+ pennies(storyInfo, fund);
-		if (a.length == 1) { 
-		    return "0" + a; 
-		} else if (a.length == 2) {
-		    return a; 
-		} 
-		else { 
-		    return a.substring(0,2);
-		}
-	    };
-	    var storyFunds = 
-		_.map(this.model.get('funds'),
-		      function (fund) {
-			  var storyInfo =_.clone(self.model.get('info'));
-			  return _.extend(fund, 
-					  {dollars: dollars(storyInfo, fund),
-					   pennies: pennyString(storyInfo, fund)});
-		      });
-	this.list.refresh(storyFunds);
+	    this.list.refresh(this.model.get('funds'));
 
 	},
 

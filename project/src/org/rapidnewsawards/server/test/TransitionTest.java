@@ -67,7 +67,7 @@ public class TransitionTest extends RNATest {
 		d.transition.setPeriodicalBalance();
 		d.editions.setSpaceBalance(1, 100);
 		d.transition.finishTransition();
-		ScoreSpace s = d.editions.getScoreSpace(Edition.createKey(0));
+		ScoreSpace s = d.editions.getScoreSpace(d.ofy(), Edition.createKey(0));
 		assertEquals(s.balance, 0);
 	}
 }

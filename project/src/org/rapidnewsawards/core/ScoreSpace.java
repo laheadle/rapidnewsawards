@@ -36,9 +36,7 @@ public class ScoreSpace {
 	}
 
 	public static Key<ScoreSpace> keyFromEditionKey (Key<Edition> key) {
-		return new Key<ScoreSpace>(
-				new Key<ScoreRoot>(ScoreRoot.class, key.getName()),
-				ScoreSpace.class, key.getName());
+		return new Key<ScoreSpace>(ScoreRoot.keyFromEditionKey(key), ScoreSpace.class, key.getName());
 	}
 
 	public int getNumber() {

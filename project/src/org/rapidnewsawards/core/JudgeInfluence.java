@@ -10,8 +10,8 @@ public class JudgeInfluence {
 	@Id
 	public Long id;
 
-	public int authority;
-	public int funded;
+	public int authority; 
+	public int score;
 	
 	@Parent
 	public Key<Edition> edition;
@@ -21,6 +21,7 @@ public class JudgeInfluence {
 	
 	public JudgeInfluence(int authority, Key<Edition> edition, Key<User> user) {
 		this.authority = authority;
+		this.score = 0;
 		this.edition = edition;
 		this.user = user;
 	}

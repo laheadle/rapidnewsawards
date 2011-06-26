@@ -6,13 +6,11 @@ import org.rapidnewsawards.core.User;
 
 public class InfluenceMessage implements Comparable<InfluenceMessage> {
 	public User user;
-	public int authority;
 	public String fundedStr;
 	public int funded;
 
-	public InfluenceMessage (User u, int authority, int funded) { 
+	public InfluenceMessage (User u, int funded) { 
 		this.user = u;
-		this.authority = authority;	
 		this.funded = funded;
 		this.fundedStr = Periodical.moneyPrint(funded);
 	}
