@@ -56,6 +56,11 @@ body {
     height: 100%;
 }
 
+a.titleLink {
+    font-size: 1.2em;
+    display: block;
+}
+
 h1.title {
     font-weight: bold;
     font-size: 2em;

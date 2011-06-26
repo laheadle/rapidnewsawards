@@ -3,7 +3,11 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="com.google.appengine.eclipse.core.GAE_CONTAINER"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER"/>
-	<classpathentry kind="lib" path="war/WEB-INF/lib/objectify-3.0.jar"/>
+	<classpathentry kind="lib" path="war/WEB-INF/lib/objectify-3.0.jar">
+		<attributes>
+			<attribute name="javadoc_location" value="file:/C:/Users/Lyn/Desktop/code/java_libs/objectify-3.0/javadoc/"/>
+		</attributes>
+	</classpathentry>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/junit-4.9b2.jar"/>
 	<classpathentry kind="lib" path="C:/Users/Lyn/Desktop/code/eclipse/plugins/com.google.appengine.eclipse.sdkbundle_1.5.1.r36v201106211634/appengine-java-sdk-1.5.1/lib/impl/appengine-api.jar"/>
 	<classpathentry kind="lib" path="war/WEB-INF/lib/gson-1.7.1.jar"/>

@@ -152,15 +152,23 @@
       <div class="spine">
 	<span class="revenue"> <%= fundingStr %></span>
 	<br>
-	<h3> 
-	  <a href="<%= link.url %>"> <%= link.title %> </a> </h3> 
+	  <a class="titleLink" href="<%= link.url %>"> <%= link.title %> </a>
 	<span> 
 	  submitted by <%= rMake('#person-link-template', submitter) %> 
 	  from <%= link.domain %> </span> <br>
-    
-	<span> Fund this story: </span>
-	<input id="is-funding" type="checkbox" 
-	       <%= userIsFunding? 'checked="yes"' : '' %>> </input> </div> </script>
+
+        <% if (isCurrent) { %>
+          <span> Fund this story: </span>
+	  <input id="is-funding" type="checkbox" 
+		 <%= userIsFunding? 'checked="yes"' : '' %>> </input>
+
+  	<% } else if (userIsFunding) { %>
+          <span> You funded this story. </span>	
+	<% } else { %>
+          <span> You did not fund this story. </span>	
+	<% } %>
+
+    </div> </script>
 
     <script type="text/template" id="story-template">
      <div class="fatBottom">

@@ -329,15 +329,17 @@ public class DAO extends DAOBase {
 			return result;
 		}
 
-		public FullStoryInfo getStory(int editionNum, Long linkId) {
+		public FullStoryInfo getStory(int editionNum, Long linkId) throws RNAException {
 			Key<Link> linkKey = new Key<Link>(Link.class, linkId);
-			Key<Edition> editionKey = new Key<Edition>(Edition.class, ""
-					+ editionNum);
+			Key<Edition> editionKey = Edition.createKey(editionNum);
 
 			// Edition e = getEdition(Name.AGGREGATOR_NAME, editionNum, null);
 			ScoredLink sl = editions.getScoredLink(editionKey, linkKey);
 
-			Link link = ofy().get(linkKey);
+			Link link = ofy().find(linkKey);
+			if (link == null) {
+				throw new RNAException("Story Link not found");
+			}
 
 			StoryInfo si = new StoryInfo();
 			si.link = link;
@@ -345,7 +347,8 @@ public class DAO extends DAOBase {
 			si.editionId = editionNum;
 			si.submitter = ofy().get(link.submitter);
 			si.setFunding(sl.funding);
-
+			si.isCurrent = editions.getEdition(CURRENT).getKey().equals(editionKey);
+			
 			if (user != null) {
 				si.userIsFunding = users.hasVoted(user, editionKey, link);
 			}

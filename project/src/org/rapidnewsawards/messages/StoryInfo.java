@@ -21,6 +21,7 @@ public class StoryInfo {
 	public int score;
 	private int funding;
 	public boolean userIsFunding;
+	public boolean isCurrent;
 	
 	// only read by clients
 	@SuppressWarnings("unused")

@@ -123,7 +123,7 @@ public class JSONServlet extends HttpServlet {
 		// TODO 2.0 Rename to getStory
 		commandsMap.put("story", new AbstractCommand() {
 			@Override
-			public Object getResult() {
+			public Object getResult() throws RNAException {
 				int edition = get("edition", Integer.class);
 				long link = get("linkId", Long.class);
 				return d.editions.getStory(edition, link);
