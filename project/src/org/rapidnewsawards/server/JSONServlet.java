@@ -162,11 +162,12 @@ public class JSONServlet extends HttpServlet {
 		commandsMap.put("voteFor", new AbstractCommand() {
 			@Override
 			public Object getResult() throws RNAException {
-				// TODO call typed interface, standardize exceptions 
+				// TODO call typed interface, standardize exceptions
 				// -- e.g. BadRequestException(Response to client)
 				String link = request.getParameter("link");
 				String fullLink = request.getParameter("fullLink");
-				Edition ed = d.editions.getCurrentEdition();
+				int edition = get("edition", Integer.class);
+				Edition ed = d.editions.getEdition(edition);
 				Boolean on = new Boolean(request.getParameter("on"));
 				VoteResult vr = d.users.voteFor(link, fullLink, ed.getKey(), on);
 				return vr;

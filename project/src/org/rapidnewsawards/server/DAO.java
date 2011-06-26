@@ -1108,7 +1108,7 @@ public class DAO extends DAOBase {
 			if (!on) {
 				throw new RNAException("Vote Cancel Not Implemented");
 			}
-
+			
 			if (user.isEditor) {
 				vr.returnVal = Response.ONLY_JUDGES_CAN_VOTE;
 				return vr;

@@ -35,15 +35,17 @@ $(function(){
 	    var setUser = function(data) {
 		if (data) {
 		    self.model.set({user: data, submitting: true});
-		    doRequest({fun: 'voteFor', 
-			       link: link,
-			       fullLink: window.location.toString(), 
-			       on: true},
-			      setLink,
-			      function (err) {
-				  flashError(err.toString());
-			      });
-
+		    if (self.isLoggedInandInitialized()) {
+			doRequest({fun: 'voteFor', 
+				   link: link,
+				   edition: -1,
+				   fullLink: window.location.toString(), 
+				   on: true},
+				  setLink,
+				  function (err) {
+				      flashError(err.toString());
+				  });
+		    }
 		}
 		else {
 		    self.model.set({user: {cid: 'guest'}});
@@ -64,6 +66,11 @@ $(function(){
 	    $(this.el).html('');
 	},
 
+	isLoggedInandInitialized: function() {
+	    var user = this.model.get('user');
+	    return user.nickname && user.isInitialized;
+	},
+
 	render: function() {
 	    var user = this.model.get('user');
 	    var done = this.model.get('done');
@@ -74,7 +81,7 @@ $(function(){
 	    if (!user) {
 		this.show('fetching user info...');
 	    }
-	    else if (user.nickname && user.isInitialized) {
+	    else if (this.isLoggedInandInitialized()) {
 		if (done) {
 		    if (this.model.get('result') === 'ALREADY_VOTED') { 
 			this.show('you already voted for this story');

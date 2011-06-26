@@ -734,6 +734,7 @@ $(function(){
 		var on = $(this).is(':checked');
 		doPostRequest({fun: 'voteFor', 
 			       link: self.model.get('info').link.url,
+			       edition: self.model.get('info').editionId,
 			       fullLink: "",
 			       on: on},
 			      function(data) {
