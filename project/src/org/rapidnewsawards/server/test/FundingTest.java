@@ -30,7 +30,7 @@ public class FundingTest extends RNATest {
 		.ancestor(e1).filter("user", jqp.getKey()).get();
 		d.ofy().delete(eua);
 		d.ofy().put(new JudgeInfluence(1, 
-				e1, jqp.getKey()));
+				ScoreSpace.keyFromEditionKey(e1), jqp.getKey()));
 
 		Link l = d.users.createLink("http://example.com", "title", jqp.getKey());
 		assertEquals(d.editions.getLatestUser_Vote_Links(e1).size(), 0);

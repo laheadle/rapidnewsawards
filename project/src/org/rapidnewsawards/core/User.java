@@ -62,6 +62,9 @@ public class User {
 
 	public String getDisplayName() {
 		if (nickname == null || nickname.equals("")) {
+			if (email.indexOf('@') == -1) {
+				return "??";
+			}
 			return email.substring(0, email.indexOf('@'));
 		}
 		else {

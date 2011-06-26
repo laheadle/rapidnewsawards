@@ -14,15 +14,16 @@ public class JudgeInfluence {
 	public int score;
 	
 	@Parent
-	public Key<Edition> edition;
+	public Key<ScoreSpace> space;
 	public Key<User> user;
+
 
 	public JudgeInfluence() {}
 	
-	public JudgeInfluence(int authority, Key<Edition> edition, Key<User> user) {
+	public JudgeInfluence(int authority, Key<ScoreSpace> space, Key<User> user) {
 		this.authority = authority;
 		this.score = 0;
-		this.edition = edition;
+		this.space = space;
 		this.user = user;
 	}
 	

@@ -137,7 +137,7 @@ public class MakeDataServlet extends HttpServlet {
 		// EditorInflucne
 		for (Edition e : editions) {
 			for (User ed : editors) {
-				d.ofy().put(new EditorInfluence(e.getKey(), ed.getKey()));
+				d.ofy().put(new EditorInfluence(ScoreSpace.keyFromEditionKey(e.getKey()), ed.getKey()));
 			}
 		}
 

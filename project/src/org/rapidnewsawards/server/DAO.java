@@ -164,13 +164,10 @@ public class DAO extends DAOBase {
 			Map<Key<User>, Integer> funds = new HashMap<Key<User>, Integer>();
 			ArrayList<Key<User>> judges = new ArrayList<Key<User>>();
 
-			// TODO give two types the same parent -- RACE CONDITION HERE
 			ScoreSpace space = getScoreSpace(txn, e.getKey());
-			txn.getTxn().commit();
-			
-			txn = fact().beginTransaction();
+
 			for (JudgeInfluence ji : txn.query(
-					JudgeInfluence.class).ancestor(e.getKey())) {
+					JudgeInfluence.class).ancestor(ScoreSpace.keyFromEditionKey(e.getKey()))) {
 				funds.put(ji.user, funding(ji.score, space.totalScore, space.balance));
 				judges.add(ji.user);
 			}
@@ -198,12 +195,8 @@ public class DAO extends DAOBase {
 			ArrayList<Key<User>> editors = new ArrayList<Key<User>>();
 
 			ScoreSpace space = getScoreSpace(txn, e.getKey());
-			txn.getTxn().commit();
-			
-			txn = fact().beginTransaction();
-			// TODO PARENT
 			for (EditorInfluence ei : txn.query(
-					EditorInfluence.class).ancestor(e.getKey())) {
+					EditorInfluence.class).ancestor(ScoreSpace.keyFromEditionKey(e.getKey()))) {
 				funds.put(ei.editor, funding(ei.score, space.totalScore, space.balance));
 				editors.add(ei.editor);
 			}
@@ -365,7 +358,8 @@ public class DAO extends DAOBase {
 
 			FullStoryInfo fsi = new FullStoryInfo();
 			fsi.info = si;
-			fsi.funds = getVoters(linkKey, editionKey);
+			fsi.funds = getVoters(txn, linkKey, editionKey);
+			txn.getTxn().commit();
 			return fsi;
 		}
 
@@ -472,7 +466,7 @@ public class DAO extends DAOBase {
 			return vr;
 		}
 
-		public LinkedList<InfluenceMessage> getVoters(Key<Link> l, Key<Edition> e) {
+		public LinkedList<InfluenceMessage> getVoters(Objectify txn, Key<Link> l, Key<Edition> e) {
 			LinkedList<InfluenceMessage> result = new LinkedList<InfluenceMessage>();
 
 			Map<Key<User>, Integer> authorities = new HashMap<Key<User>, Integer>();
@@ -489,7 +483,6 @@ public class DAO extends DAOBase {
 				return result;
 			}
 
-			Objectify txn = fact().beginTransaction();
 			ScoreSpace space = getScoreSpace(txn, e);
 			Map<Key<User>, User> vmap = ofy().get(voters);
 
@@ -497,7 +490,6 @@ public class DAO extends DAOBase {
 				result.add(new InfluenceMessage(vmap.get(voters.get(i)),
 						funding(authorities.get(voters.get(i)), space.totalScore, space.balance)));
 			}
-			txn.getTxn().commit();
 			Collections.sort(result);
 			return result;
 		}
@@ -803,11 +795,12 @@ public class DAO extends DAOBase {
 			assert(!getPeriodical().inTransition);
 
 			Objectify txn = fact().beginTransaction();
-			JudgeInfluence ji = txn.query(JudgeInfluence.class).ancestor(edition)
+			Key<ScoreSpace> space = ScoreSpace.keyFromEditionKey(edition);
+			JudgeInfluence ji = txn.query(JudgeInfluence.class).ancestor(space)
 			.filter("user", judge).get();
 			if (ji == null) {
 				assert(amount > 0);
-				ji = new JudgeInfluence(0, edition, judge);
+				ji = new JudgeInfluence(0, space, judge);
 			}
 			ji.authority += amount;
 			txn.put(ji);
@@ -1217,13 +1210,13 @@ public class DAO extends DAOBase {
 		}
 
 		public JudgeInfluence getJudgeInfluence(Objectify ofy, Key<User> uk, Key<Edition> ek) {
-			JudgeInfluence ji = ofy.query(JudgeInfluence.class).ancestor(ek)
+			JudgeInfluence ji = ofy.query(JudgeInfluence.class).ancestor(ScoreSpace.keyFromEditionKey(ek))
 			.filter("user", uk).get();
 			return ji;
 		}
 
 		public EditorInfluence getEditorInfluence(Objectify ofy, Key<User> editor, Key<Edition> ek) {
-			EditorInfluence ei = ofy.query(EditorInfluence.class).ancestor(ek)
+			EditorInfluence ei = ofy.query(EditorInfluence.class).ancestor(ScoreSpace.keyFromEditionKey(ek))
 			.filter("editor", editor).get();
 			return ei;
 		}
@@ -1270,9 +1263,9 @@ public class DAO extends DAOBase {
 				for(int i = editions.getCurrentEdition().number;
 				i < editions.getNumEditions();
 				i++) {
-					Key<Edition> eKey = Edition.createKey(i);
+					Key<ScoreSpace> sKey = ScoreSpace.keyFromEditionKey(Edition.createKey(i));
 					ofy().put(new JudgeInfluence(0, 
-							eKey, user.getKey()));
+							sKey, user.getKey()));
 				}
 			}
 			return user;
@@ -1403,7 +1396,7 @@ public class DAO extends DAOBase {
 		Objectify otx = fact().beginTransaction();
 		Set<EditorInfluence> eiset = new HashSet<EditorInfluence>();
 		for (Key<User> editor : editors) {
-			EditorInfluence ei = otx.query(EditorInfluence.class).ancestor(edition)
+			EditorInfluence ei = otx.query(EditorInfluence.class).ancestor(ScoreSpace.keyFromEditionKey(edition))
 			.filter("editor", editor).get();
 			// TODO Write a test for this invariant that checks this and judge influence
 			ei.score += 1;

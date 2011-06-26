@@ -10,13 +10,13 @@ public class EditorInfluence {
 
 	public int score;
 	
-	@Parent public Key<Edition> edition;
+	@Parent public Key<ScoreSpace> space;
 	public Key<User> editor;
 	
 	public EditorInfluence() {}
 	
-	public EditorInfluence(Key<Edition> edition, Key<User> editor) {
-		this.edition = edition;
+	public EditorInfluence(Key<ScoreSpace> space, Key<User> editor) {
+		this.space = space;
 		this.editor = editor;
 		score = 0;
 	}
