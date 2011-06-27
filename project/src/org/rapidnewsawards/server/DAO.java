@@ -339,7 +339,7 @@ public class DAO extends DAOBase {
 			ScoredLink sl = editions.getScoredLink(txn, editionKey, linkKey);
 
 			Link link = ofy().find(linkKey);
-			if (link == null) {
+			if (link == null || sl == null) {
 				throw new RNAException("Story Link not found");
 			}
 
@@ -762,6 +762,12 @@ public class DAO extends DAOBase {
 				return Response.EDITION_NOT_CURRENT;
 			}
 
+			if (lp.periodical.userlocked) {
+				log.warning("waiting to social");
+				lp.rollback(); socialTxn.getTxn().rollback();
+				throw new ConcurrentModificationException(); 
+			}
+
 			if (lp.periodical.inTransition) {
 				log.warning("Attempted to socialize during transition");
 				lp.rollback(); socialTxn.getTxn().rollback();
@@ -923,8 +929,9 @@ public class DAO extends DAOBase {
 
 			final Periodical p = locked.periodical;
 			
-			if (p.userlocked) { 
+			if (p.userlocked) {
 				locked.rollback();
+				log.warning("waiting to transition");
 				throw new ConcurrentModificationException(); 
 			}
 
@@ -1189,24 +1196,18 @@ public class DAO extends DAOBase {
 				Key<Link> lk, boolean on) {
 			assert(getPeriodical().userlocked);
 			Objectify txn = fact().beginTransaction();
+			Vote v = null;
 			if (on) {
 				// TODO pass in date
 				JudgeInfluence ji = getJudgeInfluence(ofy(), uk, ek);
 				int authority = ji.authority;
-				Vote v = new Vote(uk, ek, lk, new Date(), authority);
+				v = new Vote(uk, ek, lk, new Date(), authority);
 				txn.put(v);
-				TallyTask.tallyVote(txn.getTxn(), v);
-				txn.getTxn().commit();
 			} else {
-				// TODO this
-				throw new IllegalArgumentException("no negative voting yet");
-				/*
-				Vote v = ofy().query(Vote.class).filter("edition", ek)
-				.filter("link", lk).get();
-				txn.delete(v);
-				// TODO pass in actual values -- vote is gone!
-				TallyTask.tallyVote(txn.getTxn(), v); */
+				v = ofy().query(Vote.class).filter("edition", ek).filter("link", lk).get();
 			}
+			TallyTask.tallyVote(txn.getTxn(), v, on);
+			txn.getTxn().commit();
 		}
 
 		public JudgeInfluence getJudgeInfluence(Objectify ofy, Key<User> uk, Key<Edition> ek) {
@@ -1342,7 +1343,7 @@ public class DAO extends DAOBase {
 	}
 
 	/* Increment the ScoreSpace (score and fund) for this edition */
-	public void tallyVote(Key<Vote> vote) {
+	public void tallyVote(Key<Vote> vote, boolean on) {
 		assert(getPeriodical().userlocked);
 		Vote v = ofy().get(vote);
 		Objectify otx = fact().beginTransaction();
@@ -1351,34 +1352,40 @@ public class DAO extends DAOBase {
 		ScoredLink sl = otx.query(ScoredLink.class)
 		.ancestor(space.root).filter("link", v.link).get();
 		
-		space.totalScore += v.authority;
+		space.totalScore += on? v.authority : -v.authority;
 		space.totalSpend = funding(space.totalScore, space.totalScore, space.balance);
 		
 		if (sl == null) {
-			sl = new ScoredLink(v.edition, space.root, v.link, v.authority);
-			space.numFundedLinks++;
+			if (on) {
+				sl = new ScoredLink(v.edition, space.root, v.link, v.authority);
+				space.numFundedLinks++;
+				otx.put(sl);
+			}
 		}
 		else {
-			sl.score += v.authority;
+			sl.score += on? v.authority : -v.authority;
+			if (sl.score == 0) {
+				otx.delete(sl);
+				space.numFundedLinks--;
+			}
 		}
-		otx.put(sl);
 		otx.put(space);
-		TallyTask.addJudgeFunding(otx.getTxn(), v, v.authority);
+		TallyTask.addJudgeScore(otx.getTxn(), v, v.authority, on);			
 		otx.getTxn().commit();
 	}
 
-	public void addJudgeFunding(Key<Vote> vkey, int fund) {
+	public void addJudgeScore(Key<Vote> vkey, int authority, boolean on) {
 		assert(getPeriodical().userlocked);
 		Vote v = ofy().get(vkey);
 		Objectify otx = fact().beginTransaction();
 		JudgeInfluence ji = users.getJudgeInfluence(otx, v.voter, v.edition);
-		ji.score += fund;
+		ji.score += on? authority : -authority;
 		otx.put(ji);
-		TallyTask.findEditorsToFund(otx.getTxn(), v, fund);
+		TallyTask.findEditorsToScore(otx.getTxn(), v, on);
 		otx.getTxn().commit();
 	}
 	
-	public void findEditorsToFund(Key<Vote> vkey, int fund) {
+	public void findEditorsToScore(Key<Vote> vkey, boolean on) {
 		assert(getPeriodical().userlocked);
 		Vote v = ofy().get(vkey);
 		Objectify otx = fact().beginTransaction();
@@ -1387,19 +1394,31 @@ public class DAO extends DAOBase {
 				.filter("edition", v.edition)) {
 			editors.add(fb.editor);
 		}
-		TallyTask.addEditorFunding(otx.getTxn(), editors, v.edition, fund);
+		
+		if (!on) {
+			TallyTask.deleteVote(otx.getTxn(), v, editors, v.edition);			
+		}
+		else {
+			TallyTask.addEditorScore(otx.getTxn(), editors, v.edition, on);
+		}
 		otx.getTxn().commit();
 	}
 
-	public void addEditorFunding(Set<Key<User>> editors, Key<Edition> edition, int fund) {
-		assert(fund % editors.size() == 0);
+	public void deleteVote(Key<Vote> v, Set<Key<User>> editors, Key<Edition> edition) {
+		Objectify otx = fact().beginTransaction();
+		otx.delete(v);
+		TallyTask.addEditorScore(otx.getTxn(), editors, edition, false);
+		otx.getTxn().commit();
+	}
+
+	public void addEditorScore(Set<Key<User>> editors, Key<Edition> edition, boolean on) {
 		Objectify otx = fact().beginTransaction();
 		Set<EditorInfluence> eiset = new HashSet<EditorInfluence>();
 		for (Key<User> editor : editors) {
 			EditorInfluence ei = otx.query(EditorInfluence.class).ancestor(ScoreSpace.keyFromEditionKey(edition))
 			.filter("editor", editor).get();
 			// TODO Write a test for this invariant that checks this and judge influence
-			ei.score += 1;
+			ei.score += on ? 1 : -1;
 			eiset.add(ei);
 		}
 		otx.put(eiset);
@@ -1459,5 +1478,6 @@ public class DAO extends DAOBase {
 			}
 		}
 	}
+
 
 }

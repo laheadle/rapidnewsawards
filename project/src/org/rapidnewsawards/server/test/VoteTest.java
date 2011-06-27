@@ -42,13 +42,13 @@ public class VoteTest extends RNATest {
 		ScoreSpace space = d.editions.getScoreSpace(d.ofy(), v.edition);
 		space.balance = 100;
 		d.ofy().put(space);
-		d.tallyVote(v.getKey());
+		d.tallyVote(v.getKey(), true);
 		space = d.editions.getScoreSpace(d.ofy(), v.edition);
 		assertEquals(space.totalScore, 1);
 		assertEquals(space.numFundedLinks, 1);
 		assertEquals(space.totalSpend, 100);
 		assertEquals(space.balance, 100);
-		d.addJudgeFunding(v.getKey(), 100);
+		d.addJudgeScore(v.getKey(), 1, true);
 		JudgeInfluence ji = d.users.getJudgeInfluence(d.ofy(), v.voter, v.edition);
 		assertEquals(ji.score, 1);
 		//d.addEditorFunding(v.getKey(), 100);

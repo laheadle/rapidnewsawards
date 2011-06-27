@@ -14,8 +14,8 @@ abstract class ConcurrentServletCommand {
 
 	public ConcurrentServletCommand() {
 		retries = 0;
-		maxTries = 30;
-		sleepInterval = 100;
+		maxTries = 60;
+		sleepInterval = 10;
 	}
 	
 	public Object run(HttpServletRequest request, HttpServletResponse resp) 

@@ -42,40 +42,52 @@ public class TallyTask  extends HttpServlet {
 				.param("on", Boolean.toString(on)));		
 	}
 
-	public static void tallyVote(Transaction txn, Vote v) {
+	public static void tallyVote(Transaction txn, Vote v, boolean on) {
 		Queue queue = QueueFactory.getDefaultQueue();
 		queue.add(txn, withUrl("/tasks/tally").method(TaskOptions.Method.GET)
 				.param("fun", "tallyVote")
 				.param("vote", v.id.toString())
+				.param("on", Boolean.toString(on))
 				.param("user", Long.toString(v.voter.getId())));
 	}
 
-	public static void addJudgeFunding(Transaction txn, Vote v, int fund) {
+	public static void addJudgeScore(Transaction txn, Vote v, int authority, boolean on) {
 		Queue queue = QueueFactory.getDefaultQueue();
 		queue.add(txn, withUrl("/tasks/tally").method(TaskOptions.Method.GET)
-				.param("fun", "addJudgeFunding")
+				.param("fun", "addJudgeScore")
 				.param("vote", v.id.toString())
-				.param("fund", Integer.toString(fund))
+				.param("authority", Integer.toString(authority))
+				.param("on", Boolean.toString(on))
 				.param("user", Long.toString(v.voter.getId())));
 	}
 
-	public static void findEditorsToFund(Transaction txn, Vote v, int fund) {
+	public static void findEditorsToScore(Transaction txn, Vote v, boolean on) {
 		Queue queue = QueueFactory.getDefaultQueue();
 		queue.add(txn, withUrl("/tasks/tally").method(TaskOptions.Method.GET)
-				.param("fun", "findEditorsToFund")
+				.param("fun", "findEditorsToScore")
 				.param("vote", v.id.toString())
-				.param("fund", Integer.toString(fund))
+				.param("on", Boolean.toString(on))
 				.param("user", Long.toString(v.voter.getId())));
 	}
 
-	public static void addEditorFunding(Transaction txn, Set<Key<User>> editors, 
-			Key<Edition> edition, int fund) {
+	public static void deleteVote(Transaction txn, Vote v, Set<Key<User>> editors, Key<Edition> edition) {
 		Queue queue = QueueFactory.getDefaultQueue();
 		queue.add(txn, withUrl("/tasks/tally").method(TaskOptions.Method.GET)
-				.param("fun", "addEditorFunding")
+				.param("fun", "deleteVote")
 				.param("editors", encodeUsers(editors))
 				.param("edition", edition.getName())
-				.param("fund", Integer.toString(fund)));
+				.param("vote", v.id.toString())
+				.param("user", Long.toString(v.voter.getId())));
+	}
+
+	public static void addEditorScore(Transaction txn, Set<Key<User>> editors, 
+			Key<Edition> edition, boolean on) {
+		Queue queue = QueueFactory.getDefaultQueue();
+		queue.add(txn, withUrl("/tasks/tally").method(TaskOptions.Method.GET)
+				.param("fun", "addEditorScore")
+				.param("editors", encodeUsers(editors))
+				.param("edition", edition.getName())
+				.param("on", Boolean.toString(on)));
 	}
 
 	public static void releaseUserLock(Transaction txn) {
@@ -141,77 +153,112 @@ public class TallyTask  extends HttpServlet {
 		else if (fun.equals("tallyVote")) {
 			String votestr = request.getParameter("vote");
 			String userstr = request.getParameter("user");
+			String onstr = request.getParameter("on");
 			if (votestr == null) {
 				throw new IllegalArgumentException("vote");
 			}
 			if (userstr == null) {
 				throw new IllegalArgumentException("user");
+			}
+			if (onstr == null) {
+				throw new IllegalArgumentException("on");
 			}
 			Long voteId = Long.valueOf(votestr);
 			Long userId = Long.valueOf(userstr);
+			boolean on = Boolean.valueOf(onstr);
 			Key<User> ukey = new Key<User>(User.class, userId);
 			Key<Vote> vkey = new Key<Vote>(ukey, Vote.class, voteId);
 
-			d.tallyVote(vkey);
+			d.tallyVote(vkey, on);
 		}
-		else if (fun.equals("addJudgeFunding")) {
+		else if (fun.equals("addJudgeScore")) {
 			String votestr = request.getParameter("vote");
-			String fundstr = request.getParameter("fund");
+			String authoritystr = request.getParameter("authority");
+			String userstr = request.getParameter("user");
+			String onstr = request.getParameter("on");
+			if (votestr == null) {
+				throw new IllegalArgumentException("vote");
+			}
+			if (authoritystr == null) {
+				throw new IllegalArgumentException("authority");
+			}
+			if (userstr == null) {
+				throw new IllegalArgumentException("user");
+			}
+			if (onstr == null) {
+				throw new IllegalArgumentException("on");
+			}
+			long voteId = Long.valueOf(votestr);
+			int authority = Integer.valueOf(authoritystr);
+			long userId = Long.valueOf(userstr);
+			boolean on = Boolean.valueOf(onstr);
+			Key<User> ukey = new Key<User>(User.class, userId);
+			Key<Vote> vkey = new Key<Vote>(ukey, Vote.class, voteId);
+
+			d.addJudgeScore(vkey, authority, on);
+		}
+		else if (fun.equals("findEditorsToScore")) {
+			String votestr = request.getParameter("vote");
+			String onstr = request.getParameter("on");
 			String userstr = request.getParameter("user");
 			if (votestr == null) {
 				throw new IllegalArgumentException("vote");
 			}
-			if (fundstr == null) {
-				throw new IllegalArgumentException("fund");
+			if (onstr == null) {
+				throw new IllegalArgumentException("on");
 			}
 			if (userstr == null) {
 				throw new IllegalArgumentException("user");
 			}
 			long voteId = Long.valueOf(votestr);
-			int fund = Integer.valueOf(fundstr);
+			boolean on = Boolean.valueOf(onstr);
 			long userId = Long.valueOf(userstr);
 			Key<User> ukey = new Key<User>(User.class, userId);
 			Key<Vote> vkey = new Key<Vote>(ukey, Vote.class, voteId);
 
-			d.addJudgeFunding(vkey, fund);
+			d.findEditorsToScore(vkey, on);
 		}
-		else if (fun.equals("findEditorsToFund")) {
-			String votestr = request.getParameter("vote");
-			String fundstr = request.getParameter("fund");
-			String userstr = request.getParameter("user");
-			if (votestr == null) {
-				throw new IllegalArgumentException("vote");
-			}
-			if (fundstr == null) {
-				throw new IllegalArgumentException("fund");
-			}
-			if (userstr == null) {
-				throw new IllegalArgumentException("user");
-			}
-			long voteId = Long.valueOf(votestr);
-			int fund = Integer.valueOf(fundstr);
-			long userId = Long.valueOf(userstr);
-			Key<User> ukey = new Key<User>(User.class, userId);
-			Key<Vote> vkey = new Key<Vote>(ukey, Vote.class, voteId);
-
-			d.findEditorsToFund(vkey, fund);
-		}
-		else if (fun.equals("addEditorFunding")) {
+		else if (fun.equals("deleteVote")) {
 			String editorsstr = request.getParameter("editors");
 			String editionstr = request.getParameter("edition");
-			String fundstr = request.getParameter("fund");
+			String votestr = request.getParameter("vote");
+			String userstr = request.getParameter("user");
 			if (editorsstr == null) {
 				throw new IllegalArgumentException("editors");
 			}
 			if (editionstr == null) {
 				throw new IllegalArgumentException("edition");
 			}
-			if (fundstr == null) {
-				throw new IllegalArgumentException("fund");
+			if (votestr == null) {
+				throw new IllegalArgumentException("vote");
+			}
+			if (userstr == null) {
+				throw new IllegalArgumentException("user");
 			}
 			Set<Key<User>> editors = decodeUsers(editorsstr);
-			int fund = Integer.valueOf(fundstr);
-			d.addEditorFunding(editors, Edition.createKey(Integer.parseInt(editionstr)), fund);
+			Long voteId = Long.valueOf(votestr);
+			Long userId = Long.valueOf(userstr);
+			Key<User> ukey = new Key<User>(User.class, userId);
+			Key<Vote> vkey = new Key<Vote>(ukey, Vote.class, voteId);
+
+			d.deleteVote(vkey, editors, Edition.createKey(Integer.parseInt(editionstr)));
+		}
+		else if (fun.equals("addEditorScore")) {
+			String editorsstr = request.getParameter("editors");
+			String editionstr = request.getParameter("edition");
+			String onstr = request.getParameter("on");
+			if (editorsstr == null) {
+				throw new IllegalArgumentException("editors");
+			}
+			if (editionstr == null) {
+				throw new IllegalArgumentException("edition");
+			}
+			if (onstr == null) {
+				throw new IllegalArgumentException("on");
+			}
+			Set<Key<User>> editors = decodeUsers(editorsstr);
+			boolean on = Boolean.valueOf(onstr);
+			d.addEditorScore(editors, Edition.createKey(Integer.parseInt(editionstr)), on);
 		}
 		else if (fun.equals("releaseUserLock")) {
 			try {

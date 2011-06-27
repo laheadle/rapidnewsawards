@@ -706,14 +706,16 @@ $(function(){
 			       fullLink: "",
 			       on: on},
 			      function(data) {
-				  // TODO Don't show 'success' for errors
 				  if (data.returnVal === 'SUCCESS') {
 				      flashLog({type: 'success',
-						content: data.returnVal || 'I got confused'});
+						content: on? 'Your vote was counted' :
+					       'Your vote was cancelled'});
 				  }
 				  else {
 				      flashLog({type: 'error',
-						content: data.returnVal || 'I got confused'});
+						content: (on? 'Failed to count your vote: ' :
+							  'Failed to cancel your vote: ') + 
+						(data.returnVal || 'try again later')});
 				  }
 			      });
 	    });
@@ -1046,9 +1048,6 @@ $(function(){
 		       linkId: linkId}, 
 		      function(data) {
 			  self.setMainView(FullStoryView, data);
-		      },
-		      function (err) {
-			  flashError(err.toString());
 		      });
 	},
 

@@ -157,14 +157,14 @@
 	  submitted by <%= rMake('#person-link-template', submitter) %> 
 	  from <%= link.domain %> </span> <br>
 
-        <% if (isCurrent) { %>
+        <% if (isCurrent && !app.loginView.isEditor) { %>
           <span> Fund this story: </span>
 	  <input id="is-funding" type="checkbox" 
 		 <%= userIsFunding? 'checked="yes"' : '' %>> </input>
 
-  	<% } else if (userIsFunding) { %>
+  	<% } else if (userIsFunding && !app.loginView.isEditor) { %>
           <span> You funded this story. </span>	
-	<% } else { %>
+	<% } else if (!app.loginView.isEditor) { %>
           <span> You did not fund this story. </span>	
 	<% } %>
 

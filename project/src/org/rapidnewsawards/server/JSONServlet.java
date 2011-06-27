@@ -315,7 +315,8 @@ public class JSONServlet extends HttpServlet {
 			re.payload = null;
 			re.status = SERVER_ERROR;
 			re.message = "";
-			out.println(g.toJson(re));			
+			out.println(g.toJson(re));
+			e.printStackTrace();
 		}
 	}
 
