@@ -17,7 +17,7 @@
     <div id="rna-app">
 
       <div id="header">
-        <h1 class="spine title">newskraft.org</h1>
+        <h1 class="title">newskraft.org</h1>
 	<div id="login" class="huge">
 	  <a class="login"> </a>
 	  <a class="logout"> </a>
@@ -29,12 +29,15 @@
 	<span class="flag notice large"></span>
 	<span class="content large"> Please Wait.. </span> </div>
 
-      <ul id="menu"> 
-	<li> 
-	  <span class="explain"> See what we're working on. </span> 
-	  <a id="upcoming"> Upcoming </a> </li>
-	<li> 
-	  <a id="recent"> Previous </a> </li> </ul>
+      <div id="leftColumn">
+	<ul id="menu"> 
+	  <li> 
+	    <span class="explain"> See what we're working on. </span> 
+	    <a id="upcoming"> Upcoming </a> </li>
+	  <li> <a id="recent"> Previous </a> </li> </ul>
+
+	<ul id="secondMenu"> 
+	  <li> <a class="menuBorder" href="vote2.html"> Nominate Article </a> </li> </ul> </div>
 
       <div id="main"> 
 	<span id="loadMessage" 
@@ -157,14 +160,14 @@
 	  submitted by <%= rMake('#person-link-template', submitter) %> 
 	  from <%= link.domain %> </span> <br>
 
-        <% if (isCurrent && !app.loginView.isEditor) { %>
+        <% if (isCurrent && !app.loginView.isEditor()) { %>
           <span> Fund this story: </span>
 	  <input id="is-funding" type="checkbox" 
 		 <%= userIsFunding? 'checked="yes"' : '' %>> </input>
 
-  	<% } else if (userIsFunding && !app.loginView.isEditor) { %>
+  	<% } else if (userIsFunding && !app.loginView.isEditor()) { %>
           <span> You funded this story. </span>	
-	<% } else if (!app.loginView.isEditor) { %>
+	<% } else if (!app.loginView.isEditor()) { %>
           <span> You did not fund this story. </span>	
 	<% } %>
 

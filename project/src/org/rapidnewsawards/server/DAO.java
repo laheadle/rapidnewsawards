@@ -768,6 +768,8 @@ public class DAO extends DAOBase {
 				throw new ConcurrentModificationException(); 
 			}
 
+			// If a transition is in progress, ask them to wait.
+			// This should ease the pressure a bit on the concurrent system.
 			if (lp.periodical.inTransition) {
 				log.warning("Attempted to socialize during transition");
 				lp.rollback(); socialTxn.getTxn().rollback();

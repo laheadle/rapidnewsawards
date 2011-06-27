@@ -13,6 +13,10 @@
     font-size: 1.4em;
 }
 
+.enormous {
+    font-size: 1.6em;
+}
+
 .fatBottom {
     margin-bottom: .5em;
 }
@@ -51,9 +55,6 @@ html, body {
 }
 
 body {
-    margin-left: 100px;
-    width: 800px;
-    height: 100%;
 }
 
 a.titleLink {
@@ -68,16 +69,52 @@ h1.title {
     display: inline;
 }
 
+/* width: 100 [left-margin] 150 [left-menu] 850 [header/main] */
+
 #rna-app {
-}
-
-#edition-header, #main, #login, #flash, h1.title {
     position: relative;
+    left: 100px;
+    width: 1000px;
+    height: 100%;
 }
 
-#edition-header {
+#header {
+    position: absolute;
+    left: 150px;
+    border-bottom: 1px solid black;
+    width: 850px; /* 1000 - 150 */ 
+    height: 30px;
+}
+
+#edition-header, .volumeHeader {
+    position: absolute;
     background-color: #F0F0F0;
-    margin-left: 150px;
+    width: 850px;
+    font-size: 1.4em;
+}
+
+#volume {
+    position: absolute;
+}
+
+.volumeBody {
+    top: 50px;
+}
+
+.volumeHeader {
+    position: absolute;
+}
+
+#main {
+    position: absolute;
+    width: 850px;
+    left: 150px;
+    top: 50px;
+}
+
+#main .edition {
+    position: absolute;
+    top: 10px;
 }
 
 #flash {
@@ -92,7 +129,24 @@ h1.title {
     color: blue;
 }
 
-#menu li {
+#leftColumn {
+    position:absolute;
+    top: 60px;
+}
+
+.menuBorder {
+    border-top: 1px solid gray;
+    padding-top: 5px;
+}
+
+#secondMenu {
+    margin: 10 0 0 0; 
+    padding-left: 0;
+    font: 1.1em bold;
+    color: blue;
+}
+
+#menu li, #secondMenu li {
     display: block;
 }
 
@@ -101,9 +155,8 @@ h1.title {
 }
 
 #login {
-    top: 0;
+    margin-top: 4px;
     float: right;
-    margin: 0.43em 0px;
 }
 
 
@@ -121,41 +174,32 @@ h1.title {
 #flash span.info { color: green; }
 
 
-#headerLine {
-    border: 1px solid black;
-}
-
-#bodyLine {
-
-}
-
 /* --- supporting id's --- */
 
+.collapsedEdition {
+    margin-top: 5px;
+    border-bottom: 1px solid #F0F0F0;
+}
 
+.list {
+    position: absolute;
+    width: 850px;
+    margin-top: 10px;
+}
+
+.listItem {
+
+}
 
 #createAccount {
     padding-left: 150px;
 }
 
 #editionTabsMajor {
-    width: 158px;
-    position: relative;
+
 }
 
 #editionTabsMinor {
-    width: 158px;
-    position: relative;
-}
-
-#main {
-    width: 100%;
-}
-
-#main ul.edition {
-    position: relative;
-    top: 0;
-    padding-left: 154px;
-    margin-left: 0;
 }
 
 
@@ -167,11 +211,7 @@ h1.title {
     margin: auto 0 auto 0;
 }
 
-.edition li, #volume li, #person li, #fullStory li {
-    display: block;
-}
-
-.edition li.empty {
+.edition .empty {
     font-size: 1.4em;
 }
 
@@ -183,10 +223,8 @@ h1.title {
 .editionTabs {
     border-left: 1px solid black;
     border-right: 1px solid black;
-    width: 150px;
-    margin-left: 25%;
     padding: 0 5px 0 5px;
-    margin-top: 20px;
+    margin: 60px 0 40px 100px;
 }
 
 .fund-from {
@@ -217,7 +255,7 @@ h1.title {
     font-size: .5em;
 }
 
-.social, .story {
+.listItem {
     color: black;
     font-size: 1.1em;
     margin-bottom: .5em;
@@ -237,11 +275,12 @@ h1.title {
     
 }
 
-.volumeHeader {
-    margin-left: 25%;
-    margin-top: 20px;
-}
-
 .welcomeTxt {
     font-weight: bold;
+}
+
+.showText {
+    font-weight: bold;
+    position: absolute;
+    left: 200px;
 }

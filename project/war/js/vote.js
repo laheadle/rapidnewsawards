@@ -41,10 +41,7 @@ $(function(){
 				   edition: -1,
 				   fullLink: window.location.toString(), 
 				   on: true},
-				  setLink,
-				  function (err) {
-				      flashError(err.toString());
-				  });
+				  setLink);
 		    }
 		}
 		else {
@@ -58,7 +55,7 @@ $(function(){
 	},	
 
 	show: function (txt) {
-	    $(this.el).append(this.make('span', {}, txt));
+	    $(this.el).append(this.make('span', {'class': 'showText'}, txt));
 	},
 	
 	clear: function () {

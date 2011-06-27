@@ -39,8 +39,7 @@ $(function(){
 	    var self = this;
 	    this.list.bind('add',     function () { self.addOne() });
 	    this.list.bind('refresh', function () { self.addAll() });
-	    $(this.el).append(this.make('div', {id: 'bodyLine', 'class': 'hugeBottom'}));
-	    $(this.el).append(this.make('ul', {'class': 'spine large'}));
+	    $(this.el).append(this.make('div', {'class': 'list large'}));
 	},
 
 	addOne: function(model) {
@@ -54,7 +53,7 @@ $(function(){
 	},
 
 	appendElt: function(el) {
-	    this.$('ul').append(el);
+	    this.$('.list').append(el);
 	},
 
 	/* Called by constructor in subclass */
@@ -88,7 +87,7 @@ $(function(){
 	render: function() {
 	    // these go above the edition list, so they are prepended
 	    // fixme change to a table
-	    var div = this.make("div", {'class': "editionTabs large"});
+	    var div = this.make("div", {'class': "editionTabs enormous"});
 	    $(div).html(rMake('#edition-tabs-template', 
 			      {storiesSelected: this.storiesSelected,
 			       networkSelected: this.networkSelected}));
@@ -112,8 +111,8 @@ $(function(){
 
     window.StoryView = Backbone.View.extend({
 
-	tagName:  "li",
-	className: "story",
+	tagName:  "div",
+	className: "listItem",
 
 	// Cache the template function for a single story.
 	template: _.template($('#story-template').html()),
@@ -160,8 +159,8 @@ $(function(){
 
     window.FundingView = Backbone.View.extend({
 
-	tagName:  "li",
-	className: "story", // fixme
+	tagName:  "div",
+	className: "listItem", // fixme
 
 	events: {
 	    "click a": 'person'
@@ -239,7 +238,7 @@ $(function(){
 		var message = this.edition.number > 0 ?
 		    "The judges have not funded this edition." :
 		    "Funding will begin after the signup round.";
-		this.appendElt(this.make("li", {'class': 'empty'}, 
+		this.appendElt(this.make("div", {'class': 'empty listItem'}, 
 					 message));
 	    }
 	    return this;
@@ -258,7 +257,7 @@ $(function(){
 
 	this.appendElt = attrs.appendElt == undefined? 
 	    function(el) {
-		this.parent.$('ul').append(el);
+		this.parent.$('.list').append(el);
 	    }
 	: attrs.appendElt;
 
@@ -300,8 +299,8 @@ $(function(){
 
     window.SocialView = Backbone.View.extend({
 
-	tagName:  "li",
-	className: "social", 
+	tagName:  "div",
+	className: "listItem", 
 
 	followTemplate: _.template($('#follow-template').html()),
 	welcomeTemplate: _.template($('#welcome-template').html()),
@@ -353,8 +352,8 @@ $(function(){
 
     window.AuthorityView = Backbone.View.extend({
 
-	tagName:  "li",
-	className: "story", // fixme
+	tagName:  "div",
+	className: "listItem", // fixme
 
 	events: {
 	    "click a": 'person'
@@ -392,8 +391,8 @@ $(function(){
 
     window.TopEditorView = Backbone.View.extend({
 
-	tagName:  "li",
-	className: "story", // fixme
+	tagName:  "div",
+	className: "listItem", // fixme
 
 	events: {
 	    "click a": 'person'
@@ -483,11 +482,11 @@ $(function(){
 	    }
 	    if (this.list.length == 0) {
 		if (this.order == 'top') {
-		    this.appendElt(this.make("li", {'class': 'empty'}, 
+		    this.appendElt(this.make("div", {'class': 'empty listItem'}, 
 					     "No funding has occurred during this edition."));
 		}
 		else {
-		    this.appendElt(this.make("li", {'class': 'empty'}, 
+		    this.appendElt(this.make("div", {'class': 'empty listItem'}, 
 					     "The network has not changed during this edition."));
 		}
 	    }
@@ -508,7 +507,7 @@ $(function(){
 	    this.model.bind('change', function () { self.render() });
 	    this.model.view = this;
 	    // fixme refactor
-	    $(this.el).append(this.make('ul', {'class': 'spine large'}));
+	    $(this.el).append(this.make('div', {'class': 'list large'}));
 	    // add fundings list
 	    this.list = 
 		new GenList({parent: this, 
@@ -520,7 +519,7 @@ $(function(){
 					      {user: null}))
 			     },
 			     appendElt: function(el) {
-				 this.parent.$('ul').append(el);
+				 this.parent.$('.list').append(el);
 			     }});
 	    this.list.refresh(this.model.get('userInfo').votes);
 	},
@@ -634,8 +633,8 @@ $(function(){
 
     window.StoryFundingView = Backbone.View.extend({
 
-	tagName:  "li",
-	className: "story", // fixme
+	tagName:  "div",
+	className: "listItem", // fixme
 
 	events: {
 	    "click a": 'person'
@@ -679,7 +678,7 @@ $(function(){
 	    this.model.bind('change', function () { self.render() });
 	    this.model.view = this;	    
 	    // fixme refactor
-	    $(this.el).append(this.make('ul', {'class': 'spine large'}));
+	    $(this.el).append(this.make('div', {'class': 'list large'}));
 	    // add StoryFundingsList
 	    this.list = 
 		new GenList({parent: this, 
@@ -730,7 +729,7 @@ $(function(){
 
     window.CollapsedEditionView = Backbone.View.extend({
 
-	tagName:  "li",
+	tagName:  "div",
 	className: "collapsedEdition",
 
 	events: {
@@ -780,7 +779,7 @@ $(function(){
 	    this.current = attrs.current;
 	    // fixme refactor
 	    $(this.el).append(this.make('div', {'class': 'volumeHeader large'}));
-	    $(this.el).append(this.make('ul', {'class': 'spine large'}));
+	    $(this.el).append(this.make('div', {'class': 'volumeBody list large'}));
 	    this.glist = 
 		new GenList({parent: this, 
 			     list: new EditionList});
@@ -805,7 +804,7 @@ $(function(){
 	    }
 	    var remaining = this.total - 1 - published;
 
-	    this.$('div').html(rMake('#volume-template',
+	    this.$('.volumeHeader').html(rMake('#volume-template',
 				     {published: published, remaining: remaining}));
 	    return this;
 	},
