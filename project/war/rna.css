@@ -230,6 +230,7 @@ h1.title {
     border-right: 1px solid black;
     padding: 0 5px 0 5px;
     margin: 60px 0 40px 100px;
+    width: 200px;
 }
 
 .fund-from {
