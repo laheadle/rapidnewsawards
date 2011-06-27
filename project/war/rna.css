@@ -1,10 +1,6 @@
 
 /* --- generics --- */
 
-.spine {
-    padding-left: 150px;
-}
-
 .large {
     font-size: 1.2em
 }
@@ -86,11 +82,19 @@ h1.title {
     height: 30px;
 }
 
-#edition-header, .volumeHeader {
+#person {
     position: absolute;
+    top: 30px;
+}
+
+#edition-header, .volumeHeader, .mainHeader {
     background-color: #F0F0F0;
     width: 850px;
     font-size: 1.4em;
+}
+
+.social-links {
+    margin-top: 5px;
 }
 
 #volume {
@@ -118,6 +122,9 @@ h1.title {
 }
 
 #flash {
+    position: absolute;
+    top: 30px;
+    left: 150px;
     height: 1.2em;
     margin: 0.67em 0 0 0;
 }
@@ -184,7 +191,6 @@ h1.title {
 .list {
     position: absolute;
     width: 850px;
-    margin-top: 10px;
 }
 
 .listItem {
@@ -199,17 +205,16 @@ h1.title {
 
 }
 
+.spaceOnTop {
+    margin-top: 20px;
+}
+
 #editionTabsMinor {
 }
 
 
 /* --- supporting classes --- */
 
-
-.edition ul.spine {
-    position: relative;
-    margin: auto 0 auto 0;
-}
 
 .edition .empty {
     font-size: 1.4em;
@@ -237,7 +242,7 @@ h1.title {
     font-size: 1.1em;
 }
 
-.number {
+.number, .amount {
     color: green;
 }
 

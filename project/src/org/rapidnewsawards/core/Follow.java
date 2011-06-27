@@ -10,7 +10,7 @@ import com.googlecode.objectify.annotation.Parent;
 @Entity
 
 /*
- * An Editor is Currently Following a Judge
+ * An Editor is Following a Judge during an Edition
  */
 @Cached
 public class Follow {

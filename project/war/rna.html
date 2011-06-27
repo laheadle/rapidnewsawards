@@ -18,14 +18,14 @@
 
       <div id="header">
         <h1 class="title">newskraft.org</h1>
-	<div id="login" class="huge">
+	<div id="login" class="large">
 	  <a class="login"> </a>
 	  <a class="logout"> </a>
 	</div> </div>
 
       <div id="headerLine"> </div>
 
-      <div id="flash" class="spine">
+      <div id="flash">
 	<span class="flag notice large"></span>
 	<span class="content large"> Please Wait.. </span> </div>
 
@@ -66,7 +66,7 @@
     <script type="text/template" id="edition-header-template"> 
       <span id="edition-header"> <span class="number"> Number 
 	<%= number %>: </span> <%= finished? 'Awarded' : 'Awarding' %> 
-	<%= finished? totalSpendStr : revenueStr %> 
+	<span class="amount"> <%= finished? totalSpendStr : revenueStr %> </span>
 	on <%= endStr %> </span> </script>
 
     <script type="text/template" id="signup-round-template"> 
@@ -106,22 +106,22 @@
       <%= fundedStr %> <a> <%= nickname %> </a> </script>
     
     <script type="text/template" id="none-followed-template">
-	<li class="empty"> 
+	<div class="listItem empty"> 
 	  No judges have been fully authorized yet.  Please invite or follow judges.
-	</li> </script>
+	</div> </script>
 
     <script type="text/template" id="funding-template">
-	<li> 
+	<div class="listItem"> 
 	  <!-- don't redisplay the username for personview -->
 	  <span class="smallTime"> <%= timeStr %></span> 
 	  <%= user ? rMake('#person-link-template', user) : "" %>
 	  funded 
 	  <a href="<%= link.url %>"> <%= link.title %> </a>
-	</li> </script>
+	</div> </script>
 
     <script type="text/template" id="followers-template">
-      <div class="social-links spine">
-        Followed by: 
+      <div class="social-links">
+        <div class="mainHeader spaceOnTop"> Followed by </div>
           <% if (followers.length == 0) { %>
   	    <%= 'nobody' %>
   	  <% } else {
@@ -133,7 +133,7 @@
     </script>
 
     <script type="text/template" id="follows-template">
-      <div class="social-links spine">
+      <div class="social-links">
         who follows: 
           <% if (follows.length == 0) { %>
   	    <%= 'nobody' %>
@@ -146,13 +146,13 @@
     </script>
 
     <script type="text/template" id="story-funding-template">
-	<li> 
+	<div class="listItem"> 
 	  <%= fundedStr %> <span class="fund-from"> from </span>
 	  <%= rMake('#person-link-template', user) %>
-	</li> </script>
+	</div> </script>
 
     <script type="text/template" id="full-story-template">
-      <div class="spine">
+      <div>
 	<span class="revenue"> <%= fundingStr %></span>
 	<br>
 	  <a class="titleLink" href="<%= link.url %>"> <%= link.title %> </a>
@@ -204,14 +204,17 @@
       <span class="smallTime"> <%= timeStr %> </span> <span>Welcome, </span> 
       <%= objectLink %>.</script>
 
+    <script type="text/template" id="person-recent-header">
+      <div class="mainHeader spaceOnTop"> Recently </div> </script>
+
     <script type="text/template" id="person-template">
-      <div class="spine fatBottom"> 
+      <div class="mainHeader"> 
 	<span class="userNickname"> <%= nickname %> </span> 
 	<span class="userType"> 
 	  is <%= isEditor? 'an editor' : 'a judge' %> </span> </div> </script>
 
     <script type="text/template" id="is-following-template">
-      <span class="spine"> Follow: </span>
+      <span> Follow: </span>
       <input id="is-following" type="checkbox" 
 	     <%= isFollowing? 'checked="yes"' : '' %>> </input> </script>
 

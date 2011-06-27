@@ -236,8 +236,10 @@ $(function(){
 
 	    if (this.list.length == 0) {
 		var message = this.edition.number > 0 ?
-		    "The judges have not funded this edition." :
-		    "Funding will begin after the signup round.";
+		    "The judges have not funded this edition, " + 
+		     (this.order == 'top'? 'so there are no top stories.' :
+		     'so there are no recently funded stories.') :
+		"Funding will begin after the signup round.";
 		this.appendElt(this.make("div", {'class': 'empty listItem'}, 
 					 message));
 	    }
@@ -574,6 +576,8 @@ $(function(){
 		    html += rMake('#followers-template', {followers: followers});
 		}
 	    }
+
+	    html += rMake('#person-recent-header');
 
 	    $(this.el).prepend(html);
 	    this.bindEvents(this);

@@ -17,6 +17,7 @@ public class Periodical {
 
 	private static final int ROOT_ID = 1;
 
+	// TODO 2.0 rename to nextEditionKey
 	private Key<Edition> currentEditionKey;
 	
 
