@@ -15,7 +15,7 @@ public class Periodical {
 	// 5k dollars (in pennies)
 	private static final int TEST_INITIAL_BALANCE = 500000;
 
-	private static final int ROOT_ID = 1;
+	public static final long ROOT_ID = 1L;
 
 	// TODO 2.0 rename to nextEditionKey
 	private Key<Edition> currentEditionKey;
@@ -52,7 +52,7 @@ public class Periodical {
 		this.balance = TEST_INITIAL_BALANCE;
 	}
 	
-	private static Key<Root> rootKey() {
+	public static Key<Root> rootKey() {
 		return new Key<Root>(Root.class, ROOT_ID);
 	}
 

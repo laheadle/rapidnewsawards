@@ -586,6 +586,98 @@ $(function(){
 	
     });
 
+    //* Nominate / Submit
+    window.NominateView = Backbone.View.extend({
+
+	tagName: "div",
+	id: "nominate",
+
+	initialize: function() {
+	    var self = this;
+	    this.model.bind('change', function () { self.render() });
+	    this.model.view = this;
+	    this.render();
+	},
+
+	bindEvents: function(self) {
+	    this.$('input[name=nominateStory]').click(function (event) {
+		event.preventDefault();
+		var link = self.$('input[name=url]').attr('value');
+		doRequest({fun: 'voteFor',
+			   link: link,
+			   fullLink: ''},
+			  function (data) {
+			      if (data.submit) {
+				  // show full submit form
+				  app.setMainView(FullSubmitView,
+						  {title: data.suggestedTitle,
+						   link: link});
+			      }
+			      else {
+				  window.flashLog({type: 'success',
+						   content: 'Story was already nominated: Your support is being counted.'});
+				  app.hashStory(data.edition, data.linkId);
+			      }
+			  });
+	    });
+	},
+
+	render: function() {
+	    if (window.app.loginView.isLoggedInJudge()) {
+		if (window.app.loginView.isCreatingAccount()) {
+		    $(this.el).html(rMake('#header-template', {text: 'You must finish creating your account before nominating anything'}));
+		}
+		else {
+		    $(this.el).html(rMake('#nominate-story-template', 
+					  this.model.toJSON()));
+		    this.bindEvents(this);
+		}
+	    }
+	    else {
+		$(this.el).html(rMake('#header-template', {text: 'Only judges can nominate works for funding'}));
+	    }
+
+	    return this;
+	},
+	
+    });
+
+    window.FullSubmitView = Backbone.View.extend({
+
+	tagName: "div",
+	id: "fullSubmit",
+
+	initialize: function() {
+	    var self = this;
+	    this.model.bind('change', function () { self.render() });
+	    this.model.view = this;
+	    this.render();
+	},
+
+	bindEvents: function(self) {
+	    this.$('input[name=nominateStory]').click(function (event) {
+		event.preventDefault();
+		var link = self.$('input[name=url]').attr('value');
+		doRequest({fun: 'submitStory',
+			   url: self.$('input[name=url]').attr('value'),
+			   title: self.$('input[name=title]').attr('value') },
+			  function (data) {
+			      window.flashLog({type: 'success',
+					       content: 'Your support is being counted.'});
+			      app.hashStory(data.currentEdition, data.linkId);
+			  });
+	    });
+	},
+
+	render: function() {
+	    $(this.el).html(rMake('#full-submit-template', 
+				  this.model.toJSON()));
+	    this.bindEvents(this);
+	    return this;
+	},
+	
+    });
+
     //* CreateAccountView
 
     window.CreateAccountView = Backbone.View.extend({
@@ -844,6 +936,10 @@ $(function(){
 	    return this.loggedIn() && this.model.get('email') == user.email;
 	},
 
+	isLoggedInJudge: function() {
+	    return this.loggedIn() && !this.isEditor();
+	},
+
 	isCreatingAccount: function() {
 	    return this.model.get('isInitialized') == false;
 	},
@@ -921,6 +1017,7 @@ $(function(){
 	    // "":"",
 	    // "":"",
 	    "network/:ed": "network",
+	    "nominate": "nominate",
 	    "createAccount/:andThen": "createAccount",
 	    "recentSocials/:ed": "recentSocials",
 	    "topAuthorities/:ed": "topAuthorities",
@@ -965,7 +1062,6 @@ $(function(){
 
 	initialize: function() {
 	    this.loginView = new LoginView;
-	    Backbone.history.start();
 	},
 
 	currentOrFinalEdition: -5,
@@ -1065,6 +1161,10 @@ $(function(){
 		      });
 	},
 
+	nominate: function() {
+	    this.setMainView(NominateView, {});
+	},
+
 	createAccount: function(andThen) {
 	    var andThen = decodeURIComponent(andThen);
 	    var self = this;
@@ -1130,6 +1230,10 @@ $(function(){
 	    this.setHash( 'network/' + (ed || '')); 
 	},
 
+	hashNominate: function() {
+	    this.setHash('nominate');
+	},
+
 	hashTopStories: function(ed) {
 	    this.setHash( 'topStories/' + (ed || ''));
 	},
@@ -1164,6 +1268,7 @@ $(function(){
     //* init
     window.initRNA();
     window.app = new App;
+    Backbone.history.start();
     defaultAction();
 
     $(window).bind('hashchange', function () { 
@@ -1182,6 +1287,11 @@ $(function(){
     $('a').live('click', function() {
 	flashClear('');
     });
+
+    $('a.nominate').live('click', function() {
+	app.hashNominate();
+    });
+
 
     $('#loadMessage').html('');
     log({info: 'loaded'});

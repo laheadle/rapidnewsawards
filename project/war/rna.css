@@ -93,6 +93,10 @@ h1.title {
     font-size: 1.4em;
 }
 
+.mainDescription {
+    margin: 10px 0;
+}
+
 .social-links {
     margin-top: 5px;
 }
@@ -133,7 +137,10 @@ h1.title {
     margin: 0 0 0 0; 
     padding-left: 0;
     font: 1.1em bold;
-    color: blue;
+}
+
+.menuHeader {
+    padding-bottom: 5px;
 }
 
 #leftColumn {
@@ -147,18 +154,11 @@ h1.title {
 }
 
 #secondMenu {
-    margin: 10 0 0 0; 
+    position: relative;
+    top: 10px;
     padding-left: 0;
     font: 1.1em bold;
     color: blue;
-}
-
-#menu li, #secondMenu li {
-    display: block;
-}
-
-#menu li .explain {
-    display: none;
 }
 
 #login {

@@ -2,6 +2,7 @@ package org.rapidnewsawards.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.text.ParseException;
 import java.util.ArrayList;
 import java.util.Date;
@@ -99,8 +100,13 @@ public class MakeDataServlet extends HttpServlet {
 		User jq = d.users.findUserByLogin("johnqpublic@gmail.com", "gmail.com");
 		for (int i = 0;i < numLinks;i++) {
 			d.user = jq;
-			VoteResult vr = d.editions.submitStory("http://www.example" + i + ".com", 
-					"example story", current.getKey());
+			VoteResult vr = null;
+			try {
+				vr = d.editions.submitStory("http://www.example" + i + ".com", 
+						"example story", current.getKey());
+			} catch (MalformedURLException e) {
+				e.printStackTrace();
+			}
 			if (!vr.returnVal.s.equals(Response.SUCCESS.s)) {
 				DAO.log.warning(vr.returnVal.toString());
 			}
@@ -179,7 +185,7 @@ public class MakeDataServlet extends HttpServlet {
 	throws ParseException {
 		Objectify o = DAO.instance.ofy();
 		final Root root = new Root();
-		root.id = 1L;
+		root.id = Periodical.ROOT_ID;
 		o.put(root);
 		
 		final Periodical p = new Periodical(Name.AGGREGATOR_NAME);

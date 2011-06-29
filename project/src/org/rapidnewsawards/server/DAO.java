@@ -120,7 +120,7 @@ public class DAO extends DAOBase {
 						return getEdition(FINAL);
 					}
 					else {
-						throw new RNAException("no current edition");
+						throw new RNAException("No upcoming edition, that's all folks.");
 					}
 				}
 				return o.get(p.getcurrentEditionKey());
@@ -427,7 +427,7 @@ public class DAO extends DAOBase {
 		}
 
 		public VoteResult submitStory(String url, String title,
-				Key<Edition> e) throws RNAException {
+				Key<Edition> e) throws RNAException, MalformedURLException {
 			// TODO put this and vote in transaction along with task
 			VoteResult vr = new VoteResult();
 
@@ -447,21 +447,12 @@ public class DAO extends DAOBase {
 			}
 			if (title.length() > 499) {
 				vr.returnVal = Response.TITLE_TOO_LONG;
-				return vr;				
+				return vr;	
 			}
 			else {
-				try {
-					Link l = users.createLink(url, title, user.getKey());
-					vr.returnVal = users.voteFor(
-							user,
-							e, l, true);
-				}
-				catch (MalformedURLException ex) {
-					// TODO Just Catch this in parent?
-					// TODO Test on frontend
-					log.warning("bad url " + url + "submitted by " + user);
-					vr.returnVal = Response.BAD_URL;
-				}
+				Link l = users.createLink(url, title, user.getKey());
+				vr.linkId = l.id;
+				vr.returnVal = users.voteFor(user, e, l, true);
 			}
 			return vr;
 		}
@@ -984,9 +975,14 @@ public class DAO extends DAOBase {
 		public Link createLink(String url, String title, Key<User> submitter) 
 		throws MalformedURLException {
 			assert (submitter != null);
+			Objectify txn = fact().beginTransaction();
 			String domain = new java.net.URL(url).getHost();
-			Link l = new Link(url, title, domain, submitter);
-			ofy().put(l);
+			Link l = txn.query(Link.class).ancestor(Periodical.rootKey()).filter(Name.URL.name, url).get();
+			if (l == null) {
+				l = new Link(url, title, domain, submitter);
+				txn.put(l);
+			}
+			txn.getTxn().commit();
 			return l;
 		}
 
@@ -1133,12 +1129,16 @@ public class DAO extends DAOBase {
 				return vr;
 			}
 
-			Link l = ofy().query(Link.class).filter(Name.URL.name, link).get();
+			Link l = ofy().query(Link.class).ancestor(Periodical.rootKey()).filter(Name.URL.name, link).get();
 			if (l == null) {
-				return null; // User must submit the link
+				String title = TitleGrabber.getTitle(link);
+				vr.suggestedTitle = title;
+				vr.returnVal = Response.SUCCESS;
+				vr.submit = true;
 			} else {
 				vr.returnVal = voteFor(
 						user, edition, l, on);
+				vr.linkId = l.id;
 				// TODO test user login state for votes
 				vr.authUrl = userService.createLogoutURL("FIXME");
 			}

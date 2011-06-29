@@ -30,14 +30,14 @@
 	<span class="content large"> Please Wait.. </span> </div>
 
       <div id="leftColumn">
-	<ul id="menu"> 
-	  <li> 
-	    <span class="explain"> See what we're working on. </span> 
-	    <a id="upcoming"> Upcoming </a> </li>
-	  <li> <a id="recent"> Previous </a> </li> </ul>
+	<div id="menu"> 
+	  <div class="menuHeader"> Editions </div>
+	  <div> 
+	    <a class="menuBorder" id="upcoming"> Upcoming </a> </div>
+	  <div> <a id="recent"> Previous </a> </div> </div>
 
-	<ul id="secondMenu"> 
-	  <li> <a class="menuBorder" href="vote2.html"> Nominate Article </a> </li> </ul> </div>
+	<div id="secondMenu"> 
+	  <div> <a class="menuBorder"> Nominate Article </a> </div> </div> </div>
 
       <div id="main"> 
 	<span id="loadMessage" 
@@ -64,7 +64,7 @@
     <!-- Templates -->
 
     <script type="text/template" id="edition-header-template"> 
-      <span id="edition-header"> <span class="number"> Number 
+      <span id="edition-header" class="spaceOnTop"> <span class="number"> Number 
 	<%= number %>: </span> <%= finished? 'Awarded' : 'Awarding' %> 
 	<span class="amount"> <%= finished? totalSpendStr : revenueStr %> </span>
 	on <%= endStr %> </span> </script>
@@ -131,6 +131,34 @@
   	  } %>
       </div>
     </script>
+
+    <script type="text/template" id="header-template">
+      <div class="mainHeader spaceOnTop"> <%= text %> </div> </script>
+
+    <script type="text/template" id="nominate-story-template">
+        <div class="mainHeader spaceOnTop"> Nominate A Work of Journalism for Recognition and Support </div>
+	<div class="mainDescription"> Your funding support will be noted in the next edition of newskraft.org, and you will become the nominating judge of this work. </div>
+      	<table>
+	  <tr> <td> URL of Work: </td> 
+	    <td> <input type="text" size="100" name="url"/> </td> </tr>
+	  <tr> <td> </td>
+	    <td>
+	      <input type="submit" value="Nominate" name="nominateStory"/> 
+    </td> </tr> </table> </script>
+
+
+    <script type="text/template" id="full-submit-template">
+        <div class="mainHeader spaceOnTop"> Check Title </div>
+	<div class="mainDescription"> Edit the provided title and submit. </div>
+	<table> <tr> <td> Title: </td>
+	    <td> <input type="text" size="100" name="title" value="<%= title %>"/> </td> </tr>
+	  <tr> <td> URL: </td> 
+	    <td> <input type="text" size="100" name="url" value="<%= link %>" /> </td> </tr>
+	  <tr> <td> </td>
+	    <td>
+	      <input type="submit" value="Nominate Work" name="nominateStory"/> </td> </tr> </table>
+    </td> </tr> </table> </script>
+
 
     <script type="text/template" id="follows-template">
       <div class="social-links">

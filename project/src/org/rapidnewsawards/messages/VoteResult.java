@@ -8,5 +8,8 @@ public class VoteResult {
 	public VoteResult() {};
 	public Response returnVal;
 	public String authUrl;
-	public Boolean supporting;
+	public String suggestedTitle;
+	public boolean submit;
+	public long linkId;
+	public int currentEdition;
 }

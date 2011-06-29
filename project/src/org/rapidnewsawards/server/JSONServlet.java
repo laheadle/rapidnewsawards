@@ -2,6 +2,7 @@ package org.rapidnewsawards.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -170,6 +171,7 @@ public class JSONServlet extends HttpServlet {
 				Edition ed = d.editions.getEdition(edition);
 				Boolean on = new Boolean(request.getParameter("on"));
 				VoteResult vr = d.users.voteFor(link, fullLink, ed.getKey(), on);
+				vr.currentEdition = Edition.getNumber(d.editions.getCurrentEdition().getKey());
 				return vr;
 			}
 		});
@@ -191,9 +193,15 @@ public class JSONServlet extends HttpServlet {
 				String url = request.getParameter("url");
 				String title = request.getParameter("title");
 				Edition ed = d.editions.getCurrentEdition();
-				VoteResult vr = d.editions
-				.submitStory(url, title, ed.getKey());
-				return vr;
+				try {
+					VoteResult vr = d.editions.submitStory(url, title, ed.getKey());
+					return vr;
+				}
+				catch (MalformedURLException ex) {
+					// TODO Test on frontend
+					log.warning("bad url " +  url + "submitted by " + d.user == null? "anon" : d.user.toString());
+					throw new RNAException("Malformed URL");
+				}
 			}
 		});
 		

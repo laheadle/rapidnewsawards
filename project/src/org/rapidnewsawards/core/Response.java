@@ -26,9 +26,8 @@ public enum Response {
 	TITLE_TOO_LONG("The title is too long"), 
 	VOTING_FORBIDDEN_DURING_SIGNUP("Voting is not permitted during the signup round"), 
 	ONLY_JUDGES_CAN_VOTE("Only judges can vote");
-
-
-public String s;
+	
+	public String s;
 
 	Response(String s) {
 		this.s = s;
