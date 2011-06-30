@@ -550,9 +550,10 @@ $(function(){
 
 	    // Bookmarklet
 	    if (app.loginView.isCurrentUser(u) && !this.user().isEditor) {
-		var link = '<a href="javascript:(function(){window.open(\'http://localhost:8888/vote2.html?href=\'+document.location.href)})()"> RNA Submit </a>';
+		var arg='\'http://localhost:8888/rna.html#nominate/\'+encodeURIComponent(document.location.href)'
+		var link = '<a href="javascript:(function(){window.open('+arg+')})()"> RNA Nominate </a>';
 		flashLog({type: 'notice', 
-			  header: 'For Submitting Stories:',
+			  header: 'For Nominating Stories:',
 			  content: 'Drag ' + link + ' to your bookmarks toolbar now.'});
 	    }
 
@@ -664,7 +665,7 @@ $(function(){
 			  function (data) {
 			      window.flashLog({type: 'success',
 					       content: 'Your support is being counted.'});
-			      app.hashStory(data.currentEdition, data.linkId);
+			      app.clearMainView();
 			  });
 	    });
 	},
@@ -1018,6 +1019,7 @@ $(function(){
 	    // "":"",
 	    "network/:ed": "network",
 	    "nominate": "nominate",
+	    "nominate/:url": "nominate",
 	    "createAccount/:andThen": "createAccount",
 	    "recentSocials/:ed": "recentSocials",
 	    "topAuthorities/:ed": "topAuthorities",
@@ -1161,8 +1163,8 @@ $(function(){
 		      });
 	},
 
-	nominate: function() {
-	    this.setMainView(NominateView, {});
+	nominate: function(url) {
+	    this.setMainView(NominateView, {url: url? decodeURIComponent(url) : ''});
 	},
 
 	createAccount: function(andThen) {
@@ -1230,8 +1232,13 @@ $(function(){
 	    this.setHash( 'network/' + (ed || '')); 
 	},
 
-	hashNominate: function() {
-	    this.setHash('nominate');
+	hashNominate: function(url) {
+	    if (url) {
+		this.setHash('nominate/'+url);
+	    }
+	    else {
+		this.setHash('nominate');
+	    }
 	},
 
 	hashTopStories: function(ed) {

@@ -2,7 +2,7 @@
 <html>
 
   <head>
-    <title>The Craft of News: A Journal</title>
+    <title>newskraft.org</title>
     <link href="rna.css" media="all" rel="stylesheet" type="text/css"/>
     <script src="js/json2.js"></script>
     <script src="js/jquery-1.4.2.js"></script>
@@ -37,7 +37,7 @@
 	  <div> <a id="recent"> Previous </a> </div> </div>
 
 	<div id="secondMenu"> 
-	  <div> <a class="menuBorder"> Nominate Article </a> </div> </div> </div>
+	  <div> <a class="menuBorder nominate"> Nominate Work </a> </div> </div> </div>
 
       <div id="main"> 
 	<span id="loadMessage" 
@@ -140,7 +140,9 @@
 	<div class="mainDescription"> Your funding support will be noted in the next edition of newskraft.org, and you will become the nominating judge of this work. </div>
       	<table>
 	  <tr> <td> URL of Work: </td> 
-	    <td> <input type="text" size="100" name="url"/> </td> </tr>
+	    <% if (url != '') { %> <td> <input type="text" size="100" value="<%= url %>" name="url"/> </td> 
+	    <% } else { %> <td> <input type="text" size="100" name="url"/> </td> 
+	   <% } %> </tr>
 	  <tr> <td> </td>
 	    <td>
 	      <input type="submit" value="Nominate" name="nominateStory"/> 

@@ -147,7 +147,7 @@ public class TallyTask  extends HttpServlet {
 			boolean on = Boolean.valueOf(_on);
 			d.users.writeVote(new Key<User>(User.class, user), 
 					new Key<Edition>(Edition.class, edition), 
-					new Key<Link>(Link.class, link), 
+					Link.createKey(link), 
 					on);
 		}
 		else if (fun.equals("tallyVote")) {

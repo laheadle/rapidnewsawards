@@ -331,7 +331,7 @@ public class DAO extends DAOBase {
 		}
 
 		public FullStoryInfo getStory(int editionNum, Long linkId) throws RNAException {
-			Key<Link> linkKey = new Key<Link>(Link.class, linkId);
+			Key<Link> linkKey = Link.createKey(linkId);
 			Key<Edition> editionKey = Edition.createKey(editionNum);
 
 			// Edition e = getEdition(Name.AGGREGATOR_NAME, editionNum, null);
@@ -340,6 +340,7 @@ public class DAO extends DAOBase {
 
 			Link link = ofy().find(linkKey);
 			if (link == null || sl == null) {
+				txn.getTxn().rollback();
 				throw new RNAException("Story Link not found");
 			}
 

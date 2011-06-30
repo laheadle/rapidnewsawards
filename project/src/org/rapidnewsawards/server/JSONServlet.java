@@ -195,6 +195,7 @@ public class JSONServlet extends HttpServlet {
 				Edition ed = d.editions.getCurrentEdition();
 				try {
 					VoteResult vr = d.editions.submitStory(url, title, ed.getKey());
+					vr.currentEdition = ed.getNumber();
 					return vr;
 				}
 				catch (MalformedURLException ex) {

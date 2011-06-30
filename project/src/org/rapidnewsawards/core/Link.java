@@ -19,7 +19,7 @@ public class Link {
 	public String domain;
 		 	
 	public Key<Link> getKey() {
-		return new Key<Link>(Link.class, id);
+		return createKey(id);
 	}
 
 	public Link(String url, String title, String domain, Key<User> submitter) {
@@ -31,4 +31,8 @@ public class Link {
 	}
 		
 	public Link() {}
+
+	public static Key<Link> createKey(Long linkId) {
+		return new Key<Link>(Periodical.rootKey(), Link.class, linkId);	
+	}
 }
