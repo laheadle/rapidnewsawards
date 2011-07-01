@@ -597,7 +597,7 @@ $(function(){
 	    var self = this;
 	    this.model.bind('change', function () { self.render() });
 	    this.model.view = this;
-	    if (this.loginView.stillWaiting) {
+	    if (app.loginView.stillWaiting) {
 		// A request has been sent by LoginView
 		// We will handle it (success) here when it returns
 		window.requester.state = {
@@ -613,6 +613,9 @@ $(function(){
 			return {interrupted: false};
 		    }
 		}
+	    }
+	    else {
+		self.render();
 	    }
 	},
 
