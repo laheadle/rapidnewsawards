@@ -125,8 +125,10 @@
           <% if (followers.length == 0) { %>
   	    <%= 'nobody' %>
   	  <% } else {
+	     var i = 1;
   	     _.each(followers, function(f) { %> 
   	      <%= rMake('#person-link-template', f) %> 
+	      <%= i++ < followers.length ? 'and' : '' %>
             <% });
   	  } %>
       </div>
@@ -168,8 +170,10 @@
           <% if (follows.length == 0) { %>
   	    <%= 'nobody' %>
   	  <% } else {
+	     var i = 1;
   	     _.each(follows, function(f) { %> 
   	      <%= rMake('#person-link-template', f) %> 
+	      <%= i++ < followers.length ? 'and' : '' %>
             <% });
   	  } %>
       </div>
