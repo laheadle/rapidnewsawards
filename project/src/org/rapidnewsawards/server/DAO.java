@@ -1424,7 +1424,9 @@ public class DAO extends DAOBase {
 			ei.score += on ? 1 : -1;
 			eiset.add(ei);
 		}
-		otx.put(eiset);
+		if (eiset.size() > 0) {
+			otx.put(eiset);
+		}
 		TallyTask.releaseUserLock(otx.getTxn());		
 		otx.getTxn().commit();
 	}
@@ -1441,6 +1443,9 @@ public class DAO extends DAOBase {
 		if (Strings.isNullOrEmpty(name)) {
 			throw new RNAException("A name is required.");			
 		}
+		if (ofy().query(Donation.class).filter("name", name).get() != null) {
+			throw new RNAException(name + " has already donated.");			
+		}
 		boolean c = Boolean.parseBoolean(consent);
 		if (!c) {
 			throw new RNAException("You did not check the consent form.");
@@ -1455,7 +1460,7 @@ public class DAO extends DAOBase {
 		try {
 			amount = (int) (Double.parseDouble(donation) * CENTS_PER_DOLLAR);
 			if (amount > HUGE_DONATION_DOLLARS * CENTS_PER_DOLLAR) {
-				throw new RNAException("That amount is too high.");
+				throw new RNAException("The maximum donation is $" + HUGE_DONATION_DOLLARS);
 			}
 		}
 		catch (NumberFormatException e) {

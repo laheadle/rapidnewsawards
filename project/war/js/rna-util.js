@@ -59,8 +59,12 @@ window.initRNA = function () {
 	    alert(options.error.toString());
 	}
 	else {
-	    console.log(options.info || options);
+	    rnaTrace(options.info || options);
 	}
+    };
+
+    window.rnaTrace = function(s) {
+	try { console.log(s) } catch (e) { }
     };
 
     var Requester = function() {

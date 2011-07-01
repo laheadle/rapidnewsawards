@@ -605,7 +605,7 @@ $(function(){
 
 		    supercede: function(success, arg) {
 			// clear Wait state
-			console.log('login returned');
+			rnaTrace('login returned');
 			// call the loginView success
 			success(arg);
 			// recurse (no longer waiting)
@@ -982,7 +982,7 @@ $(function(){
 	    doRequest({ fun: 'sendUser' },
 		      function(data) {
 			  self.stillWaiting = false;
-			  console.log('data ' + data);
+			  rnaTrace('data ' + data);
 			  if (data) {
 			      self.model.set(data);
 			  }
@@ -1197,7 +1197,7 @@ $(function(){
 
 		    supercede: function(success, arg) {
 			// clear Wait state
-			console.log('success');
+			rnaTrace('success');
 			// call the loginView success
 			success(arg);
 			// recurse (no longer waiting)
@@ -1208,12 +1208,12 @@ $(function(){
 		return;
 	    }
 	    if (this.loginView.isCreatingAccount()) {
-		console.log('creating');
+		rnaTrace('creating');
 		flashClear();
 		this.setMainView(new CreateAccountView({andThen: andThen}));
 	    }
 	    else {
-		console.log('not creating');
+		rnaTrace('not creating');
 		window.location = andThen;
 	    }
 	},
@@ -1237,7 +1237,7 @@ $(function(){
 	},
 
 	setHash: function(hash) {
-	    console.log('setHash: ' + hash);
+	    rnaTrace('setHash: ' + hash);
 	    window.location.hash = hash;
 	},
 	

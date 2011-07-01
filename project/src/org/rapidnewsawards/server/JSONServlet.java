@@ -230,7 +230,13 @@ public class JSONServlet extends HttpServlet {
 		commandsMap.put("relatedUser", new AbstractCommand() {
 			@Override
 			public Object getResult() throws RNAException {
-				long userId = new Long(request.getParameter("id"));
+				long userId = 0L;
+				try {
+					userId = new Long(request.getParameter("id"));
+				}
+				catch (NumberFormatException e) {
+					throw new RNAException("Bad User Id");
+				}
 				return d.users.getRelatedUserInfo(Name.AGGREGATOR_NAME, d.user,
 						new Key<User>(User.class, userId));
 			}
