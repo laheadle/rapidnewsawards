@@ -597,7 +597,23 @@ $(function(){
 	    var self = this;
 	    this.model.bind('change', function () { self.render() });
 	    this.model.view = this;
-	    this.render();
+	    if (this.loginView.stillWaiting) {
+		// A request has been sent by LoginView
+		// We will handle it (success) here when it returns
+		window.requester.state = {
+		    interrupted: true,
+
+		    supercede: function(success, arg) {
+			// clear Wait state
+			console.log('login returned');
+			// call the loginView success
+			success(arg);
+			// recurse (no longer waiting)
+			self.render();
+			return {interrupted: false};
+		    }
+		}
+	    }
 	},
 
 	bindEvents: function(self) {
@@ -1171,12 +1187,15 @@ $(function(){
 	    var andThen = decodeURIComponent(andThen);
 	    var self = this;
 	    if (this.loginView.stillWaiting) {
+		// A request has been sent by LoginView
+		// We will handle it (success) here when it returns
 		window.requester.state = {
 		    interrupted: true,
 
 		    supercede: function(success, arg) {
 			// clear Wait state
 			console.log('success');
+			// call the loginView success
 			success(arg);
 			// recurse (no longer waiting)
 			self.createAccount(andThen);
