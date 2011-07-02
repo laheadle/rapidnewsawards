@@ -250,7 +250,7 @@ $(function(){
 			"The judges did not fund this edition, " + 
 			(this.order == 'top'? 'so there were no top stories.' :
 			 'so there were no recently funded stories.') :
-		    "No stories were published stories during the signup round, because the signup round is for socializing.";
+		    "No stories were funded during the signup round, because the signup round was for socializing.";
 		    this.appendElt(this.make("div", {'class': 'empty listItem'}, 
 					     message));
 		}
@@ -259,7 +259,7 @@ $(function(){
 			"The judges have not funded this edition, " + 
 			(this.order == 'top'? 'so there are no top stories.' :
 			 'so there are no recently funded stories.') :
-		    "No stories will be funded during the signup round.";
+		    "No stories will be funded during the signup round, because the signup round is for socializing.";
 		    this.appendElt(this.make("div", {'class': 'empty listItem'}, 
 					     message));
 		}
@@ -1286,7 +1286,7 @@ $(function(){
 	},
 
 	hashNetwork: function(ed) { 
-	    this.setHash( 'network/' + (ed || '')); 
+	    this.setHash( 'network/' + (ed === 0 ? ed : (ed || ''))); 
 	},
 
 	hashNominate: function(url) {
@@ -1299,23 +1299,23 @@ $(function(){
 	},
 
 	hashTopStories: function(ed) {
-	    this.setHash( 'topStories/' + (ed || ''));
+	    this.setHash( 'topStories/' + (ed === 0 ? ed : (ed || '')));
 	},
 
 	hashTopAuthorities: function(ed) {
-	    this.setHash( 'topAuthorities/' + (ed || ''));
+	    this.setHash( 'topAuthorities/' + (ed === 0 ? ed : (ed || '')));
 	},
 
 	hashTopEditors: function(ed) {
-	    this.setHash( 'topEditors/' + (ed || ''));
+	    this.setHash( 'topEditors/' + (ed === 0 ? ed : (ed || '')));
 	},
 
 	hashRecentSocials: function(ed) {
-	    this.setHash( 'recentSocials/' + (ed || ''));
+	    this.setHash( 'recentSocials/' + (ed === 0 ? ed : (ed || '')));
 	},
 
 	hashRecentFundings: function(ed) {
-	    this.setHash('recentFundings/' + (ed || ''));
+	    this.setHash('recentFundings/' + (ed === 0 ? ed : (ed || '')));
 	},
 
 	hashCreateAccount: function() {

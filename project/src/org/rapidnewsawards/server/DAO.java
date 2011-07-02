@@ -146,7 +146,7 @@ public class DAO extends DAOBase {
 				if (p.isFinished())	
 					return getEdition(FINAL);
 				if (Edition.getNumber(p.getcurrentEditionKey()) == INITIAL) {
-					throw new RNAException("There is no current edition because we are just getting started.");
+					throw new RNAException("There is no current edition because we are just getting started. Now is the time for joining and following.");
 				}
 				return o.get(Edition.getPreviousKey(p.getcurrentEditionKey()));
 			}
