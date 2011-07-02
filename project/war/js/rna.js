@@ -30,6 +30,8 @@ $(function(){
 	initialize: function(attrs) {
 	    this.edition = attrs.edition;
 	    this.numEditions = attrs.numEditions;
+	    this.isNext = attrs.isNext;
+	    this.isCurrent = attrs.isCurrent;
 	    this.list = attrs.list;
 	    this.getAttrs = attrs.getAttrs;
 	    this.itemView = attrs.itemView;
@@ -51,6 +53,7 @@ $(function(){
 	    var view = this;
 	    view.list.each(function (item) { view.addOne(item) });
 	},
+
 
 	appendElt: function(el) {
 	    this.$('.list').append(el);
@@ -99,6 +102,13 @@ $(function(){
 	    else {
 		$(this.el).prepend(rMake('#edition-header-template', 
 					 this.edition));
+	    }
+
+	    if (this.isCurrent) {
+		app.selectMenuItem('#current');
+	    }
+	    else if (this.isNext) {
+		app.selectMenuItem('#next');
 	    }
 	    return this;
 	},
@@ -235,13 +245,24 @@ $(function(){
 	    this.$('#editionTabsMinor').html(rMake('#stories-order-tab-template', args));
 
 	    if (this.list.length == 0) {
-		var message = this.edition.number > 0 ?
-		    "The judges have not funded this edition, " + 
-		     (this.order == 'top'? 'so there are no top stories.' :
-		     'so there are no recently funded stories.') :
-		"Funding will begin after the signup round.";
-		this.appendElt(this.make("div", {'class': 'empty listItem'}, 
-					 message));
+		if (this.edition.finished) {
+ 		    var message = this.edition.number > 0 ?
+			"The judges did not fund this edition, " + 
+			(this.order == 'top'? 'so there were no top stories.' :
+			 'so there were no recently funded stories.') :
+		    "No stories were published stories during the signup round, because the signup round is for socializing.";
+		    this.appendElt(this.make("div", {'class': 'empty listItem'}, 
+					     message));
+		}
+		else {
+ 		    var message = this.edition.number > 0 ?
+			"The judges have not funded this edition, " + 
+			(this.order == 'top'? 'so there are no top stories.' :
+			 'so there are no recently funded stories.') :
+		    "No stories will be funded during the signup round.";
+		    this.appendElt(this.make("div", {'class': 'empty listItem'}, 
+					     message));
+		}
 	    }
 	    return this;
 	}
@@ -922,6 +943,7 @@ $(function(){
 
 	    this.$('.volumeHeader').html(rMake('#volume-template',
 				     {published: published, remaining: remaining}));
+	    app.selectMenuItem('#recent');
 	    return this;
 	},
 
@@ -1051,6 +1073,7 @@ $(function(){
 	},
 
 	clearMainView: function () {
+	    this.clearAllMenuSelections();
 	    if (this.mainView !== undefined) {
 		log({info: 'removing main'});
 		$(this.mainView.el).html('');
@@ -1062,6 +1085,16 @@ $(function(){
 	    this.clearMainView();
 	    this.mainView = new viewType(attrs);
 	    $('#main').append(this.mainView.el);
+	},
+
+	selectMenuItem: function(item) {
+	    $(item).removeClass('unselected').addClass('selected');
+	},
+
+	clearAllMenuSelections: function() {
+	    $('#recent').removeClass('selected').addClass('unselected');
+	    $('#next').removeClass('selected').addClass('unselected');
+	    $('#current').removeClass('selected').addClass('unselected');
 	},
 
 	setMainView: function(type, data) {
@@ -1098,6 +1131,8 @@ $(function(){
 			{order: order,
 			 edition: data.edition,
 			 numEditions: data.numEditions,
+			 isCurrent: data.isCurrent,
+			 isNext: data.isNext,
 			 storiesSelected: view === StoriesView ?
  			 'selected' : 'unselected',
 			 networkSelected: view === NetworkView ?
@@ -1155,9 +1190,9 @@ $(function(){
 	    this.recentSocials(edNum);
 	},
 
-	// fixme this is broken at the end of a volume
+	// fixme this is broken at the end of a volume -- Is it still??
 	// default view for edition
-	edition: function(edNum) {	    
+	edition: function(edNum) {
 	    return this.topStories(edNum);
 	},
 
@@ -1287,8 +1322,6 @@ $(function(){
 	    this.setHash('createAccount/');
 	},
 
-	hashUpcoming: function() {}, // fixme
-
 	hashRecent: function() {
 	    this.setHash('volume');
 	},
@@ -1304,9 +1337,21 @@ $(function(){
 	defaultAction();
     });
 
+    // see DAO.java
+    var NEXT = -1;
+    var AFTER_NEXT = -2;
+    var FINAL = -3;
+    var CURRENT = -4;
+    var NEXT_OR_FINAL = -5;
+
     // fixme
-    $('#upcoming').click(function (event) {
-	app.hashTopStories();
+    $('#next').click(function (event) {
+	app.hashTopStories(NEXT);
+    });
+
+
+    $('#current').click(function (event) {
+	app.hashTopStories(CURRENT);
     });
 
     $('#recent').click(function (event) {
@@ -1315,6 +1360,7 @@ $(function(){
 
     $('a').live('click', function() {
 	flashClear('');
+	app.clearAllMenuSelections();
     });
 
     $('a.nominate').live('click', function() {

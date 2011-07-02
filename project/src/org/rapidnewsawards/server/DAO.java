@@ -67,6 +67,7 @@ public class DAO extends DAOBase {
 	public class Editions {
 
 		// TODO 2.0 make enums
+		private static final int INITIAL = 0;
 		public static final int CURRENT = -1;
 		public static final int NEXT = -2;
 		public static final int FINAL = -3;
@@ -109,51 +110,49 @@ public class DAO extends DAOBase {
 		 * 
 		 * @param number the edition number requested
 		 */
-		public Edition getEdition(final int edition) throws RNAException {
+		public Edition getEdition(final int editionNum) throws RNAException {
 
 			final Objectify o = ofy();
+			final Periodical p = getPeriodical();
 
-			if (edition == CURRENT || edition == CURRENT_OR_FINAL) {
-				final Periodical p = getPeriodical();
+			if (editionNum == CURRENT || editionNum == CURRENT_OR_FINAL) {
 				if (p.isFinished()) {
-					if (edition == CURRENT_OR_FINAL) {
+					if (editionNum == CURRENT_OR_FINAL) {
 						return getEdition(FINAL);
 					}
 					else {
-						throw new RNAException("No upcoming edition, that's all folks.");
+						throw new RNAException("No next edition, that's all folks.");
 					}
 				}
 				return o.get(p.getcurrentEditionKey());
 			}
 
-			else if (edition == NEXT) {
-				final Periodical p = getPeriodical();
+			else if (editionNum == NEXT) {
 				if (p.isFinished()) {
 					throw new RNAException(
-							"Next edition requested for finished periodical");
+							"After-Next edition requested for finished periodical");
 				}
 				Key<Edition> nextKey = Edition.getNextKey(p.getcurrentEditionKey());
 				if (Edition.isAfterFinal(nextKey, getNumEditions())) {
 					throw new RNAException(
-					"Next edition requested after final Edition");					
+					"There is no edition after the final one");					
 				}
 				return o.get(nextKey);
 			}
-			else if (edition == FINAL) {
+			else if (editionNum == FINAL) {
 				return o.get(Edition.getFinalKey(getNumEditions()));
 			}
-			else if (edition == PREVIOUS) {
-				if (edition == 0) {
-					throw new RNAException("There is no previous edition");
-				}
-				final Periodical p = getPeriodical();
+			else if (editionNum == PREVIOUS) {
 				if (p.isFinished())	
 					return getEdition(FINAL);
+				if (Edition.getNumber(p.getcurrentEditionKey()) == INITIAL) {
+					throw new RNAException("There is no current edition because we are just getting started.");
+				}
 				return o.get(Edition.getPreviousKey(p.getcurrentEditionKey()));
 			}
 			else {
 				// TODO 2.0 this only works because we assume one periodical
-				return o.get(Edition.class, "" + edition);
+				return o.get(Edition.class, "" + editionNum);
 			}
 		}
 
@@ -305,12 +304,14 @@ public class DAO extends DAOBase {
 
 		public RecentVotes getRecentVotes(int edition) throws RNAException {
 			Edition e = getEdition(edition);
-			RecentVotes s = new RecentVotes();
+			RecentVotes recent = new RecentVotes();
 			// no aggregate score info needed
-			s.edition = makeEditionMessage(ofy(), e);
-			s.numEditions = getNumEditions();
-			s.list = getLatestUser_Vote_Links(e.getKey());
-			return s;
+			recent.edition = makeEditionMessage(ofy(), e);
+			recent.numEditions = getNumEditions();
+			recent.isCurrent = editions.isPrevious(e);
+			recent.isNext = editions.isCurrent(e);
+			recent.list = getLatestUser_Vote_Links(e.getKey());
+			return recent;
 		}
 
 		public ScoredLink getScoredLink(Objectify ofy, Key<Edition> e, Key<Link> l) {
@@ -369,6 +370,8 @@ public class DAO extends DAOBase {
 			TopJudges tj = new TopJudges();
 			Objectify txn = fact().beginTransaction();
 			tj.edition = makeEditionMessage(txn, e);
+			tj.isCurrent = editions.isPrevious(e);
+			tj.isNext = editions.isCurrent(e);
 			tj.numEditions = editions.getNumEditions();
 			tj.list = getJudges(txn, e);
 			return tj;
@@ -379,6 +382,8 @@ public class DAO extends DAOBase {
 			TopEditors tj = new TopEditors();
 			Objectify txn = fact().beginTransaction();
 			tj.edition = makeEditionMessage(txn, e);
+			tj.isCurrent = editions.isPrevious(e);
+			tj.isNext = editions.isCurrent(e);
 			tj.numEditions = editions.getNumEditions();
 			tj.list = getTopEditors(txn, e);
 			return tj;
@@ -392,6 +397,8 @@ public class DAO extends DAOBase {
 			LinkedList<StoryInfo> stories = new LinkedList<StoryInfo>();
 			result.edition = makeEditionMessage(txn, e);
 			result.numEditions = editions.getNumEditions();
+			result.isCurrent = editions.isPrevious(e);
+			result.isNext = editions.isCurrent(e);
 			result.list = stories;
 			LinkedList<ScoredLink> scored = editions.getScoredLinks(txn, e, 1);
 			LinkedList<Key<Link>> linkKeys = new LinkedList<Key<Link>>();
@@ -426,6 +433,24 @@ public class DAO extends DAOBase {
 
 			return result;
 		}
+
+		private boolean isPrevious(Edition e) {
+			try {
+				return getEdition(PREVIOUS).getKey().equals(e.getKey());
+			} catch (RNAException e1) {
+				return false;
+			}
+		}
+
+
+		private boolean isCurrent(Edition e) {
+			try {
+				return getEdition(CURRENT).getKey().equals(e.getKey());
+			} catch (RNAException e1) {
+				return false;
+			}
+		}
+
 
 		public VoteResult submitStory(String url, String title,
 				Key<Edition> e) throws RNAException, MalformedURLException {
@@ -833,20 +858,22 @@ public class DAO extends DAOBase {
 		}
 
 		public RecentSocials getRecentSocials(int edition) throws RNAException {
-			Edition preceeding = editions.getEdition(edition);
+			Edition e = editions.getEdition(edition);
 
-			RecentSocials s = new RecentSocials();
+			RecentSocials rs = new RecentSocials();
 			// No transaction because no aggregate score data needed
-			s.edition = editions.makeEditionMessage(ofy(), preceeding);
-			s.numEditions = editions.getNumEditions();
+			rs.edition = editions.makeEditionMessage(ofy(), e);
+			rs.numEditions = editions.getNumEditions();
+			rs.isCurrent = editions.isPrevious(e);
+			rs.isNext = editions.isCurrent(e);
 
 			Edition succeeding = null;
-			if (!Edition.isFinal(preceeding.getKey(), editions.getNumEditions())) {
+			if (!Edition.isFinal(e.getKey(), editions.getNumEditions())) {
 				succeeding = 
-					ofy().get(Edition.getNextKey(preceeding.getKey()));
+					ofy().get(Edition.getNextKey(e.getKey()));
 			}
-			s.list = editions.getLatestEditor_Judges(succeeding);
-			return s;
+			rs.list = editions.getLatestEditor_Judges(succeeding);
+			return rs;
 		}
 
 		public boolean willBeFollowingNextEdition(Key<User> from, Key<User> to) {

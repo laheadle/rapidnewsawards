@@ -126,6 +126,9 @@ h1.title {
 }
 
 #flash {
+    position: absolute;
+    top: 30px;
+    left: 150px;
     height: 1.2em;
     margin: 0.67em 0 0 0;
 }
@@ -146,8 +149,8 @@ h1.title {
 }
 
 .menuBorder {
-    border-top: 1px solid gray;
-    padding-top: 5px;
+    border-bottom: 1px solid gray;
+    margin-bottom: 5px;
 }
 
 #secondMenu {
@@ -238,6 +241,10 @@ h1.title {
 .indented-story {
     padding: 0 0 0 10px;
     font-size: 1.1em;
+}
+
+.nominate {
+    display: none; /* fixme */
 }
 
 .number, .amount {
