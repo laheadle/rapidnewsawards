@@ -285,11 +285,17 @@ $(function(){
 	: attrs.appendElt;
 
 
-	this.newModel = attrs.newModel == undefined? 
-	    function(item) {
-		return new Backbone.Model(item.toJSON());
-	    }
-	: attrs.newModel;
+	if (attrs.newModel == undefined) {
+	    var self = this;
+	    this.newModel = function(item) {
+		    // fixme this should apply a getattrs to item, like editionView does
+		    // the real fix is to make editionView use GenList...
+		    return new self.list.model(item.toJSON());
+		}
+	}
+	else {
+	    this.newModel = attrs.newModel;
+	}
 
 
 	this.addOne = function(model) {
@@ -506,11 +512,15 @@ $(function(){
 	    if (this.list.length == 0) {
 		if (this.order == 'top') {
 		    this.appendElt(this.make("div", {'class': 'empty listItem'}, 
-					     "No funding has occurred during this edition."));
+					     this.edition.finished? 
+					     "No funding occurred during this edition."
+					     : "No funding has occurred during this edition."));
 		}
 		else {
 		    this.appendElt(this.make("div", {'class': 'empty listItem'}, 
-					     "The network has not changed during this edition."));
+					     this.edition.finished? 
+					     "The network did not change during this edition."
+					     : "The network has not changed during this edition."));
 		}
 	    }
 	    return this;
@@ -532,19 +542,27 @@ $(function(){
 	    // fixme refactor
 	    $(this.el).append(this.make('div', {'class': 'list large'}));
 	    // add fundings list
-	    this.list = 
-		new GenList({parent: this, 
-			     list: new FundingsList,
-			     newModel: function(item) {
-				 // don't display a (redundant) user for personView's Fundings
-				 return new Backbone.Model(
-				     _.extend(item.toJSON(),
-					      {user: null}))
-			     },
-			     appendElt: function(el) {
-				 this.parent.$('.list').append(el);
-			     }});
-	    this.list.refresh(this.model.get('userInfo').votes);
+
+	    if (this.user().isEditor) {
+		this.list = new GenList({parent: this, 
+					 list: new SocialList});
+		this.list.refresh(this.model.get('userInfo').socials);
+	    }
+	    else {
+		this.list = 
+		    new GenList({parent: this, 
+				 list: new FundingsList,
+				 newModel: function(item) {
+				     // don't display a (redundant) user for personView's Fundings
+				     return new Backbone.Model(
+					 _.extend(item.toJSON(),
+						  {user: null}))
+				 },
+				 appendElt: function(el) {
+				     this.parent.$('.list').append(el);
+				 }});
+		this.list.refresh(this.model.get('userInfo').votes);
+	    }
 	},
 
 	user: function() {
@@ -796,7 +814,6 @@ $(function(){
 
 
     window.StoryFundingsList = Backbone.Collection.extend({
-	model: Backbone.Model,
 	view: StoryFundingView,
 
 	comparator: function(model) {
@@ -862,8 +879,6 @@ $(function(){
 
     //* VolumeView
 
-    window.Edition = Backbone.Model.extend({});
-
     window.CollapsedEditionView = Backbone.View.extend({
 
 	tagName:  "div",
@@ -894,8 +909,6 @@ $(function(){
 
 
     window.EditionList = Backbone.Collection.extend({
-
-	model: Edition,
 	view: CollapsedEditionView,
 
 	comparator: function(edition) {

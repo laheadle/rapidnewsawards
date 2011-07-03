@@ -9,4 +9,5 @@ public class UserInfo {
 	public LinkedList<Vote_Link> votes;
 	public LinkedList<User> followers;
 	public LinkedList<User> follows;
+	public LinkedList<SocialInfo> socials;
 }

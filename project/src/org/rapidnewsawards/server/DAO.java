@@ -215,23 +215,25 @@ public class DAO extends DAOBase {
 			return result;
 		}
 
+		private LinkedList<SocialInfo> getLatestSocialInfoInEdition(Edition e) {
+			return editions.createSocialInfoList(ofy().query(SocialEvent.class).filter("edition", e.getKey()).order("-time"));
+		}
+
+		public LinkedList<SocialInfo> getLatestSocialInfoforEditor(Key<User> user) {
+			return editions.createSocialInfoList(ofy().query(SocialEvent.class).ancestor(user).order("-time"));
+		}
+
 		/*
 		 * Runs three queries: first get keys, then use the keys to get 2 sets
 		 * of entities
 		 */
-		private LinkedList<SocialInfo> getLatestEditor_Judges(Edition e) {
+		private LinkedList<SocialInfo> createSocialInfoList(Query<SocialEvent> q) {
 			LinkedList<SocialInfo> result = new LinkedList<SocialInfo>();
-
-			if (e == null)
-				return result;
-
 			ArrayList<Key<User>> editors = new ArrayList<Key<User>>();
 			ArrayList<Key<User>> judges = new ArrayList<Key<User>>();
 			ArrayList<Boolean> bools = new ArrayList<Boolean>();
 			// think - does this show everything we want?
 			// todo ignore welcomes on eds and donors
-			Query<SocialEvent> q = ofy().query(SocialEvent.class)
-					.filter("edition", e.getKey()).order("-time");
 
 			ArrayList<Date> times = new ArrayList<Date>();
 			for (SocialEvent event : q) {
@@ -247,9 +249,7 @@ public class DAO extends DAOBase {
 				result.add(new SocialInfo(umap.get(editors.get(i)), lmap
 						.get(judges.get(i)), bools.get(i), times.get(i)));
 			}
-
 			return result;
-
 		}
 
 		/*
@@ -871,8 +871,11 @@ public class DAO extends DAOBase {
 			if (!Edition.isFinal(e.getKey(), editions.getNumEditions())) {
 				succeeding = 
 					ofy().get(Edition.getNextKey(e.getKey()));
+				rs.list = editions.getLatestSocialInfoInEdition(succeeding);
 			}
-			rs.list = editions.getLatestEditor_Judges(succeeding);
+			else {
+				rs.list = new LinkedList<SocialInfo>();
+			}
 			return rs;
 		}
 
@@ -1101,6 +1104,7 @@ public class DAO extends DAOBase {
 				ui.user = ofy().get(user);
 				if (ui.user.isEditor) {
 					ui.follows = getFollows(user);
+					ui.socials = editions.getLatestSocialInfoforEditor(user);
 					ui.followers = new LinkedList<User>();
 					ui.votes = new LinkedList<Vote_Link>();
 				} else {
