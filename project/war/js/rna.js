@@ -243,6 +243,7 @@ $(function(){
 		{topSelected: this.order == 'top'? 'selected' : 'unselected',
 		 recentSelected: this.order == 'recent'? 'selected' : 'unselected'};
 	    this.$('#editionTabsMinor').html(rMake('#stories-order-tab-template', args));
+	    $(rMake('#signup-explanation')).insertAfter($(this.el).children().first());
 
 	    if (this.list.length == 0) {
 		if (this.edition.finished) {
@@ -502,6 +503,8 @@ $(function(){
 	    var args = 
 		{topSelected: this.order == 'top'? 'selected' : 'unselected',
 		 recentSelected: this.order == 'recent'? 'selected' : 'unselected'};
+	    $(rMake('#signup-explanation')).insertAfter($(this.el).children().first());
+
 	    this.$('#editionTabsMinor').html(rMake('#network-order-tab-template', args));
 	    if (this.order == 'top') {
 		var iargs = 

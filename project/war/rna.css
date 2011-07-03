@@ -84,7 +84,7 @@ h1.title {
 
 #person {
     position: absolute;
-    top: 30px;
+    top: 35px;
 }
 
 #edition-header, .volumeHeader, .mainHeader {
@@ -95,6 +95,15 @@ h1.title {
 
 .mainDescription {
     margin: 10px 0;
+}
+
+.help {
+    font-size: .8em;
+    color: gray;
+}
+
+a.help {
+    color: black;
 }
 
 .social-links {
@@ -215,6 +224,10 @@ h1.title {
 
 /* --- supporting classes --- */
 
+.editionExplanation {
+    margin-top: 5px;
+    font-size: 1.4em;
+}
 
 .edition .empty {
     font-size: 1.4em;

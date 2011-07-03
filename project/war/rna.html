@@ -164,10 +164,17 @@
 	      <input type="submit" value="Nominate Work" name="nominateStory"/> </td> </tr> </table>
     </td> </tr> </table> </script>
 
+    <script type="text/template" id="help-link">
+      <span class="help">[<a target="_blank" class="help" href="/help.html#<%= topic %>">?</a>]</span>
+    </script>
+
+    <script type="text/template" id="signup-explanation">
+    <div class="editionExplanation"> The time for editors, judges and anyone else to invite judges to the site, and for editors to follow judges. </div> </script>
 
     <script type="text/template" id="follows-template">
       <div class="social-links">
-        <div class="mainHeader spaceOnTop"> Following  </div>
+        <div class="mainHeader spaceOnTop"> Following or About to Follow  
+	  <%= rMake('#help-link', {topic: 'about-to-follow'}) %> </div>
           <% if (follows.length == 0) { %>
   	    <%= 'nobody' %>
   	  <% } else {
