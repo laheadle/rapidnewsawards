@@ -126,12 +126,7 @@ a.help {
     position: absolute;
     width: 850px;
     left: 150px;
-    top: 50px;
-}
-
-#main .edition {
-    position: absolute;
-    top: 10px;
+    top: 75px;
 }
 
 #flash {
@@ -177,6 +172,7 @@ a.help {
 
 
 #flash span.error { color: red }
+#flash span.redNotice { color: red }
 #flash span.notice { color: green }
 
 #flash span.success { 
@@ -226,16 +222,24 @@ a.help {
 
 .editionExplanation {
     margin-top: 5px;
-    font-size: 1.4em;
+}
+
+.fundingExplanation {
+    font-weight: bold;
 }
 
 .edition .empty {
+    
     font-size: 1.4em;
 }
 
 
 .edition span.submitter {
     display: block;
+}
+
+.submitterLine {
+    padding: 5px;
 }
 
 .editionTabs {
@@ -270,6 +274,12 @@ a.help {
     background-color:  #F0F0F0;
 }
 
+.bigRevenue {
+    padding: 2px;
+    font-size: 1.2em;
+    background-color:  #F0F0F0;
+}
+
 .signup {
     color: green;
 }
@@ -281,6 +291,12 @@ a.help {
 .listItem {
     color: black;
     font-size: 1.1em;
+    margin-bottom: .5em;
+}
+
+.regularSize {
+    color: black;
+    font-size: .9em;
     margin-bottom: .5em;
 }
 

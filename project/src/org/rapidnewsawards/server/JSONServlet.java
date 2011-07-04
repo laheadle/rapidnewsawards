@@ -280,6 +280,7 @@ public class JSONServlet extends HttpServlet {
 	class ResponseMessage {
 		public String status;
 		public String message;
+		public User requester;
 		public Object payload;
 	}
 	
@@ -301,9 +302,9 @@ public class JSONServlet extends HttpServlet {
 		try {
 			ConcurrentServletCommand command = new ConcurrentServletCommand() {
 				@Override
-				public Object perform(HttpServletRequest request, HttpServletResponse resp) 
+				public Object perform(HttpServletRequest request, HttpServletResponse resp)
 				throws RNAException {
-					return c.perform(request);	
+					return c.perform(request);
 				}
 			};
 			re.payload = command.run(request, resp);
@@ -312,26 +313,26 @@ public class JSONServlet extends HttpServlet {
 						"command %s needed %d retries.", c, command.retries));
 			}
 			re.status = OK;
-			out.println(g.toJson(re));
 		} catch (RNAException e) {
 			re.payload = null;
 			re.status = BAD_REQUEST;
 			re.message = e.message;
-			out.println(g.toJson(re));
 		}
 		catch (TooBusyException e) {
 			re.payload = null;
 			re.status = TRY_AGAIN;
 			re.message = "Things are busy...please try again!";
 			log.severe(String.format("%s command gave up after %d retries!", c, e.tries));
-			out.println(g.toJson(re));
 		}
 		catch (Exception e) {
 			re.payload = null;
 			re.status = SERVER_ERROR;
 			re.message = "";
-			out.println(g.toJson(re));
 			e.printStackTrace();
+		}
+		finally {
+			re.requester = DAO.instance.user;
+			out.println(g.toJson(re));
 		}
 	}
 

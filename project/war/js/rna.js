@@ -243,7 +243,22 @@ $(function(){
 		{topSelected: this.order == 'top'? 'selected' : 'unselected',
 		 recentSelected: this.order == 'recent'? 'selected' : 'unselected'};
 	    this.$('#editionTabsMinor').html(rMake('#stories-order-tab-template', args));
-	    $(rMake('#signup-explanation')).insertAfter($(this.el).children().first());
+
+	    if (this.edition.number === 0) {
+		$(rMake('#signup-explanation')).insertAfter($(this.el).children().first());
+	    }
+	    else if (this.order == 'top') {
+		if (!this.edition.finished) {
+		    $(rMake('#funding-amounts-explanation')).insertAfter($(this.el).children().first());
+		}
+		$(rMake('#top-stories-explanation')).insertAfter($(this.el).children().first());
+	    }
+	    else {
+		if (!this.edition.finished) {
+		    $(rMake('#funding-amounts-explanation')).insertAfter($(this.el).children().first());
+		}
+		$(rMake('#recent-stories-explanation')).insertAfter($(this.el).children().first());
+	    }
 
 	    if (this.list.length == 0) {
 		if (this.edition.finished) {
@@ -503,7 +518,9 @@ $(function(){
 	    var args = 
 		{topSelected: this.order == 'top'? 'selected' : 'unselected',
 		 recentSelected: this.order == 'recent'? 'selected' : 'unselected'};
-	    $(rMake('#signup-explanation')).insertAfter($(this.el).children().first());
+	    if (this.edition.number === 0) {
+		$(rMake('#signup-explanation')).insertAfter($(this.el).children().first());
+	    }
 
 	    this.$('#editionTabsMinor').html(rMake('#network-order-tab-template', args));
 	    if (this.order == 'top') {
@@ -639,26 +656,7 @@ $(function(){
 	    var self = this;
 	    this.model.bind('change', function () { self.render() });
 	    this.model.view = this;
-	    if (app.loginView.stillWaiting) {
-		// A request has been sent by LoginView
-		// We will handle it (success) here when it returns
-		window.requester.state = {
-		    interrupted: true,
-
-		    supercede: function(success, arg) {
-			// clear Wait state
-			rnaTrace('login returned');
-			// call the loginView success
-			success(arg);
-			// recurse (no longer waiting)
-			self.render();
-			return {interrupted: false};
-		    }
-		}
-	    }
-	    else {
-		self.render();
-	    }
+	    self.render();
 	},
 
 	bindEvents: function(self) {
@@ -765,16 +763,9 @@ $(function(){
 			    webPage: webPage,
 			    consent: consent }, 
 			  function(data) {
-			      if (data) {
-				  app.loginView.model.set(data);
-				  window.app.setLocation(self.andThen);
-			      }
-			      else {
-				  flashError('failed to create account');
-			      }
-			  },
-			  function(response) {
-			      window.flashLog({type:'error', content: response.message});
+			      // 1) user data comes back in request.requester and then
+			      // 2) loginView.model is set by doRequest handler.
+			      window.app.setLocation(self.andThen);
 			  });
 	    });
 	},
@@ -1004,30 +995,16 @@ $(function(){
 
 	checkCreatingAccount: function() {
 	    if (this.isCreatingAccount() && !window.location.hash.match(/#createAccount/)) {
-		flashLog({type: 'notice',
+		flashLog({type: 'redNotice',
 			  content: rMake('#please-finish-registering')});
 	    }
 	},
 
 	initialize: function() {
 	    var self = this.model.view = this;
-
 	    this.model.bind('change', function () { 
 		self.render();
 	    });
-
-	    self.stillWaiting = true; // this has to coordinate with createAccount
-	    doRequest({ fun: 'sendUser' },
-		      function(data) {
-			  self.stillWaiting = false;
-			  rnaTrace('data ' + data);
-			  if (data) {
-			      self.model.set(data);
-			  }
-			  else {
-			      self.model.set({cid: 'guest'});
-			  }			      
-		      });
 	},
 
 	logout: function() { 
@@ -1227,9 +1204,6 @@ $(function(){
 	    doRequest({ fun: 'relatedUser', id: id}, 
 		      function(data) {
 			  self.setMainView(PersonView, data);
-		      },
-		      function (err) {
-			  flashError(err.toString());
 		      });
 	},
 
@@ -1240,33 +1214,18 @@ $(function(){
 	createAccount: function(andThen) {
 	    var andThen = decodeURIComponent(andThen);
 	    var self = this;
-	    if (this.loginView.stillWaiting) {
-		// A request has been sent by LoginView
-		// We will handle it (success) here when it returns
-		window.requester.state = {
-		    interrupted: true,
-
-		    supercede: function(success, arg) {
-			// clear Wait state
-			rnaTrace('success');
-			// call the loginView success
-			success(arg);
-			// recurse (no longer waiting)
-			self.createAccount(andThen);
-			return {interrupted: false};
-		    }
-		}
-		return;
-	    }
-	    if (this.loginView.isCreatingAccount()) {
-		rnaTrace('creating');
-		flashClear();
-		this.setMainView(new CreateAccountView({andThen: andThen}));
-	    }
-	    else {
-		rnaTrace('not creating');
-		window.location = andThen;
-	    }
+	    doRequest({ fun: 'sendUser'},
+		      function(data) {
+			  if (self.loginView.isCreatingAccount()) {
+			      rnaTrace('creating');
+			      flashClear();
+			      self.setMainView(new CreateAccountView({andThen: andThen}));
+			  }
+			  else {
+			      rnaTrace('not creating');
+			      window.location = andThen;
+			  }
+		      });
 	},
 
 	volume: function() {
@@ -1277,9 +1236,6 @@ $(function(){
 			      self.setVolumeView({current: data.current, 
 						  data: _.map(data.editions,
 							  window.Utils.processEdition)});
-		      },
-		      function (err) {
-			  flashError(err.toString());
 		      });
 	},
 

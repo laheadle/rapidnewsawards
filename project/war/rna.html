@@ -41,9 +41,9 @@
 	  <div> <a class="nominate"> Nominate Work </a> </div> </div> </div>
 
       <div id="main"> 
-	<span id="loadMessage" 
+	<!-- <span id="loadMessage" 
 	      style="margin-left: 25%; color: red; font-size: large; font-weight: bold">
-	  Loading... </span> </div> </div>
+	  Loading... </span> --> </div> </div>
 
     <script type="text/template" id="create-account-template"> 
       <div class="fatBottom"> <span class="welcomeTxt"> Welcome to the site. </span>  Please tell us about yourself. </div> <br>
@@ -117,7 +117,7 @@
 	  <span class="smallTime"> <%= timeStr %></span> 
 	  <%= user ? rMake('#person-link-template', user) : "" %>
 	  supported 
-	  <a href="<%= link.url %>"> <%= link.title %> </a>
+	  <a href="#story/<%= vote.edition.raw.name%>/<%= link.id %>"> <%= link.title %> </a>
 	</div> </script>
 
     <script type="text/template" id="followers-template">
@@ -171,6 +171,19 @@
     <script type="text/template" id="signup-explanation">
     <div class="editionExplanation"> The time for editors, judges and anyone else to invite judges to the site, and for editors to follow judges. </div> </script>
 
+
+    <script type="text/template" id="top-stories-explanation">
+    <div class="editionExplanation"> Stories with the most funding for this edition appear on top.  All funding is hypothetical and non-binding. </div> </script>
+
+    <script type="text/template" id="funding-amounts-explanation">
+      <div class="fundingExplanation"> 
+	Funding amounts will continue to change until this edition is published. </div> </script>
+
+
+    <script type="text/template" id="recent-stories-explanation">
+    <div class="editionExplanation"> Recent acts of funding for this edition appear on top.  All funding is hypothetical and non-binding.  </div> </script>
+
+
     <script type="text/template" id="follows-template">
       <div class="social-links">
         <div class="mainHeader spaceOnTop"> Following or About to Follow  
@@ -189,37 +202,38 @@
 
     <script type="text/template" id="story-funding-template">
 	<div class="listItem"> 
-	  <%= fundedStr %> <span class="fund-from"> from </span>
-	  <%= rMake('#person-link-template', user) %>
-	</div> </script>
+	  <div class="regularSize"> <%= fundedStr %> <span class="fund-from"> from </span>
+	  <%= rMake('#person-link-template', user) %> </div> </div> </script>
 
     <script type="text/template" id="full-story-template">
       <div>
-	<span class="revenue"> <%= fundingStr %></span>
+	<span class="bigRevenue"> <%= fundingStr %></span>
 	<br>
-	  <a class="titleLink" href="<%= link.url %>"> <%= link.title %> </a>
-	<span> 
-	  submitted by <%= rMake('#person-link-template', submitter) %> 
+	  <a class="titleLink" target="_blank" href="<%= link.url %>"> <%= link.title %> </a>
+	<span class="submitterLine"> 
+	  nominated by <%= rMake('#person-link-template', submitter) %> 
 	  from <%= link.domain %> </span> <br>
 
         <% if (isCurrent && !app.loginView.isEditor()) { %>
-          <span> Fund this story: </span>
+          <span> Fund this work: </span>
 	  <input id="is-funding" type="checkbox" 
 		 <%= userIsFunding? 'checked="yes"' : '' %>> </input>
 
   	<% } else if (userIsFunding && !app.loginView.isEditor()) { %>
-          <span> You supported this story. </span>	
+          <span> You supported this work. </span>	
 	<% } else if (!app.loginView.isEditor()) { %>
           <span> You did not support this story. </span>	
 	<% } %>
+
+	<div class="mainHeader spaceOnTop"> Funding Events  </div>
 
     </div> </script>
 
     <script type="text/template" id="story-template">
      <div class="fatBottom">
-      <a class="revenue" href="<%= href %>"> <%= fundingStr %>...</a>
+      <span class="revenue"> <%= fundingStr %>...</span>
       <br>
-      <a class="indented-story" href="<%= link.url %>"> <%= link.title %></a> 
+      <a class="indented-story" href="<%= href %>"> <%= link.title %></a> 
       <div></script>
 
     <script type="text/template" id="collapsed-edition-template">

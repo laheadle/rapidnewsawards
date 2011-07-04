@@ -14,12 +14,13 @@ window.initRNA = function () {
 	    var text = {
 		error: 'Error',
 		notice: 'Notice',
+		redNotice: 'Notice',
 		success: 'Ok',
 		info: '',
 	    }
 	    
 	    var span = this.$('span.flag');
-	    span.removeClass('error success info notice').addClass(type);
+	    span.removeClass('error success info notice redNotice').addClass(type);
 	    span.text(header || text[type]);
 	},
 
@@ -83,6 +84,8 @@ window.initRNA = function () {
 	    var bitOfProblem = 'bit of a problem...working on it.';
 	    var response = empty? {status: false, message: bitOfProblem} : JSON.parse(data);
 	    var payload = response.payload;
+
+	    app.loginView.model.set(response.requester || {cid: 'guest'});
 	    if (response.status === 'BAD_REQUEST') { 
 		if (err) { err(response); } else { flashError(response.message); }
 		return;
@@ -95,6 +98,7 @@ window.initRNA = function () {
 		flashError("Server Error.  We are looking into it, please try again in a bit.");
 		return;
 	    }
+	    try {
 		if (!self.state.interrupted) {
 		    self.state = function (state, payload) { 
 			var s = success(payload, state);
@@ -107,6 +111,11 @@ window.initRNA = function () {
 		else {
 		    self.state = self.state.supercede(success, payload);
 		}
+
+	    }
+	    catch (e) {
+		reportError(attrs, e);
+	    }
 	};
 	method.apply($, ['JSONrpc', attrs, reactTo]);
     };
