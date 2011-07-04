@@ -1032,6 +1032,9 @@ $(function(){
 		this.$('a.logout').text('')
 		.css('padding-left', '0');
 	    }
+	    if (this.isLoggedInJudge()) {
+		$('.judgeOnly').css('display', 'block');
+	    }
 	    this.checkCreatingAccount();
 	}
     });

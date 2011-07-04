@@ -38,7 +38,7 @@
 	  <div> <a id="recent"> Recent </a> </div> </div>
 
 	<div id="secondMenu"> 
-	  <div> <a class="nominate"> Nominate Work </a> </div> </div> </div>
+	  <div> <a class="nominate judgeOnly"> Nominate Work </a> </div> </div> </div>
 
       <div id="main"> 
 	<!-- <span id="loadMessage" 
@@ -257,7 +257,8 @@
       <%= objectLink %> </script>
 
     <script type="text/template" id="welcome-template">
-      <span class="smallTime"> <%= timeStr %> </span> <span>Welcome, </span> 
+      <span class="smallTime"> <%= timeStr %> </span> 
+      <span>Welcome, <%= judge.isEditor === true? 'editor' : 'judge' %> </span> 
       <%= objectLink %>.</script>
 
     <script type="text/template" id="person-recent-header">

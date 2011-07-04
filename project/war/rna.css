@@ -260,8 +260,12 @@ a.help {
     font-size: 1.1em;
 }
 
+.judgeOnly {
+    display: none;
+}
+
 .nominate {
-    display: none; /* fixme */
+
 }
 
 .number, .amount {
