@@ -199,9 +199,16 @@ public class JSONServlet extends HttpServlet {
 					return vr;
 				}
 				catch (MalformedURLException ex) {
-					// TODO Test on frontend
-					log.warning("bad url " +  url + "submitted by " + d.user == null? "anon" : d.user.toString());
-					throw new RNAException("Malformed URL");
+					try {
+						VoteResult vr = d.editions.submitStory("http://" + url, title, ed.getKey());
+						vr.currentEdition = ed.getNumber();
+						return vr;
+					}
+					catch (MalformedURLException ex2) {
+						// TODO Test on frontend
+						log.warning("bad url " +  url + "submitted by " + d.user == null? "anon" : d.user.toString());
+						throw new RNAException("Malformed URL");
+					}
 				}
 			}
 		});
