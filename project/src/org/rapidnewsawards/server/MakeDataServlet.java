@@ -96,7 +96,7 @@ public class MakeDataServlet extends HttpServlet {
 
 	private void makeLinks() throws RNAException {
 		Edition current = d.editions.getEdition(1);
-		User jq = d.users.findUserByLogin("johnqpublic@gmail.com", "gmail.com");
+		User jq = d.users.findUserByLogin("johnqpublic@gmail.com", User.GMAIL);
 		for (int i = 0;i < numLinks;i++) {
 			d.user = jq;
 			VoteResult vr = null;
@@ -159,23 +159,17 @@ public class MakeDataServlet extends HttpServlet {
 
 
 	private static void makeRNAEditor() {
-		User rna = new User("__rnaEditor@gmail.com", "gmail.com", true);
+		User rna = new User(User.RNA_EDITOR_EMAIL, User.GMAIL, true);
 		Objectify txn = DAO.instance.fact().beginTransaction();
 		txn.put(rna);
 		txn.getTxn().commit();
-		if (rna.id != 1L) {
-			throw new IllegalStateException("bad rna ed");
-		}
 	}
 
 
 	public static User makeUser(String email, boolean isEditor) {
-		User u = new User(email, "gmail.com", isEditor);
+		User u = new User(email, User.GMAIL, isEditor);
 		d.ofy().put(u);
 		
-		if (u.id == 1L) {
-			throw new IllegalStateException("WTF?");
-		}
 		if (isEditor) {
 			editors.add(u);
 		}

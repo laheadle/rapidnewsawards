@@ -5,6 +5,7 @@ import javax.persistence.Id;
 
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Parent;
+import com.googlecode.objectify.annotation.Unindexed;
 
 
 
@@ -25,7 +26,12 @@ public class User {
 	
 	public boolean isEditor;
 
+	@Unindexed
 	public String webPage;
+
+	public static final String GMAIL = "gmail.com";
+
+	public static final String RNA_EDITOR_EMAIL = "__rnaEditor@gmail.com";
 		
 	public User() {}
 	
@@ -39,13 +45,6 @@ public class User {
 		this.isInitialized = false;
 		this.isEditor = isEditor;
 		this.lastLogin = new Date();
-	}
-
-	/*
-	 * The special editor who follows new Users without empowering them.  These follows are called Joins because the user joins the community.
-	 */
-	public static Key<User> getRNAEditor() {
-		return new Key<User>(Periodical.rootKey(), User.class, 1L);
 	}
 
 	@Override

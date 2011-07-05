@@ -43,7 +43,7 @@ public class DoSomethingServlet extends HttpServlet {
 		log.info(String.format("rna 2: %s", rna));
 	}
 	public static void makeUser(String email) {
-		User rna = dao.ofy().get(User.getRNAEditor());
+		User rna = dao.users.getRNAUser();
 		log.info(String.format("rna 3: %s", rna));
 		User u = new User(email, "gmail.com", true);
 		log.info(String.format("u 1: %s", u));

@@ -1017,16 +1017,16 @@ public class DAO extends DAOBase {
 			return l;
 		}
 
-		public User findRNAUser() {
-			Objectify o = ofy();
-
-			Query<User> q = o.query(User.class).filter("isRNA", true);
-			if (q.count() != 1) {
-				log.severe("bad rnaEditor count: " + q.count());
-				return null;
+		private User rnaUser;
+		public User getRNAUser() {
+			if (rnaUser == null) {
+				rnaUser = findUserByLogin(User.RNA_EDITOR_EMAIL, User.GMAIL);
 			}
-
-			return q.get();
+			if (rnaUser == null) {
+				throw new IllegalStateException("No RNA User");
+			}
+			
+			return rnaUser;
 		}
 
 		public User findUserByLogin(String email, String domain) {
@@ -1292,7 +1292,7 @@ public class DAO extends DAOBase {
 			log.info("welcome: " + user);
 
 			Edition next = editions.getNextEdition();
-			SocialEvent join = new SocialEvent(User.getRNAEditor(),
+			SocialEvent join = new SocialEvent(users.getRNAUser().getKey(),
 					user.getKey(), next.getKey(), new Date(), true);
 			ofy().put(join);
 			
@@ -1311,7 +1311,7 @@ public class DAO extends DAOBase {
 
 		private boolean hasAlreadyJoined(User u) {
 			return ofy().query(SocialEvent.class)
-					.ancestor(User.getRNAEditor()).filter("judge", u.getKey()).get()
+					.ancestor(users.getRNAUser()).filter("judge", u.getKey()).get()
 					!= null;
 		}
 

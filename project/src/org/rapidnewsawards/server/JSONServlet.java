@@ -293,7 +293,6 @@ public class JSONServlet extends HttpServlet {
 			out.println("invalid function");
 			return;
 		}
-		JSONServlet.log.info("Json Function: " + fun);
 		Gson g = new Gson();
 		final AbstractCommand c = commandsMap.get(fun);
 		
