@@ -4,15 +4,13 @@ import java.util.Date;
 import javax.persistence.Id;
 
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Parent;
 
 
 
 public class User {
 
-	@Id
-	public Long id;
+	@Id public Long id;
 
 	@Parent public Key<Root> root;
 	
@@ -76,7 +74,7 @@ public class User {
 	
 	@Override
 	public String toString() {
-		return getDisplayName() + "(" + email + ")";
+		return String.format("%s (%s) id: %s", getDisplayName(), email, (id == null? "NULL" : Long.toString(id)));
 	}
 	
 	public Key<User> getKey() {

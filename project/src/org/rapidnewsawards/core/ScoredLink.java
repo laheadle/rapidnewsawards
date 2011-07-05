@@ -5,7 +5,6 @@ import javax.persistence.Id;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Parent;
-import com.googlecode.objectify.annotation.Unindexed;
 
 @Cached
 public class ScoredLink {
@@ -21,9 +20,6 @@ public class ScoredLink {
 	
 	public int score;
 
-	@Unindexed 
-	private int funding;
-		
 	public ScoredLink() {}
 	
 	public ScoredLink(Key<Edition> edition, Key<ScoreRoot> root, 

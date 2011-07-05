@@ -8,7 +8,6 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
-import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
@@ -161,27 +160,16 @@ public class MakeDataServlet extends HttpServlet {
 
 	private static void makeRNAEditor() {
 		User rna = new User("__rnaEditor@gmail.com", "gmail.com", true);
-		rna.id = 1L;
 		Objectify txn = DAO.instance.fact().beginTransaction();
 		txn.put(rna);
 		txn.getTxn().commit();
 		if (rna.id != 1L) {
 			throw new IllegalStateException("bad rna ed");
 		}
-		if (d.ofy().get(User.getRNAEditor()).id != 1L) {
-			throw new IllegalStateException("rna ed not stored");
-		}
-		try {
-			Thread.sleep(500);
-		} catch (InterruptedException e1) {}
 	}
 
 
 	public static User makeUser(String email, boolean isEditor) {
-		if (d.ofy().get(User.getRNAEditor()).id != 1L) {
-			throw new IllegalStateException("rna ed not stored yet!");
-		}
-
 		User u = new User(email, "gmail.com", isEditor);
 		d.ofy().put(u);
 		

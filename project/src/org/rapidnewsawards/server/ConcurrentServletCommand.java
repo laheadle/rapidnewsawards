@@ -8,7 +8,7 @@ import javax.servlet.http.HttpServletResponse;
 
 
 abstract class ConcurrentServletCommand {
-	private static final Logger log = Logger.getLogger(TransitionTask.class
+	private static final Logger log = Logger.getLogger(ConcurrentServletCommand.class
 			.getName());
 
 	public int retries;
