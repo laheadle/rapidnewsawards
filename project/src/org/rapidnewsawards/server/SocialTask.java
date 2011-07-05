@@ -64,7 +64,8 @@ public class SocialTask extends HttpServlet {
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response)
 	throws ServletException, IOException {
-		ConcurrentServletCommand command = new ConcurrentServletCommand() {
+		ConcurrentServletCommand command =
+			new ConcurrentServletCommand(ConcurrentServletCommand.MANY, ConcurrentServletCommand.BRIEF) {
 			@Override
 			public Object perform(HttpServletRequest request, HttpServletResponse resp) 
 			throws RNAException {
@@ -74,16 +75,16 @@ public class SocialTask extends HttpServlet {
 		};
 		try {
 			command.run(request, response);
-			if (command.retries > 0) {
+			if (command.getRetries() > 0) {
 				log.warning(String.format(
-						"command %s needed %d retries.", request, command.retries));
+						"command %s needed %d retries.", request, command.getRetries()));
 			}			
 		} catch (RNAException e) {
 			throw new IllegalStateException(e);
 		} catch (TooBusyException e) {
 			throw new ConcurrentModificationException(
 					String.format("command %s needed too many (%d) retries.", 
-							request, command.retries));
+							request, command.getRetries()));
 		}
 	}
 

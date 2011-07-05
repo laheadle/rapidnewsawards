@@ -306,7 +306,8 @@ public class JSONServlet extends HttpServlet {
 		// TODO CONCURRENT mod exceptions
 		ResponseMessage re = new ResponseMessage();
 		try {
-			ConcurrentServletCommand command = new ConcurrentServletCommand() {
+			ConcurrentServletCommand command =
+				new ConcurrentServletCommand(ConcurrentServletCommand.FEW, ConcurrentServletCommand.LONG) {
 				@Override
 				public Object perform(HttpServletRequest request, HttpServletResponse resp)
 				throws RNAException {
@@ -314,9 +315,9 @@ public class JSONServlet extends HttpServlet {
 				}
 			};
 			re.payload = command.run(request, resp);
-			if (command.retries > 0) {
+			if (command.getRetries() > 0) {
 				log.warning(String.format(
-						"command %s needed %d retries.", c, command.retries));
+						"command %s needed %d retries.", c, command.getRetries()));
 			}
 			re.status = OK;
 		} catch (RNAException e) {

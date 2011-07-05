@@ -809,7 +809,9 @@ public class DAO extends DAOBase {
 				SocialTask.writeSocialEvent(
 						from, to, Edition.getNextKey(e), on, 
 						aboutToSocial != null, lp.transaction.getTxn());
-				lp.commit(); socialTxn.getTxn().commit();
+				lp.commit(); 
+				// no-op: only used for ancestor read query
+				socialTxn.getTxn().commit();
 				assert(!getPeriodical().inTransition);
 			}
 		}
