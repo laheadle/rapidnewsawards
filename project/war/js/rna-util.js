@@ -44,6 +44,9 @@ window.initRNA = function () {
     };
 
     window.flashLog = function(msg) {
+	if (flashView.model.get('content') === msg.content) {
+	    return;
+	}
 	window.flashView.model.clear();
 	window.flashView.model.set(msg);
     };
@@ -138,9 +141,17 @@ window.initRNA = function () {
     };
 
     window.redirectForLogin = function(command) {
-	var newUrl = window.location.href.replace(/html(#.*)?/,
-	    'html#createAccount/' 
-	    + encodeURIComponent(window.location.href));
+	var newUrl = ( window.location.href.match(/#/) ?
+		       window.location.href
+		       .replace(/(#.*)$/,
+				'#createAccount/' 
+				+ encodeURIComponent(window.location.href))
+		       :
+		       window.location.href +
+		       '#createAccount/' 
+		       + encodeURIComponent(window.location.href));
+
+	
 	doRequest({ fun: command,
 		    url: newUrl }, 
 		  function(data) { 
@@ -148,7 +159,7 @@ window.initRNA = function () {
 			  window.location = data;
 		      }
 		      else {
-			  log({error: 'could not change window location'});
+			  log({error: 'Failed To Log in -- please notify laheadle@gmail.com'});
 		      }
 		  });
     };
@@ -187,7 +198,17 @@ window.initRNA = function () {
 	},
     };
 
-    $.ajaxSetup({timeout: 10000});
+    $.ajaxSetup({timeout: 15000});
     $('body').ajaxError(function() { flashError("Communication error.  Please Check your network connection."); });
+
+    // via http://stackoverflow.com/questions/68485/how-to-show-loading-spinner-in-jquery
+    $('#loading')
+	.hide()  // hide it initially
+	.ajaxStart(function() {
+            $(this).show();
+	})
+	.ajaxStop(function() {
+            $(this).hide();
+	});
 
 }

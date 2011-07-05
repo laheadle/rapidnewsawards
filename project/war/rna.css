@@ -126,7 +126,7 @@ a.help {
     position: absolute;
     width: 850px;
     left: 150px;
-    top: 75px;
+    top: 85px;
 }
 
 #flash {
@@ -145,6 +145,10 @@ a.help {
 
 .menuHeader {
     padding-bottom: 5px;
+}
+
+#loading {
+    margin-left: 10px;
 }
 
 #leftColumn {
