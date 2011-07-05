@@ -52,6 +52,10 @@ public class MakeDataServlet extends HttpServlet {
 		} catch (IOException e1) {
 			throw new AssertionError();
 		}
+		if (d.user != null) {
+			out.println("Logged in user: " + d.user);
+		}
+
 		editors = new HashSet<User>();
 		Cell<Integer> numUsers = new Cell<Integer>(null);
 		int numEditions = 5;
@@ -119,7 +123,7 @@ public class MakeDataServlet extends HttpServlet {
 		d.user = olduser;
 	}
 	public static void makeData (int editionCount, long periodSize, Cell<Integer> numUsers) 
-	throws ParseException, RNAException {		
+	throws ParseException, RNAException {
 		// add users to first edition
 		makeEditions(editionCount, periodSize);
 
@@ -170,6 +174,9 @@ public class MakeDataServlet extends HttpServlet {
 		User u = new User(email, User.GMAIL, isEditor);
 		d.ofy().put(u);
 		
+		if (u.isEditor != isEditor) {
+			throw new IllegalStateException("bad editor status");
+		}
 		if (isEditor) {
 			editors.add(u);
 		}

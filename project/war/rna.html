@@ -13,6 +13,12 @@
     <meta http-equiv="Pragma" content="no-cache"> </head>
   
 
+  <style type="text/css">
+    .judgeOnly {
+    display: none;
+    }
+  </style>
+
   <body>
 
     <!-- RNA App Interface -->
@@ -35,16 +41,21 @@
 	<span class="content large"> Please Wait.. </span> </div>
 
       <div id="leftColumn">
-	<div id="menu"> 
+	<div class="menu">
 	  <div class="menuBorder"> Editions </div>
-	  <div> 
-	    <a id="next"> Next </a> </div>
+	  <div> <a id="next"> Next </a> </div>
 	  <div> <a id="current"> Current </a> </div>
 	  <div> <a id="recent"> Recent </a> </div> </div>
-
-	<div id="secondMenu" class="judgeOnly"> 
+	<div class="menu judgeOnly">
 	  <div class="menuBorder"> Works </div>
-	  <div> <a class="nominate"> Nominate </a> </div> </div> </div>
+	  <div> <a class="nominate"> Nominate </a> </div> </div> 
+	<div class="menu">
+	  <div class="menuBorder"> Discussion </div>
+	  <div> <a id="forum"> Forum </a> </div> </div>
+	<div class="menu">
+	  <div class="menuBorder"> Thanks </div>
+	  <div> <a id="forum"> Donors </a> </div> </div>
+</div>
 
       <div id="main"> 
 	 <div id="loadMessage" 

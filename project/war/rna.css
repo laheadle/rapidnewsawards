@@ -137,8 +137,8 @@ a.help {
     margin: 0.67em 0 0 0;
 }
 
-#menu {
-    margin: 0 0 0 0; 
+.menu {
+    margin: 0 0 10px 0; 
     padding-left: 0;
     font: 1.1em bold;
 }
@@ -261,10 +261,6 @@ a.help {
 .indented-story {
     padding: 0 0 0 10px;
     font-size: 1.1em;
-}
-
-.judgeOnly {
-    display: none;
 }
 
 .nominate {
