@@ -86,6 +86,7 @@ window.initRNA = function () {
 	    var payload = response.payload;
 
 	    app.loginView.model.set(response.requester || {cid: 'guest'});
+	    $('#loadMessage').html('');
 	    if (response.status === 'BAD_REQUEST') { 
 		if (err) { err(response); } else { flashError(response.message); }
 		return;

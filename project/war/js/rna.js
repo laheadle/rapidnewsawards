@@ -1343,6 +1343,5 @@ $(function(){
     });
 
 
-    $('#loadMessage').html('');
     log({info: 'loaded'});
 });
