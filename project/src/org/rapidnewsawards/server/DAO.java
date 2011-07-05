@@ -1034,7 +1034,7 @@ public class DAO extends DAOBase {
 				return null;
 			email = email.toLowerCase();
 			domain = domain.toLowerCase();
-			return ofy().query(User.class).filter("email", email)
+			return ofy().query(User.class).ancestor(Periodical.rootKey()).filter("email", email)
 					.filter("domain", domain).get();
 		}
 
@@ -1267,19 +1267,22 @@ public class DAO extends DAOBase {
 				throw new RNAException("A name or nickname is required.");			
 			}
 			if (Strings.isNullOrEmpty(webPage)) {
-				throw new RNAException("A web page is required so editors can get to know you.");			
+				throw new RNAException("A web page is required (if not yours, then one you like).");			
 			}
 			boolean c = Boolean.parseBoolean(consent);
-			if (!c) {
+			if (!c && !user.isEditor) {
 				throw new RNAException("You did not check the consent form.");
 			}
 			
+
+			Objectify txn = fact().beginTransaction();
 			user.nickname = nickname;
 			user.isInitialized = true;
 			user.webPage = normalizeWebPage(webPage);
 			
-			ofy().put(user);
-
+			txn.put(user);
+			txn.getTxn().commit();
+			
 			// GO ahead and accept their changes, but this should not happen.
 			if (hasAlreadyJoined(user)) {
 				log.warning("user changed their information: " + user);
@@ -1289,12 +1292,12 @@ public class DAO extends DAOBase {
 			log.info("welcome: " + user);
 
 			Edition next = editions.getNextEdition();
-
 			SocialEvent join = new SocialEvent(User.getRNAEditor(),
 					user.getKey(), next.getKey(), new Date(), true);
 			ofy().put(join);
-				
+			
 			if (!user.isEditor) {
+					
 				for(int i = editions.getCurrentEdition().number;
 				i < editions.getNumEditions();
 				i++) {

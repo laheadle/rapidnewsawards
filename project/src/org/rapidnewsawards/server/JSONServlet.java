@@ -238,14 +238,14 @@ public class JSONServlet extends HttpServlet {
 					throw new RNAException("Bad User Id");
 				}
 				return d.users.getRelatedUserInfo(Name.AGGREGATOR_NAME, d.user,
-						new Key<User>(User.class, userId));
+						User.createKey(userId));
 			}
 		});
 		commandsMap.put("getFollowers", new AbstractCommand() {
 			@Override
 			public Object getResult() {
 				long userId = new Long(request.getParameter("id"));
-				return d.users.getFollowers(new Key<User>(User.class, userId));
+				return d.users.getFollowers(User.createKey(userId));
 			}
 		});
 
@@ -253,7 +253,7 @@ public class JSONServlet extends HttpServlet {
 			@Override
 			public Object getResult() throws RNAException {
 				String _to = request.getParameter("to");
-				Key<User> to = User.getKey(new Long(_to));
+				Key<User> to = User.createKey(new Long(_to));
 				// TODO 2.0 pass in from client
 				Boolean on = new Boolean(request.getParameter("on"));
 				return d.social.doSocial(to, on).s;

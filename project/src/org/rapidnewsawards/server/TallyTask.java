@@ -146,7 +146,7 @@ public class TallyTask  extends HttpServlet {
 				throw new IllegalArgumentException("on");
 			}
 			boolean on = Boolean.valueOf(_on);
-			d.users.writeVote(new Key<User>(User.class, user), 
+			d.users.writeVote(createUserKey(user), 
 					new Key<Edition>(Edition.class, edition), 
 					Link.createKey(link), 
 					on);
@@ -167,7 +167,7 @@ public class TallyTask  extends HttpServlet {
 			Long voteId = Long.valueOf(votestr);
 			Long userId = Long.valueOf(userstr);
 			boolean on = Boolean.valueOf(onstr);
-			Key<User> ukey = new Key<User>(User.class, userId);
+			Key<User> ukey = createUserKey(userId);
 			Key<Vote> vkey = new Key<Vote>(ukey, Vote.class, voteId);
 
 			d.tallyVote(vkey, on);
@@ -193,7 +193,7 @@ public class TallyTask  extends HttpServlet {
 			int authority = Integer.valueOf(authoritystr);
 			long userId = Long.valueOf(userstr);
 			boolean on = Boolean.valueOf(onstr);
-			Key<User> ukey = new Key<User>(User.class, userId);
+			Key<User> ukey = createUserKey(userId);
 			Key<Vote> vkey = new Key<Vote>(ukey, Vote.class, voteId);
 
 			d.addJudgeScore(vkey, authority, on);
@@ -214,7 +214,7 @@ public class TallyTask  extends HttpServlet {
 			long voteId = Long.valueOf(votestr);
 			boolean on = Boolean.valueOf(onstr);
 			long userId = Long.valueOf(userstr);
-			Key<User> ukey = new Key<User>(User.class, userId);
+			Key<User> ukey = createUserKey(userId);
 			Key<Vote> vkey = new Key<Vote>(ukey, Vote.class, voteId);
 
 			d.findEditorsToScore(vkey, on);
@@ -239,7 +239,7 @@ public class TallyTask  extends HttpServlet {
 			Set<Key<User>> editors = decodeUsers(editorsstr);
 			Long voteId = Long.valueOf(votestr);
 			Long userId = Long.valueOf(userstr);
-			Key<User> ukey = new Key<User>(User.class, userId);
+			Key<User> ukey = createUserKey(userId);
 			Key<Vote> vkey = new Key<Vote>(ukey, Vote.class, voteId);
 
 			d.deleteVote(vkey, editors, Edition.createKey(Integer.parseInt(editionstr)));
@@ -271,6 +271,10 @@ public class TallyTask  extends HttpServlet {
 		}
 	}
 
+	private Key<User> createUserKey(Long userId) {
+			return User.createKey(userId);
+	}
+
 	private static String encodeUsers(Set<Key<User>> editors) {
 		String result = null;
 		int count = 0;
@@ -293,7 +297,7 @@ public class TallyTask  extends HttpServlet {
 		StringTokenizer tok = new StringTokenizer(editorsstr, DELIMIT);
 		while (tok.hasMoreTokens()) {
 			long id = Long.parseLong(tok.nextToken());
-			result.add(new Key<User>(User.class, id));
+			result.add(createUserKey(id));
 		}
 		return result;
 	}

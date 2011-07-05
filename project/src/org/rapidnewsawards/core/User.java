@@ -5,15 +5,17 @@ import javax.persistence.Id;
 
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cached;
+import com.googlecode.objectify.annotation.Parent;
 
 
 
-@Cached
 public class User {
 
 	@Id
 	public Long id;
 
+	@Parent public Key<Root> root;
+	
 	public Date lastLogin;
 
 	public String email;
@@ -32,7 +34,7 @@ public class User {
 	public User(String email, String domain, boolean isEditor) {
 		if (email == null || domain == null)
 			return;
-		
+		this.root = Periodical.rootKey();
 		this.email = email.toLowerCase();
 		this.domain = domain.toLowerCase();
 		this.nickname = "";
@@ -45,7 +47,7 @@ public class User {
 	 * The special editor who follows new Users without empowering them.  These follows are called Joins because the user joins the community.
 	 */
 	public static Key<User> getRNAEditor() {
-		return new Key<User>(User.class, 1L);
+		return new Key<User>(Periodical.rootKey(), User.class, 1L);
 	}
 
 	@Override
@@ -77,11 +79,11 @@ public class User {
 		return getDisplayName() + "(" + email + ")";
 	}
 	
-	public static Key<User> getKey(Long id) {
-		return new Key<User>(User.class, id);		
-	}
-	
 	public Key<User> getKey() {
-		return new Key<User>(User.class, id);
+		return new Key<User>(Periodical.rootKey(), User.class, id);
+	}
+
+	public static Key<User> createKey(long id) {
+		return new Key<User>(Periodical.rootKey(), User.class, id);
 	}
 }

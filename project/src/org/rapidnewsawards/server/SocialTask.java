@@ -120,8 +120,8 @@ public class SocialTask extends HttpServlet {
 			boolean cancelPending = Boolean.valueOf(_cancelPending);
 			d.social.writeSocialEvent( 
 					// TODO use factory methods for these
-					new Key<User>(User.class, from), 
-					new Key<User>(User.class, to), 
+					makeUserKey(from), 
+					makeUserKey(to), 
 					new Key<Edition>(Edition.class, e), 
 					on, 
 					cancelPending);
@@ -147,9 +147,8 @@ public class SocialTask extends HttpServlet {
 			}
 			boolean on = Boolean.valueOf(_on);
 			d.social.writeFutureFollowedBys( 
-					// TODO use factory methods for these
-					new Key<User>(User.class, judge), 
-					new Key<User>(User.class, editor), 
+					makeUserKey(judge), 
+					makeUserKey(editor), 
 					new Key<Edition>(Edition.class, e), 
 					on);
 		}
@@ -168,10 +167,14 @@ public class SocialTask extends HttpServlet {
 				throw new IllegalArgumentException("amount");
 			}
 			int amount = Integer.valueOf(_amount);
-			d.social.changePendingAuthority(new Key<User>(User.class, to), 
+			d.social.changePendingAuthority(makeUserKey(to), 
 					new Key<Edition>(Edition.class, e), 
 					amount);
 		}
+	}
+
+	private Key<User> makeUserKey(long from) {
+		return User.createKey(from);
 	}
 
 }

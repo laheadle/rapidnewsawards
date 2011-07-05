@@ -49,15 +49,19 @@
       <div class="fatBottom"> <span class="welcomeTxt"> Welcome to the site. </span>  Please tell us about yourself. </div> <br>
       <form>
 	<table> 
-	  <tr> <td> Name or Nickname </td> 
+	  <tr> <td> Name </td> 
 	    <td> <input type="text" name="nickname"/> </td></tr>
 	  <tr> <td> Web Page </td> 
 	    <td> <input type="text" name="webPage"/> </td> </tr> </table> <br>
+	<% if (!app.loginView.isEditor()) { %>
+
 	<iframe src="consent_judge.html" height="250" width="600"> 
 	  <p>Error: Your web browser is out of date. Please contact laheadle@gmail.com </p>
 	</iframe>
+
 	<div style="margin-top: 10px; font-weight: bold"> I agree to participate 
 	<input name="consent" type="checkbox"> </input>  </div> <br>
+	<% } %>
 
 	<input type="submit" value="submit information" />
       </form> </script>
