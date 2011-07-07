@@ -504,12 +504,21 @@ public class DAO extends DAOBase {
 			Map<Key<User>, User> vmap = ofy().get(voters);
 
 			for (int i = 0; i < voters.size(); i++) {
-				result.add(new InfluenceMessage(vmap.get(voters.get(i)),
-						funding(authorities.get(voters.get(i)), space.totalScore, space.balance)));
+				InfluenceMessage message = new InfluenceMessage(vmap.get(voters.get(i)),
+						funding(authorities.get(voters.get(i)), space.totalScore, space.balance));
+				addSupportingEditors(message);
+				result.add(message);
 			}
 			Collections.sort(result);
 			return result;
 		}
+
+		private void addSupportingEditors(InfluenceMessage message) {
+			if (!message.user.isEditor) {
+				message.supportingEditors = users.getFollowers(message.user.getKey());
+			}
+		}
+
 
 		public ScoreSpace getScoreSpace(Objectify ofy, Key<Edition> key) {
 			Key<ScoreRoot> sroot = new Key<ScoreRoot>(ScoreRoot.class, key.getName());

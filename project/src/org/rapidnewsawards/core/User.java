@@ -12,9 +12,6 @@ import com.googlecode.objectify.annotation.Unindexed;
 public class User {
 
 	@Id public Long id;
-
-	@Parent public Key<Root> root;
-	
 	public Date lastLogin;
 
 	public String email;
@@ -38,7 +35,6 @@ public class User {
 	public User(String email, String domain, boolean isEditor) {
 		if (email == null || domain == null)
 			return;
-		this.root = Periodical.rootKey();
 		this.email = email.toLowerCase();
 		this.domain = domain.toLowerCase();
 		this.nickname = "";
