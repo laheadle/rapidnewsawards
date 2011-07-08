@@ -158,7 +158,7 @@ $(function(){
 	view: StoryView,
 
 	comparator: function(story) {
-	    return story.get('score');
+	    return -story.get('score');
 	}
 
     });
@@ -571,7 +571,8 @@ $(function(){
 
 	render: function() {
 	    $(this.el).prepend(rMake('#editor-fundings-header-template', 
-				     {editor: this.model.get('editor')}));
+				     {editor: this.model.get('editor'),
+				      edition: this.model.get('edition')}));
 	}
     });
 

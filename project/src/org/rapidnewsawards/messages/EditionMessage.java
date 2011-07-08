@@ -17,6 +17,7 @@ public class EditionMessage {
 	public final boolean finished;
 	public final String totalSpendStr;
 	public final String revenueStr;
+	public String displayStr;
 	
 
 	public EditionMessage(Edition e, ScoreSpace s) {
@@ -30,5 +31,12 @@ public class EditionMessage {
 		this.revenueStr = Periodical.moneyPrint(this.revenue);
 		this.totalSpendStr = Periodical.moneyPrint(this.totalSpend);
 		this.finished = s.finished;
+		
+		if (this.number == 0) {
+			this.displayStr = "Signup Round";
+		}
+		else {
+			this.displayStr = String.format("Edition Number %d", this.number);
+		}
 	}
 }

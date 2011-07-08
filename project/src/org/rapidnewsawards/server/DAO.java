@@ -368,7 +368,7 @@ public class DAO extends DAOBase {
 			si.editionId = editionNum;
 			si.submitter = ofy().get(link.submitter);
 			si.setFunding(funding(sl.score, space.totalScore, space.balance));
-			si.isCurrent = editions.getEdition(CURRENT).getKey().equals(editionKey);
+			si.isCurrent = isCurrent(editionKey);
 			
 			if (user != null) {
 				si.userIsFunding = users.hasVoted(user, editionKey, link);
@@ -379,6 +379,15 @@ public class DAO extends DAOBase {
 			fsi.funds = getVoters(txn, linkKey, editionKey);
 			txn.getTxn().commit();
 			return fsi;
+		}
+
+
+		private boolean isCurrent(Key<Edition> editionKey) {
+			try {
+				return editions.getEdition(CURRENT).getKey().equals(editionKey);
+			} catch (RNAException e) {
+				return false;
+			}
 		}
 
 		public TopJudges getTopJudges(int edition) throws RNAException {

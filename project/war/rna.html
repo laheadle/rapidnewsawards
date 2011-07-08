@@ -164,7 +164,8 @@
 
     <script type="text/template" id="editor-fundings-header-template">
       <div class="mainHeader spaceOnTop">
-  	Funding overseen by <%= rMake('#person-link-template', editor) %> 
+  	Funding overseen by 
+	<%= rMake('#person-link-template', editor) %> during <%= edition.displayStr %> 
     <%= rMake('#help-link', {topic: 'overseen'}) %> </div> </script>
 
     <script type="text/template" id="nominate-story-template">
@@ -266,9 +267,9 @@
 		 <%= userIsFunding? 'checked="yes"' : '' %>> </input>
 
   	<% } else if (userIsFunding && !app.loginView.isEditor()) { %>
-          <span> You supported this work. </span>	
+          <span class="supported"> You supported this work. </span>	
 	<% } else if (!app.loginView.isEditor()) { %>
-          <span> You did not support this story. </span>	
+          <span class="supported"> You did not support this story. </span>	
 	<% } %>
 
 	<div class="mainHeader spaceOnTop"> Funding </div>

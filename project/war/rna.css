@@ -87,10 +87,17 @@ h1.title {
     top: 35px;
 }
 
-#edition-header, .volumeHeader, .mainHeader {
+#edition-header, .volumeHeader {
     background-color: #F0F0F0;
     width: 850px;
     font-size: 1.4em;
+}
+
+.mainHeader {
+    background-color: #F0F0F0;
+    width: 850px;
+    font-size: 1.4em;
+    margin-bottom: 10px;
 }
 
 .mainDescription {
@@ -135,6 +142,11 @@ a.help {
     left: 150px;
     height: 1.2em;
     margin: 0.67em 0 0 0;
+}
+
+.supported {
+    display: block;
+    padding-top: 5px;
 }
 
 .menu {
