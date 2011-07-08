@@ -125,7 +125,9 @@
       <%= fundedStr %> <a> <%= nickname %> </a> </script>
     
     <script type="text/template" id="top-editor-template">
-      <%= fundedStr %> <a> <%= nickname %> </a> </script>
+      <%= fundedStr %> via 
+	  <%= rMake('#person-link-template', user) %>
+	  <div> <a href="#editorFundings/<%= edition.number %>/<%= id %>"> See fundings </a> </div> </script>
     
     <script type="text/template" id="none-followed-template">
 	<div class="listItem empty"> 
@@ -158,6 +160,12 @@
 
     <script type="text/template" id="header-template">
       <div class="mainHeader spaceOnTop"> <%= text %> </div> </script>
+
+
+    <script type="text/template" id="editor-fundings-header-template">
+      <div class="mainHeader spaceOnTop">
+  	Funding overseen by <%= rMake('#person-link-template', editor) %> 
+    <%= rMake('#help-link', {topic: 'overseen'}) %> </div> </script>
 
     <script type="text/template" id="nominate-story-template">
         <div class="mainHeader spaceOnTop"> Nominate A Work of Journalism for Recognition and Support </div>
@@ -221,10 +229,27 @@
       </div>
     </script>
 
+    <script type="text/template" id="person-set-template">
+      <% if (people.length == 0) { %>
+      <%= 'nobody' %>
+      <% } else {
+	 var i = 1;
+  	 _.each(people, function(p) { %> 
+      <%= rMake('#person-link-template', p) %> 
+      <%= i++ < people.length ? 'and' : '' %>
+          <% });
+          } %>
+    </script>
+
     <script type="text/template" id="story-funding-template">
 	<div class="listItem"> 
 	  <div class="regularSize"> <%= fundedStr %> <span class="fund-from"> from </span>
-	  <%= rMake('#person-link-template', user) %> </div> </div> </script>
+	  <%= rMake('#person-link-template', user) %> 
+	  <%= rMake('#supporting-editors-template', {eds: supportingEditors}) %> </div> </div> </script>
+
+    <script type="text/template" id="supporting-editors-template">
+      <div class="supportingEditors"> 
+	Overseen by: <%= rMake('#person-set-template', {people: eds}) %> </div> </script>
 
     <script type="text/template" id="full-story-template">
       <div>
@@ -246,7 +271,7 @@
           <span> You did not support this story. </span>	
 	<% } %>
 
-	<div class="mainHeader spaceOnTop"> Funding Events  </div>
+	<div class="mainHeader spaceOnTop"> Funding </div>
 
     </div> </script>
 

@@ -36,7 +36,7 @@ public class DoSomethingServlet extends HttpServlet {
 	}
 
 	private void makeRnaEditor() {
-		User rna = new User("__rnaEditor@gmail.com", "gmail.com", true);
+		User rna = new User(User.RNA_EDITOR_EMAIL, "gmail.com", true);
 		//rna.id = 1L;
 		log.info(String.format("rna 1: %s", rna));
 		dao.ofy().put(rna);

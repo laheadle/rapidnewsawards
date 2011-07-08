@@ -129,6 +129,14 @@ public class MakeDataServlet extends HttpServlet {
 
 		makeRNAEditor();
 		
+		for(int i = 0;i < 500;i++) {
+			try {
+				d.users.getRNAUser();
+				break;
+			}
+			catch (IllegalStateException e) {}
+		}
+		
 		makeEditor("jthomas100@gmail.com");
 		makeEditor("joshuanyoung@gmail.com");
 		makeEditor("ohthatmeg@gmail.com");

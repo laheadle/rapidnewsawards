@@ -16,6 +16,7 @@ import java.util.logging.Logger;
 import org.rapidnewsawards.core.Donation;
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.EditorInfluence;
+import org.rapidnewsawards.core.EditorVote;
 import org.rapidnewsawards.core.Follow;
 import org.rapidnewsawards.core.FollowedBy;
 import org.rapidnewsawards.core.JudgeInfluence;
@@ -31,6 +32,7 @@ import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.core.Vote;
 import org.rapidnewsawards.messages.AllEditions;
 import org.rapidnewsawards.messages.EditionMessage;
+import org.rapidnewsawards.messages.EditorFundings;
 import org.rapidnewsawards.messages.FullStoryInfo;
 import org.rapidnewsawards.messages.InfluenceMessage;
 import org.rapidnewsawards.messages.Name;
@@ -257,18 +259,32 @@ public class DAO extends DAOBase {
 		 * of entities
 		 */
 		public LinkedList<User_Vote_Link> getLatestUser_Vote_Links(Key<Edition> e) {
+			LinkedList<Vote> votes = new LinkedList<Vote>();
+			for (Vote v : ofy().query(Vote.class).filter("edition", e).order("-time")) {
+				votes.add(v);
+			}
+			return getUser_Vote_Links(votes);
+		}
+
+		public LinkedList<User_Vote_Link> getLatestUser_Vote_Links(Key<Edition> edition, Key<User> editor) {
+			Set<Key<Vote>> votekeys = new HashSet<Key<Vote>>();
+			for(EditorVote ev : ofy().query(EditorVote.class).filter("editor", editor)) {
+				votekeys.add(ev.vote);
+			}
+			List<Vote> votes = new LinkedList<Vote>(ofy().get(votekeys).values());
+			Collections.sort(votes);
+			return getUser_Vote_Links(votes);
+		}
+
+		/*
+		 * Runs three queries: first get keys, then use the keys to get 2 sets
+		 * of entities
+		 */
+		public LinkedList<User_Vote_Link> getUser_Vote_Links(List<Vote> votes) {
 			LinkedList<User_Vote_Link> result = new LinkedList<User_Vote_Link>();
 
 			ArrayList<Key<User>> users = new ArrayList<Key<User>>();
 			ArrayList<Key<Link>> links = new ArrayList<Key<Link>>();
-
-			Query<Vote> q = ofy().query(Vote.class)
-					.filter("edition", e).order("-time");
-
-			LinkedList<Vote> votes = new LinkedList<Vote>();
-			for (Vote v : q) {
-				votes.add(v);
-			}
 
 			for (Vote v : votes) {
 				users.add(v.voter);
@@ -487,6 +503,8 @@ public class DAO extends DAOBase {
 			LinkedList<InfluenceMessage> result = new LinkedList<InfluenceMessage>();
 
 			Map<Key<User>, Integer> authorities = new HashMap<Key<User>, Integer>();
+			Map<Key<User>, Set<Key<User>>> followers = new HashMap<Key<User>, Set<Key<User>>>();
+			
 			ArrayList<Key<User>> voters = new ArrayList<Key<User>>();
 
 			for (Vote v : ofy().query(Vote.class).filter("link", l)
@@ -503,20 +521,44 @@ public class DAO extends DAOBase {
 			ScoreSpace space = getScoreSpace(txn, e);
 			Map<Key<User>, User> vmap = ofy().get(voters);
 
+			// fetch all supporting editors now -- avoid linear query for followers per voter
+			for(EditorVote ev : ofy().query(EditorVote.class).filter("link", l).filter("edition", e)) {
+				Set<Key<User>> eds = followers.get(ev.judge);
+				if (eds == null) {
+					eds = new HashSet<Key<User>>();
+				}
+				eds.add(ev.editor);
+				followers.put(ev.judge, eds);
+			}
+			
+			Set<Key<User>> allEds = new HashSet<Key<User>>();
+			for(Set<Key<User>> sku : followers.values()) {
+				for (Key<User> ku : sku) {
+					if (!allEds.contains(ku)) {
+						allEds.add(ku);
+					}
+				}
+			}
+			Map<Key<User>, User> allEdObjs = ofy().get(allEds);
+			
 			for (int i = 0; i < voters.size(); i++) {
 				InfluenceMessage message = new InfluenceMessage(vmap.get(voters.get(i)),
 						funding(authorities.get(voters.get(i)), space.totalScore, space.balance));
-				addSupportingEditors(message);
+				addSupportingEditors(message, followers.get(voters.get(i)), allEdObjs);
 				result.add(message);
 			}
 			Collections.sort(result);
 			return result;
 		}
 
-		private void addSupportingEditors(InfluenceMessage message) {
-			if (!message.user.isEditor) {
-				message.supportingEditors = users.getFollowers(message.user.getKey());
+		private void addSupportingEditors(InfluenceMessage message, Set<Key<User>> followers, Map<Key<User>, User> allEdObjs) {
+			LinkedList<User> support = new LinkedList<User>();
+			if (!message.user.isEditor && followers != null) {
+				for (Key<User> ku : followers) {
+					support.add(allEdObjs.get(ku));
+				}
 			}
+			message.supportingEditors = support;
 		}
 
 
@@ -1045,7 +1087,7 @@ public class DAO extends DAOBase {
 				return null;
 			email = email.toLowerCase();
 			domain = domain.toLowerCase();
-			return ofy().query(User.class).ancestor(Periodical.rootKey()).filter("email", email)
+			return ofy().query(User.class).filter("email", email)
 					.filter("domain", domain).get();
 		}
 
@@ -1112,7 +1154,7 @@ public class DAO extends DAOBase {
 		public UserInfo getUserInfo(Name periodical, Key<User> user) throws RNAException {
 			UserInfo ui = new UserInfo();
 			try {
-				ui.user = ofy().get(user);
+				ui.user = getUser(user);
 				if (ui.user.isEditor) {
 					ui.follows = getFollows(user);
 					ui.socials = editions.getLatestSocialInfoforEditor(user);
@@ -1126,6 +1168,15 @@ public class DAO extends DAOBase {
 				return ui;
 			} catch (NotFoundException e1) {
 				throw new RNAException("No such user exists");
+			}
+		}
+
+		private User getUser(Key<User> user) throws RNAException {
+			try {
+				return ofy().get(user);
+			}
+			catch (NotFoundException e) {
+				throw new RNAException("User not found");
 			}
 		}
 
@@ -1326,12 +1377,24 @@ public class DAO extends DAOBase {
 					!= null;
 		}
 
+		public EditorFundings getEditorFundings(int editionNum, long editor) throws RNAException {
+			EditorFundings ef = new EditorFundings();
+			Edition e = editions.getEdition(editionNum);
+			ef.edition = editions.makeEditionMessage(ofy(), e);
+			ef.numEditions = editions.getNumEditions();
+			ef.isCurrent = editions.isPrevious(e);
+			ef.isNext = editions.isCurrent(e);
+			ef.editor = getUser(User.createKey(editor));
+			ef.list = editions.getLatestUser_Vote_Links(e.getKey(), User.createKey(editor));
+			return ef;
+		}
 	}
 
 	static {
 		ObjectifyService.factory().register(Donation.class);
 		ObjectifyService.factory().register(Edition.class);
 		ObjectifyService.factory().register(EditorInfluence.class);
+		ObjectifyService.factory().register(EditorVote.class);
 		ObjectifyService.factory().register(Follow.class);
 		ObjectifyService.factory().register(FollowedBy.class);
 		ObjectifyService.factory().register(JudgeInfluence.class);
@@ -1416,6 +1479,9 @@ public class DAO extends DAOBase {
 				otx.delete(sl);
 				space.numFundedLinks--;
 			}
+			else {
+				otx.put(sl);
+			}
 		}
 		otx.put(space);
 		TallyTask.addJudgeScore(otx.getTxn(), v, v.authority, on);			
@@ -1444,18 +1510,37 @@ public class DAO extends DAOBase {
 		}
 		
 		if (!on) {
-			TallyTask.deleteVote(otx.getTxn(), v, editors, v.edition);			
+			TallyTask.deleteEditorVotes(otx.getTxn(), v, editors, v.edition);
 		}
 		else {
-			TallyTask.addEditorScore(otx.getTxn(), editors, v.edition, on);
+			TallyTask.addEditorVotes(otx.getTxn(), v, editors, v.edition, on);
 		}
+		otx.getTxn().commit();
+	}
+
+	public void deleteEditorVotes(Key<Vote> v, Set<Key<User>> editors, Key<Edition> edition) {
+		Objectify otx = fact().beginTransaction();
+		otx.delete(otx.query(EditorVote.class).ancestor(v));
+		TallyTask.deleteVote(otx.getTxn(), ofy().get(v), editors, edition);
+		otx.getTxn().commit();
+	}
+
+	public void addEditorVotes(Key<Vote> v, Set<Key<User>> editors, Key<Edition> edition, Key<User> judge, Key<Link> link) {
+		Objectify otx = fact().beginTransaction();
+		Set<EditorVote> evset = new HashSet<EditorVote>();
+		for (Key<User> editor : editors) {
+		EditorVote ev = new EditorVote(v, editor, judge, link, edition);
+			evset.add(ev);
+		}
+		otx.put(evset);
+		TallyTask.addEditorScore(otx.getTxn(), editors, edition, true);
 		otx.getTxn().commit();
 	}
 
 	public void deleteVote(Key<Vote> v, Set<Key<User>> editors, Key<Edition> edition) {
 		Objectify otx = fact().beginTransaction();
 		otx.delete(v);
-		TallyTask.addEditorScore(otx.getTxn(), editors, edition, false);
+		TallyTask.addEditorScore(otx.getTxn(), editors, edition, false);		
 		otx.getTxn().commit();
 	}
 

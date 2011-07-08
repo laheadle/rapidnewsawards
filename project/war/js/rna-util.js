@@ -102,7 +102,6 @@ window.initRNA = function () {
 		flashError("Server Error.  We are looking into it, please try again in a bit.");
 		return;
 	    }
-	    try {
 		if (!self.state.interrupted) {
 		    self.state = function (state, payload) { 
 			var s = success(payload, state);
@@ -115,11 +114,6 @@ window.initRNA = function () {
 		else {
 		    self.state = self.state.supercede(success, payload);
 		}
-
-	    }
-	    catch (e) {
-		reportError(attrs, e);
-	    }
 	};
 	method.apply($, ['JSONrpc', attrs, reactTo]);
     };

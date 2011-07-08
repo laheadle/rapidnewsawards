@@ -121,6 +121,13 @@ public class JSONServlet extends HttpServlet {
 			}
 		});
 
+		commandsMap.put("ping", new AbstractCommand() {
+			@Override
+			public Object getResult() throws RNAException {
+				return "pong";
+			}
+		});
+		
 		// TODO 2.0 Rename to getStory
 		commandsMap.put("story", new AbstractCommand() {
 			@Override
@@ -128,6 +135,15 @@ public class JSONServlet extends HttpServlet {
 				int edition = get("edition", Integer.class);
 				long link = get("linkId", Long.class);
 				return d.editions.getStory(edition, link);
+			}
+		});
+
+		commandsMap.put("editorFundings", new AbstractCommand() {
+			@Override
+			public Object getResult() throws RNAException {
+				int edition = get("edition", Integer.class);
+				long editor = get("editor", Long.class);
+				return d.users.getEditorFundings(edition, editor);
 			}
 		});
 

@@ -71,6 +71,30 @@ public class TallyTask  extends HttpServlet {
 				.param("user", Long.toString(v.voter.getId())));
 	}
 
+	public static void deleteEditorVotes(Transaction txn, Vote v,
+			Set<Key<User>> editors, Key<Edition> edition) {
+		Queue queue = QueueFactory.getDefaultQueue();
+		queue.add(txn, withUrl("/tasks/tally").method(TaskOptions.Method.GET)
+				.param("fun", "deleteEditorVotes")
+				.param("editors", encodeUsers(editors))
+				.param("edition", edition.getName())
+				.param("vote", v.id.toString())
+				.param("user", Long.toString(v.voter.getId())));
+	}
+
+	public static void addEditorVotes(Transaction txn, Vote v,
+			Set<Key<User>> editors, Key<Edition> edition, boolean on) {
+		Queue queue = QueueFactory.getDefaultQueue();
+		queue.add(txn, withUrl("/tasks/tally").method(TaskOptions.Method.GET)
+				.param("fun", "addEditorVotes")
+				.param("editors", encodeUsers(editors))
+				.param("edition", edition.getName())
+				.param("vote", v.id.toString())
+				.param("user", Long.toString(v.voter.getId()))
+				.param("link", Long.toString(v.link.getId())));
+
+	}
+
 	public static void deleteVote(Transaction txn, Vote v, Set<Key<User>> editors, Key<Edition> edition) {
 		Queue queue = QueueFactory.getDefaultQueue();
 		queue.add(txn, withUrl("/tasks/tally").method(TaskOptions.Method.GET)
@@ -113,7 +137,7 @@ public class TallyTask  extends HttpServlet {
 			command.run(request, response);
 			if (command.getRetries() > 0) {
 				log.warning(String.format(
-						"command %s needed %d retries.", request, command.getRetries()));
+						"command %s needed %d retries.", request.toString(), command.getRetries()));
 			}			
 		} catch (RNAException e) {
 			throw new IllegalStateException(e);
@@ -244,6 +268,37 @@ public class TallyTask  extends HttpServlet {
 			Key<Vote> vkey = new Key<Vote>(ukey, Vote.class, voteId);
 
 			d.deleteVote(vkey, editors, Edition.createKey(Integer.parseInt(editionstr)));
+		}
+		else if (fun.equals("addEditorVotes")) {
+			String editorsstr = request.getParameter("editors");
+			String editionstr = request.getParameter("edition");
+			String votestr = request.getParameter("vote");
+			String userstr = request.getParameter("user");
+			String linkstr = request.getParameter("link");
+			if (editorsstr == null) {
+				throw new IllegalArgumentException("editors");
+			}
+			if (editionstr == null) {
+				throw new IllegalArgumentException("edition");
+			}
+			if (votestr == null) {
+				throw new IllegalArgumentException("vote");
+			}
+			if (userstr == null) {
+				throw new IllegalArgumentException("user");
+			}
+			if (linkstr == null) {
+				throw new IllegalArgumentException("link");
+			}
+			Set<Key<User>> editors = decodeUsers(editorsstr);
+			Long voteId = Long.valueOf(votestr);
+			Long userId = Long.valueOf(userstr);
+			Long linkId = Long.valueOf(linkstr);
+			Key<User> ukey = createUserKey(userId);
+			Key<Vote> vkey = new Key<Vote>(ukey, Vote.class, voteId);
+			Key<Link> lkey = Link.createKey(linkId);
+			
+			d.addEditorVotes(vkey, editors, Edition.createKey(Integer.parseInt(editionstr)), ukey, lkey);
 		}
 		else if (fun.equals("addEditorScore")) {
 			String editorsstr = request.getParameter("editors");

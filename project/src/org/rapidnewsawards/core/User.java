@@ -4,10 +4,7 @@ import java.util.Date;
 import javax.persistence.Id;
 
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.annotation.Parent;
 import com.googlecode.objectify.annotation.Unindexed;
-
-
 
 public class User {
 
@@ -28,7 +25,7 @@ public class User {
 
 	public static final String GMAIL = "gmail.com";
 
-	public static final String RNA_EDITOR_EMAIL = "__rnaEditor@gmail.com";
+	public static final String RNA_EDITOR_EMAIL = "__rnaeditor@gmail.com";
 		
 	public User() {}
 	
@@ -37,7 +34,7 @@ public class User {
 			return;
 		this.email = email.toLowerCase();
 		this.domain = domain.toLowerCase();
-		this.nickname = "";
+		this.nickname = getDisplayName();
 		this.isInitialized = false;
 		this.isEditor = isEditor;
 		this.lastLogin = new Date();
@@ -73,10 +70,10 @@ public class User {
 	}
 	
 	public Key<User> getKey() {
-		return new Key<User>(Periodical.rootKey(), User.class, id);
+		return new Key<User>(User.class, id);
 	}
 
 	public static Key<User> createKey(long id) {
-		return new Key<User>(Periodical.rootKey(), User.class, id);
+		return new Key<User>(User.class, id);
 	}
 }

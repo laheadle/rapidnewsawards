@@ -286,6 +286,9 @@ $(function(){
 
     var GenList = function(attrs) {
 	this.list = attrs.list;
+	if (this.list.model == undefined) {
+	    this.list.model = Backbone.Model;
+	}
 	this.parent = attrs.parent;
 	this.newModel = attrs.newModel == undefined?
 	    function (item) { return item; } : attrs.newModel;
@@ -337,8 +340,10 @@ $(function(){
     //* Social Network  - Top or Recent
 
     window.Social = Backbone.Model.extend({
+
 	isWelcome: function() {
-	    return this.get('editor').id == 1;
+	    var RNA_EDITOR_EMAIL = "__rnaeditor@gmail.com";
+	    return this.get('editor').email == RNA_EDITOR_EMAIL;
 	}
     });
 
@@ -430,10 +435,8 @@ $(function(){
 
     });
 
-    window.TopEditor = Backbone.Model.extend({
 
-    });
-
+    //* window.TopEditor = Backbone.Model.extend({
     window.TopEditorView = Backbone.View.extend({
 
 	tagName:  "div",
@@ -461,7 +464,6 @@ $(function(){
 
 
     window.TopEditorsList = Backbone.Collection.extend({
-	model: TopEditor,
 	view: TopEditorView,
 
 	comparator: function(model) {
@@ -548,6 +550,30 @@ $(function(){
 
     });
 
+    //* EditorFundings
+    window.EditorFundingsView = Backbone.View.extend({
+	tagName: "div",
+	id: "editorFundings",
+
+	initialize: function() {
+	    var self = this;
+	    this.model.bind('change', function () { self.render() });
+	    this.model.view = this;
+
+	    $(this.el).append(this.make('div', {'class': 'list large'}));
+
+	    this.list = new GenList({
+		parent: this,
+		list: new FundingsList,
+	    });
+	    this.list.refresh(this.model.get('list'));
+	},
+
+	render: function() {
+	    $(this.el).prepend(rMake('#editor-fundings-header-template', 
+				     {editor: this.model.get('editor')}));
+	}
+    });
 
     //* Person
     window.PersonView = Backbone.View.extend({
@@ -977,7 +1003,7 @@ $(function(){
 	},
 
 	canFollow: function(user) {
-	    return this.isEditor() && !this.isCurrentUser(user);
+	    return this.isEditor() && !this.isCurrentUser(user) && !user.isEditor;
 	},
 
 
@@ -1049,11 +1075,7 @@ $(function(){
 	personLinkTemplate: _.template($('#person-link-template').html()),
 
 	routes: {
-	    // "most-recent": "mostRecent",
-	    // "editions":"editions",
-	    // "people":"people",
-	    // "":"",
-	    // "":"",
+	    "editorFundings/:edition/:editor": "editorFundings",
 	    "network/:ed": "network",
 	    "nominate": "nominate",
 	    "nominate/:url": "nominate",
@@ -1148,11 +1170,11 @@ $(function(){
 
 	topAuthorities: function(edNum) {
 	    this._edition(edNum, 'topJudges', 'top', NetworkView,
-			  function (userAuth) {
-			      var a = _.clone(userAuth.user);
-			      a.authority = userAuth.authority;
-			      a.funded = userAuth.funded;
-			      a.fundedStr = userAuth.fundedStr;
+			  function (influence) {
+			      var a = _.clone(influence.user);
+			      a.authority = influence.authority;
+			      a.funded = influence.funded;
+			      a.fundedStr = influence.fundedStr;
 			      return a;
 			  },
 			  {influence: 'judge'});
@@ -1160,10 +1182,13 @@ $(function(){
 
 	topEditors: function(edNum) {
 	    this._edition(edNum, 'topEditors', 'top', NetworkView,
-			  function (userAuth) {
-			      var a = _.clone(userAuth.user);
-			      a.funded = userAuth.funded;
-			      a.fundedStr = userAuth.fundedStr;
+			  function (influence) {
+			      var a = _.clone(influence.user);
+			      a.user = _.clone(influence.user); // for passing to link renderer
+			      a.funded = influence.funded;
+			      a.fundedStr = influence.fundedStr;
+			      // <this> is the NetworkView
+			      a.edition = this.edition;
 			      return a;
 			  },
 			  {influence: 'editor'});
@@ -1210,8 +1235,20 @@ $(function(){
 		      });
 	},
 
+	editorFundings: function(edition, editor) {
+	    var self = this;
+	    doRequest({ fun: 'editorFundings', edition: edition, editor: editor},
+		      function(data) {
+			  self.setMainView(EditorFundingsView, data);
+		      });
+	},
+
 	nominate: function(url) {
-	    this.setMainView(NominateView, {url: url? decodeURIComponent(url) : ''});
+	    var self = this;
+	    doRequest({ fun: 'ping'},
+		      function(data) {
+			  self.setMainView(NominateView, {url: url? decodeURIComponent(url) : ''});
+		      });
 	},
 
 	createAccount: function(andThen) {

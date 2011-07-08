@@ -9,7 +9,7 @@ import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Parent;
 
 @Cached
-public class Vote {
+public class Vote implements Comparable<Vote> {
 	@Parent
 	public Key<User> voter;
 
@@ -35,5 +35,9 @@ public class Vote {
 		this.authority = authority;
 	}
 	
+	public int compareTo(Vote v) {
+		return -time.compareTo(v.time);
+	}
+
 	public Key<Vote> getKey() { return new Key<Vote>(voter, Vote.class, id); }
 }

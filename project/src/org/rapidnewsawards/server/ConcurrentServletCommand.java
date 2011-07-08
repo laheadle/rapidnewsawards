@@ -61,7 +61,7 @@ abstract class ConcurrentServletCommand {
 		}
 		finally {
 			assert(fun != null);
-			log.info(String.format("end call %d: %d tries", fun, getRetries()));			
+			log.info(String.format("end call %s: %d tries", fun, getRetries() + 1));			
 		}
 	}
 	
