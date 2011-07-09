@@ -141,6 +141,10 @@ a.help {
     padding-top: 5px;
 }
 
+.supportedUser {
+    padding-bottom: 5px;
+}
+
 .emphatic {
     color: #e000ff;
 }
@@ -261,8 +265,8 @@ a.help {
     width: 200px;
 }
 
-.fund-from {
-    font-size: .6em;
+.fund-from, .via {
+    font-size: .8em;
     color: gray;
 }
 
@@ -274,7 +278,7 @@ a.help {
 .nominate {
 }
 
-.number, .amount {
+.amount {
     color: green;
 }
 

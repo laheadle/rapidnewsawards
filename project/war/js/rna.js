@@ -202,11 +202,6 @@ $(function(){
     window.FundingsList = Backbone.Collection.extend({
 	model: Funding,
 	view: FundingView,
-
-	comparator: function(model) {
-	    return - model.get('vote').time;
-	}
-
     });
 
 

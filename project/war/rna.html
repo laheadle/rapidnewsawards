@@ -136,9 +136,12 @@
 
     <script type="text/template" id="funding-template">
 	  <!-- don't redisplay the username for personview -->
-	  <span class="smallTime"> <%= timeStr %></span> 
-	  <%= user ? rMake('#person-link-template', user) : "" %>
-	  supported 
+	  <div class="supportedUser"> 
+	    <span class="smallTime"> <%= timeStr %></span> 
+	    <%= user ? rMake('#person-link-template', user) : "" %>
+	    <span class="via"> via </span> <span class="emphatic"> <%= vote.authority %> </span> 
+	    <%= vote.authority == 1? 'Editor' : 'Editors' %> </div>
+	  Supported 
 	  <a href="#story/<%= vote.edition.raw.name%>/<%= link.id %>"> <%= link.title %> </a>
 	</script>
 
@@ -304,7 +307,7 @@
 
     <script type="text/template" id="collapsed-signup-round-template">
       <span> <a href="#recentSocials/<%= number %>"> Signup round </a> 
-	published <span class="mediumTime"> <%= endStr %> </span> </span> </script>
+	completed <span class="mediumTime"> <%= endStr %> </span> </span> </script>
 
     <script type="text/template" id="volume-template">
       <span> <%= published %> 
