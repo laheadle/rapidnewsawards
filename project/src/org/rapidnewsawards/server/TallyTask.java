@@ -244,6 +244,31 @@ public class TallyTask  extends HttpServlet {
 
 			d.findEditorsToScore(vkey, on);
 		}
+		else if (fun.equals("deleteEditorVotes")) {
+			String editorsstr = request.getParameter("editors");
+			String editionstr = request.getParameter("edition");
+			String votestr = request.getParameter("vote");
+			String userstr = request.getParameter("user");
+			if (editorsstr == null) {
+				throw new IllegalArgumentException("editors");
+			}
+			if (editionstr == null) {
+				throw new IllegalArgumentException("edition");
+			}
+			if (votestr == null) {
+				throw new IllegalArgumentException("vote");
+			}
+			if (userstr == null) {
+				throw new IllegalArgumentException("user");
+			}
+			Set<Key<User>> editors = decodeUsers(editorsstr);
+			Long voteId = Long.valueOf(votestr);
+			Long userId = Long.valueOf(userstr);
+			Key<User> ukey = createUserKey(userId);
+			Key<Vote> vkey = new Key<Vote>(ukey, Vote.class, voteId);
+			
+			d.deleteEditorVotes(vkey, editors, Edition.createKey(Integer.parseInt(editionstr)));
+		}
 		else if (fun.equals("deleteVote")) {
 			String editorsstr = request.getParameter("editors");
 			String editionstr = request.getParameter("edition");
@@ -324,6 +349,9 @@ public class TallyTask  extends HttpServlet {
 				// TODO chain
 				throw new IllegalStateException(e.message);
 			}
+		}
+		else {
+			throw new IllegalArgumentException("unknown fun: " + fun);
 		}
 	}
 

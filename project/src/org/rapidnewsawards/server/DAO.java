@@ -840,9 +840,8 @@ public class DAO extends DAOBase {
 			}
 
 			if (lp.periodical.userlocked) {
-				log.warning("waiting to social");
 				lp.rollback(); socialTxn.getTxn().rollback();
-				throw new ConcurrentModificationException(); 
+				throw new ConcurrentModificationException("waiting to social"); 
 			}
 
 			// If a transition is in progress, ask them to wait.
@@ -1017,8 +1016,7 @@ public class DAO extends DAOBase {
 			
 			if (p.userlocked) {
 				locked.rollback();
-				log.warning("waiting to transition");
-				throw new ConcurrentModificationException(); 
+				throw new ConcurrentModificationException("waiting to transition"); 
 			}
 
 			if (p.isFinished()) {
@@ -1274,9 +1272,8 @@ public class DAO extends DAOBase {
 			}
 
 			if (lp.periodical.userlocked) {
-				log.warning("waiting to vote");
 				lp.rollback();
-				throw new ConcurrentModificationException("waiting");
+				throw new ConcurrentModificationException("waiting to vote");
 		 	}
 
 			boolean hasv = hasVoted(u, e, l);
@@ -1293,7 +1290,7 @@ public class DAO extends DAOBase {
 			lp.setUserLock();
 			TallyTask.writeVote(lp.transaction.getTxn(), u, e, l, on);
 			lp.commit();
-			log.info(u + (on ? " +++-> " : " xxx-> ") + l.url);
+			log.info(u + (on ? " FUND-> " : " DEFUND-> ") + l.url);
 			return Response.SUCCESS;
 		}
 		
@@ -1309,6 +1306,7 @@ public class DAO extends DAOBase {
 				v = new Vote(uk, ek, lk, new Date(), authority);
 				txn.put(v);
 			} else {
+				// non-ancestor query: we know this vote is present because the task was enqueued
 				v = ofy().query(Vote.class).filter("edition", ek).filter("link", lk).get();
 			}
 			TallyTask.tallyVote(txn.getTxn(), v, on);
@@ -1480,6 +1478,9 @@ public class DAO extends DAOBase {
 				sl = new ScoredLink(v.edition, space.root, v.link, v.authority);
 				space.numFundedLinks++;
 				otx.put(sl);
+			}
+			else {
+				log.severe("we are cancelling a null vote!");
 			}
 		}
 		else {

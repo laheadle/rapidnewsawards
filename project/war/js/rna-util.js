@@ -192,7 +192,7 @@ window.initRNA = function () {
 	},
     };
 
-    $.ajaxSetup({timeout: 15000});
+    $.ajaxSetup({timeout: 30000});
     $('body').ajaxError(function() { flashError("Communication error.  Please Check your network connection."); });
 
     // via http://stackoverflow.com/questions/68485/how-to-show-loading-spinner-in-jquery

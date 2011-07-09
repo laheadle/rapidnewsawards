@@ -81,11 +81,6 @@ h1.title {
     height: 30px;
 }
 
-#person {
-    position: absolute;
-    top: 35px;
-}
-
 #edition-header, .volumeHeader {
     background-color: #F0F0F0;
     width: 850px;

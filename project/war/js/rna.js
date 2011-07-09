@@ -5,6 +5,13 @@ $(function(){
 
     //* globals
 
+    // see DAO.java
+    var NEXT = -1;
+    var AFTER_NEXT = -2;
+    var FINAL = -3;
+    var CURRENT = -4;
+    var NEXT_OR_FINAL = -5;
+
     function defaultAction() {
 	flashInfo('');
 	if (Backbone.history.getFragment() == '') {
@@ -144,7 +151,7 @@ $(function(){
 	render: function() {
 	    var _copy = this.model.toJSON();
 	    _copy.funding = '' +_copy.funding / 100;
-	    _copy.href= '#story/' + _copy.editionId + '/' + _copy.link.id;
+	    _copy.href= '#story/' + _copy.edition.number + '/' + _copy.link.id;
 	    $(this.el).html(this.template(_copy));
 	    return this;
 	},
@@ -703,7 +710,9 @@ $(function(){
 		var link = self.$('input[name=url]').attr('value');
 		doRequest({fun: 'voteFor',
 			   link: link,
-			   fullLink: ''},
+			   edition: NEXT,
+			   fullLink: '',
+			   on: true},
 			  function (data) {
 			      if (data.submit) {
 				  // show full submit form
@@ -711,11 +720,15 @@ $(function(){
 						  {title: data.suggestedTitle,
 						   link: link});
 			      }
-			      else {
+			      else if (data.returnVal == 'SUCCESS') {
 				  window.flashLog({type: 'success',
-						   content: 'Story was already nominated: Your support is being counted.'});
-				  app.hashStory(data.edition, data.linkId);
+						   content: 'Your support is being counted.'});
 			      }
+			      else {
+				  window.flashLog({type: 'error',
+						   content: data.returnval});
+			      }
+
 			  });
 	    });
 	},
@@ -1062,11 +1075,11 @@ $(function(){
 	    if (this.loggedIn()) {
 		var nick = this.model.get('nickname');
 		this.$('a.login').text(nick);
-		this.$('a.logout').text('[Logout]')
+		this.$('a.logout').text('[Log out]')
 		.css('padding-left', '5px');
 	    }
 	    else {
-		this.$('a.login').text('[Login / Join]');
+		this.$('a.login').text('[Log In / Join]');
 		this.$('a.logout').text('')
 		.css('padding-left', '0');
 	    }
@@ -1360,13 +1373,6 @@ $(function(){
     $(window).bind('hashchange', function () { 
 	defaultAction();
     });
-
-    // see DAO.java
-    var NEXT = -1;
-    var AFTER_NEXT = -2;
-    var FINAL = -3;
-    var CURRENT = -4;
-    var NEXT_OR_FINAL = -5;
 
     // fixme
     $('#next').click(function (event) {

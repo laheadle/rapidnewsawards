@@ -13,7 +13,7 @@ import com.googlecode.objectify.annotation.Parent;
 public class Periodical {
 
 	// 5k dollars (in pennies)
-	private static final int TEST_INITIAL_BALANCE = 500000;
+	private static final int TEST_INITIAL_BALANCE = 780000;
 
 	public static final long ROOT_ID = 1L;
 

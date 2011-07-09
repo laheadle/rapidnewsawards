@@ -93,7 +93,7 @@
 
     <script type="text/template" id="signup-round-template"> 
       <span id="edition-header"> <span class="signup"> Signup round: </span> 
-	<%= finished? 'Took effect' : 'Takes effect' %>
+	<%= finished? 'Published' : 'Publishing' %>
 	on <%= endStr %> </span> </script>
 
     <script type="text/template" id="edition-tabs-template"> 
@@ -145,7 +145,8 @@
 
     <script type="text/template" id="followers-template">
       <div class="social-links">
-        <div class="mainHeader spaceOnTop"> Followed by </div>
+        <div class="mainHeader spaceOnTop"> Followed by or about to be followed by
+	  <%= rMake('#help-link', {topic: 'about-to-follow'}) %> </div>
           <% if (followers.length == 0) { %>
   	    <%= 'nobody' %>
   	  <% } else {
@@ -165,7 +166,8 @@
     <script type="text/template" id="editor-fundings-header-template">
       <div class="mainHeader spaceOnTop">
   	Funding overseen by 
-	<%= rMake('#person-link-template', editor) %> during <%= edition.displayStr %> 
+	<%= rMake('#person-link-template', editor) %> during 
+	<a href="#topStories/<%= edition.number %>"> <%= edition.displayStr %>  </a>
     <%= rMake('#help-link', {topic: 'overseen'}) %> </div> </script>
 
     <script type="text/template" id="nominate-story-template">
@@ -184,7 +186,8 @@
 
     <script type="text/template" id="full-submit-template">
         <div class="mainHeader spaceOnTop"> Check Title </div>
-	<div class="mainDescription"> Edit the provided title and submit. </div>
+	<div class="mainDescription"> 
+	  <span class="emphatic"> Edit or accept </span> the provided title and submit nomination. </div>
 	<table> <tr> <td> Title: </td>
 	    <td> <input type="text" size="100" name="title" value="<%= title %>"/> </td> </tr>
 	  <tr> <td> URL: </td> 
@@ -288,7 +291,7 @@
 
     <script type="text/template" id="story-template">
      <div class="fatBottom">
-      <span class="revenue"> <%= fundingStr %>...</span>
+      <span class="amount"> <%= fundingStr %></span>
       <br>
       <a class="indented-story" href="<%= href %>"> <%= link.title %></a> 
       <div></script>

@@ -140,7 +140,10 @@ public class TransitionTask  extends HttpServlet {
 		}		
 		else if (fun.equals("finish")) {
 			d.transition.finishTransition();
-		}		
+		}
+		else {
+			throw new IllegalArgumentException("unknown fun: " + fun);
+		}
 	}
 
 	

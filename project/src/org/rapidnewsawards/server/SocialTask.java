@@ -127,7 +127,7 @@ public class SocialTask extends HttpServlet {
 					on, 
 					cancelPending);
 		}
-		if (fun.equals("writeFutureFollowedBys")) {
+		else if (fun.equals("writeFutureFollowedBys")) {
 			String _judge = request.getParameter("judge");
 			if (_judge == null) {
 				throw new IllegalArgumentException("judge");
@@ -171,6 +171,9 @@ public class SocialTask extends HttpServlet {
 			d.social.changePendingAuthority(makeUserKey(to), 
 					new Key<Edition>(Edition.class, e), 
 					amount);
+		}
+		else {
+			throw new IllegalArgumentException("unknown fun: " + fun);
 		}
 	}
 

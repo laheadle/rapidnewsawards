@@ -44,6 +44,7 @@ public class MakeDataServlet extends HttpServlet {
 	public final static long ONE_MINUTE = 60 * 1000; 	
 	public final static long ONE_HOUR = 60 * ONE_MINUTE; 		
 	public final static long FIVE_MINUTES = 5 * ONE_MINUTE; 
+	public final static int  NUM_EDITIONS = 12;
 
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) {
@@ -58,7 +59,6 @@ public class MakeDataServlet extends HttpServlet {
 
 		editors = new HashSet<User>();
 		Cell<Integer> numUsers = new Cell<Integer>(null);
-		int numEditions = 5;
 		try {
 			try {
 				doFollow = new Boolean(request.getParameter("doFollow"));
@@ -79,7 +79,7 @@ public class MakeDataServlet extends HttpServlet {
 			}
 			catch(Exception e) {}
 
-			makeData(numEditions, minutes * ONE_MINUTE, numUsers);
+			makeData(NUM_EDITIONS, minutes * ONE_MINUTE, numUsers);
 
 			if (doTransition) {
 				Date da = new Date(new Date().getTime() + 500L);
@@ -95,7 +95,7 @@ public class MakeDataServlet extends HttpServlet {
 			e.printStackTrace();
 		}
 		out.println("created " + numUsers.value + " users");
-		out.println("created " + numEditions + " editions");
+		out.println("created " + NUM_EDITIONS + " editions");
 	}
 
 	private void makeLinks() throws RNAException {
@@ -116,11 +116,12 @@ public class MakeDataServlet extends HttpServlet {
 		}
 	}
 
-	public static void welcome(User u, String nickname) throws RNAException {
+	public static User welcome(User u, String nickname) throws RNAException {
 		User olduser = d.user;
 		d.user = u;
 		d.users.welcomeUser(nickname, "true", "http://example.com");		
 		d.user = olduser;
+		return u;
 	}
 	public static void makeData (int editionCount, long periodSize, Cell<Integer> numUsers) 
 	throws ParseException, RNAException {
@@ -137,9 +138,9 @@ public class MakeDataServlet extends HttpServlet {
 			catch (IllegalStateException e) {}
 		}
 		
-		makeEditor("jthomas100@gmail.com");
-		makeEditor("joshuanyoung@gmail.com");
-		makeEditor("ohthatmeg@gmail.com");
+		welcome(makeEditor("joshuanyoung@gmail.com"), "Josh Young");
+		welcome(makeEditor("ohthatmeg@gmail.com"), "Megan Garber");
+		User paul = welcome(makeEditor("ftrain@gmail.com"), "Paul Ford");
 		
 		User so = makeJudge("steveouting@gmail.com");
 		welcome(so, "Steve Outing");
@@ -147,8 +148,8 @@ public class MakeDataServlet extends HttpServlet {
 		User jq = makeJudge("johnqpublic@gmail.com");
 		welcome(jq, "john q public");
 
-		User lyn = makeEditor("laheadle@gmail.com");		
-		welcome(lyn, "lyn");
+		welcome(makeJudge("jthomas100@gmail.com"), "Jeff Thomas");
+
 
 		if (numUsers != null) {
 			int NUM_USERS = 6;
@@ -163,7 +164,7 @@ public class MakeDataServlet extends HttpServlet {
 		}
 
 		if (doFollow) {
-				d.user = lyn;
+				d.user = paul;
 				Response r = d.social.doSocial(jq.getKey(), true);
 				assert(r.equals(Response.ABOUT_TO_FOLLOW));
 		}
