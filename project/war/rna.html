@@ -146,6 +146,7 @@
       <div class="social-links">
         <div class="middleHeader"> Followed by or about to be followed by
 	  <%= rMake('#help-link', {topic: 'about-to-follow'}) %> </div>
+	  <div class="item">
           <% if (followers.length == 0) { %>
   	    <%= 'nobody' %>
   	  <% } else {
@@ -155,6 +156,7 @@
 	      <%= i++ < followers.length ? 'and' : '' %>
             <% });
   	  } %>
+	  </div>
       </div>
     </script>
 
@@ -295,29 +297,28 @@
       <div></script>
 
     <script type="text/template" id="collapsed-edition-template">
-      <span> <a href="#topStories/<%= number %>"> Number 
-	  <%= number %> </a> awarded $<%= totalSpend / 100 %> to 
+      <a href="#topStories/<%= number %>"> Number 
+	  <%= number %> </a> awarded <span class="amount"> $<%= totalSpend / 100 %> </span> to 
 	<%= numFundedLinks %> <%= numFundedLinks == 1? 'story' : 'stories' %> 
-	on <%= endStr %> </span> </script>
+	<span class="mediumTime"> <%= endStr %> </span> </script>
 
     <script type="text/template" id="collapsed-signup-round-template">
       <span> <a href="#recentSocials/<%= number %>"> Signup round </a> 
-	ended on <%= endStr %> </span> </script>
+	published <span class="mediumTime"> <%= endStr %> </span> </span> </script>
 
     <script type="text/template" id="volume-template">
       <span> <%= published %> 
 	<%= published == 1? 'edition' : 'editions' %> 
 	published, <%= remaining %> remaining. </span> </script>
 
-    <script type="text/template" id="follow-template">
-      <span class="smallTime"> <%= timeStr %> </span> <%= subjectLink %> 
+    <script type="text/template" id="social-template">
+      <%= subjectLink %> 
       <span> <%= on? 'decided to follow' : 'decided to unfollow' %> </span>
-      <%= objectLink %> </script>
+      <%= objectLink %> <span class="smallTime"> <%= timeStr %> </span> </script>
 
     <script type="text/template" id="welcome-template">
-      <span class="smallTime"> <%= timeStr %> </span> 
       <span>Welcome, <%= judge.isEditor === true? 'editor' : 'judge' %> </span> 
-      <%= objectLink %>.</script>
+      <%= objectLink %>. <span class="smallTime"> <%= timeStr %> </span> </script>
 
     <script type="text/template" id="person-recent-header">
       <div class="middleHeader"> Recently </div> </script>

@@ -359,7 +359,7 @@ $(function(){
 	tagName:  "div",
 	className: "listItem", 
 
-	followTemplate: _.template($('#follow-template').html()),
+	followTemplate: _.template($('#social-template').html()),
 	welcomeTemplate: _.template($('#welcome-template').html()),
 
 	events: {
@@ -973,8 +973,8 @@ $(function(){
 	initialize: function(attrs) {
 	    this.current = attrs.current;
 	    // fixme refactor
-	    $(this.el).append(this.make('div', {'class': 'volumeHeader large'}));
-	    $(this.el).append(this.make('div', {'class': 'volumeBody list'}));
+	    $(this.el).append(this.make('div', {'class': 'mainHeader'}));
+	    $(this.el).append(this.make('div', {'class': 'list'}));
 	    this.glist = 
 		new GenList({parent: this, 
 			     list: new EditionList});
@@ -999,7 +999,7 @@ $(function(){
 	    }
 	    var remaining = this.total - 1 - published;
 
-	    this.$('.volumeHeader').html(rMake('#volume-template',
+	    this.$('.mainHeader').html(rMake('#volume-template',
 				     {published: published, remaining: remaining}));
 	    app.selectMenuItem('#recent');
 	    return this;

@@ -91,7 +91,6 @@ h1.title {
     background-color: #F0F0F0;
     width: 850px;
     font-size: 1.2em;
-    margin-bottom: 20px;
 }
 
 .mainDescription {
@@ -296,7 +295,20 @@ a.help {
 }
 
 .smallTime {
-    font-size: .5em;
+    font-size: .7em;
+    font-weight: bold;
+    float: right;
+    padding-top: 5px;
+}
+
+.mediumTime {
+    float: right;
+}
+
+.item {
+    color: black;
+    font-size: 1.1em;
+    margin-top: 10px;
 }
 
 .listItem {
