@@ -66,6 +66,56 @@ public class DAO extends DAOBase {
 
 	private static final int CENTS_PER_DOLLAR = 100;
 
+	static {
+		ObjectifyService.factory().register(Donation.class);
+		ObjectifyService.factory().register(Edition.class);
+		ObjectifyService.factory().register(EditorInfluence.class);
+		ObjectifyService.factory().register(EditorVote.class);
+		ObjectifyService.factory().register(Follow.class);
+		ObjectifyService.factory().register(FollowedBy.class);
+		ObjectifyService.factory().register(JudgeInfluence.class);
+		ObjectifyService.factory().register(Link.class);
+		ObjectifyService.factory().register(Periodical.class);
+		ObjectifyService.factory().register(Root.class);
+		ObjectifyService.factory().register(ScoredLink.class);
+		// TODO Replace with edition?
+		ObjectifyService.factory().register(ScoreRoot.class);
+		ObjectifyService.factory().register(ScoreSpace.class);
+		ObjectifyService.factory().register(SocialEvent.class);
+		ObjectifyService.factory().register(User.class);
+		ObjectifyService.factory().register(Vote.class);
+	}
+	public static DAO instance = new DAO();
+
+	/*
+	 * The currently logged-in user. See AuthFilter
+	 */
+	public User user;
+	
+	public static final Name periodicalName = Name.AGGREGATOR_NAME;
+
+	/*
+	 * Sub-modules for data access
+	 */
+	public Social social;
+
+	public Transition transition;
+
+	public Users users;
+
+	public Editions editions;
+
+	public static final Logger log = Logger.getLogger(DAO.class.getName());
+
+	public DAO() {
+		user = null;
+		social = new Social();
+		transition = new Transition();
+		editions = new Editions();
+		users = new Users();
+	}
+	
+	
 	public class Editions {
 
 		// TODO 2.0 make enums
@@ -1397,56 +1447,6 @@ public class DAO extends DAOBase {
 		}
 	}
 
-	static {
-		ObjectifyService.factory().register(Donation.class);
-		ObjectifyService.factory().register(Edition.class);
-		ObjectifyService.factory().register(EditorInfluence.class);
-		ObjectifyService.factory().register(EditorVote.class);
-		ObjectifyService.factory().register(Follow.class);
-		ObjectifyService.factory().register(FollowedBy.class);
-		ObjectifyService.factory().register(JudgeInfluence.class);
-		ObjectifyService.factory().register(Link.class);
-		ObjectifyService.factory().register(Periodical.class);
-		ObjectifyService.factory().register(Root.class);
-		ObjectifyService.factory().register(ScoredLink.class);
-		// TODO Replace with edition?
-		ObjectifyService.factory().register(ScoreRoot.class);
-		ObjectifyService.factory().register(ScoreSpace.class);
-		ObjectifyService.factory().register(SocialEvent.class);
-		ObjectifyService.factory().register(User.class);
-		ObjectifyService.factory().register(Vote.class);
-	}
-	public static DAO instance = new DAO();
-
-	/*
-	 * The currently logged-in user. See AuthFilter
-	 */
-	public User user;
-	
-	public static final Name periodicalName = Name.AGGREGATOR_NAME;
-
-
-
-	/*
-	 * Sub-modules for data access
-	 */
-	public Social social;
-
-	public Transition transition;
-
-	public Users users;
-
-	public Editions editions;
-
-	public static final Logger log = Logger.getLogger(DAO.class.getName());
-
-	public DAO() {
-		user = null;
-		social = new Social();
-		transition = new Transition();
-		editions = new Editions();
-		users = new Users();
-	}
 
 	public Periodical getPeriodical() {
 		return ofy().get(Periodical.getKey(periodicalName.name));
@@ -1467,8 +1467,7 @@ public class DAO extends DAOBase {
 		Objectify otx = fact().beginTransaction();
 		ScoreSpace space = editions.getScoreSpace(otx, v.edition);
 		
-		ScoredLink sl = otx.query(ScoredLink.class)
-		.ancestor(space.root).filter("link", v.link).get();
+		ScoredLink sl = editions.getScoredLink(otx, v.edition, v.link);
 		
 		space.totalScore += on? v.authority : -v.authority;
 		space.totalSpend = funding(space.totalScore, space.totalScore, space.balance);
