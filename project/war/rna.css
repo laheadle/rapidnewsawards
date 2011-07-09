@@ -206,12 +206,9 @@ a.help {
 }
 
 .list {
-    position: absolute;
+    position: relative;
+    top: 5px;
     width: 850px;
-}
-
-.listItem {
-
 }
 
 #createAccount {
@@ -222,8 +219,11 @@ a.help {
     width: 300px;
 }
 
-.spaceOnTop {
+.middleHeader {
     margin-top: 15px;
+    background-color: #F0F0F0;
+    width: 850px;
+    font-size: 1.2em;
 }
 
 #editionTabsMinor {
@@ -303,6 +303,7 @@ a.help {
     color: black;
     font-size: 1.1em;
     margin-bottom: .5em;
+    border-bottom: 1px solid #F0F0F0;
 }
 
 .regularSize {

@@ -48,7 +48,7 @@ $(function(){
 	    var self = this;
 	    this.list.bind('add',     function () { self.addOne() });
 	    this.list.bind('refresh', function () { self.addAll() });
-	    $(this.el).append(this.make('div', {'class': 'list large'}));
+	    $(this.el).append(this.make('div', {'class': 'list'}));
 	},
 
 	addOne: function(model) {
@@ -578,7 +578,7 @@ $(function(){
 	    this.model.bind('change', function () { self.render() });
 	    this.model.view = this;
 
-	    $(this.el).append(this.make('div', {'class': 'list large'}));
+	    $(this.el).append(this.make('div', {'class': 'list'}));
 
 	    this.list = new GenList({
 		parent: this,
@@ -605,7 +605,7 @@ $(function(){
 	    this.model.bind('change', function () { self.render() });
 	    this.model.view = this;
 	    // fixme refactor
-	    $(this.el).append(this.make('div', {'class': 'list large'}));
+	    $(this.el).append(this.make('div', {'class': 'list'}));
 	    // add fundings list
 
 	    if (this.user().isEditor) {
@@ -974,7 +974,7 @@ $(function(){
 	    this.current = attrs.current;
 	    // fixme refactor
 	    $(this.el).append(this.make('div', {'class': 'volumeHeader large'}));
-	    $(this.el).append(this.make('div', {'class': 'volumeBody list large'}));
+	    $(this.el).append(this.make('div', {'class': 'volumeBody list'}));
 	    this.glist = 
 		new GenList({parent: this, 
 			     list: new EditionList});

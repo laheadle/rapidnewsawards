@@ -130,22 +130,21 @@
 	  <div> <a href="#editorFundings/<%= edition.number %>/<%= id %>"> See fundings </a> </div> </script>
     
     <script type="text/template" id="none-followed-template">
-	<div class="listItem empty"> 
+	<div class="empty"> 
 	  No judges have been fully authorized yet.  Please invite or follow judges.
 	</div> </script>
 
     <script type="text/template" id="funding-template">
-	<div class="listItem"> 
 	  <!-- don't redisplay the username for personview -->
 	  <span class="smallTime"> <%= timeStr %></span> 
 	  <%= user ? rMake('#person-link-template', user) : "" %>
 	  supported 
 	  <a href="#story/<%= vote.edition.raw.name%>/<%= link.id %>"> <%= link.title %> </a>
-	</div> </script>
+	</script>
 
     <script type="text/template" id="followers-template">
       <div class="social-links">
-        <div class="mainHeader spaceOnTop"> Followed by or about to be followed by
+        <div class="middleHeader"> Followed by or about to be followed by
 	  <%= rMake('#help-link', {topic: 'about-to-follow'}) %> </div>
           <% if (followers.length == 0) { %>
   	    <%= 'nobody' %>
@@ -160,18 +159,18 @@
     </script>
 
     <script type="text/template" id="header-template">
-      <div class="mainHeader spaceOnTop"> <%= text %> </div> </script>
+      <div class="mainHeader"> <%= text %> </div> </script>
 
 
     <script type="text/template" id="editor-fundings-header-template">
-      <div class="mainHeader spaceOnTop">
+      <div class="mainHeader">
   	Funding overseen by 
 	<%= rMake('#person-link-template', editor) %> during 
 	<a href="#topStories/<%= edition.number %>"> <%= edition.displayStr %>  </a>
     <%= rMake('#help-link', {topic: 'overseen'}) %> </div> </script>
 
     <script type="text/template" id="nominate-story-template">
-        <div class="mainHeader spaceOnTop"> Nominate A Work of Journalism for Recognition and Support </div>
+        <div class="mainHeader"> Nominate A Work of Journalism for Recognition and Support </div>
 	<div class="mainDescription"> Your funding support will be noted in the next edition of newskraft.org, and you will become the nominating judge of this work. </div>
       	<table>
 	  <tr> <td> URL of Work: </td> 
@@ -185,7 +184,7 @@
 
 
     <script type="text/template" id="full-submit-template">
-        <div class="mainHeader spaceOnTop"> Check Title </div>
+        <div class="mainHeader"> Check Title </div>
 	<div class="mainDescription"> 
 	  <span class="emphatic"> Edit or accept </span> the provided title and submit nomination. </div>
 	<table> <tr> <td> Title: </td>
@@ -228,7 +227,7 @@
 
     <script type="text/template" id="follows-template">
       <div class="social-links">
-        <div class="mainHeader spaceOnTop"> Following or About to Follow  
+        <div class="middleHeader"> Following or About to Follow  
 	  <%= rMake('#help-link', {topic: 'about-to-follow'}) %> </div>
           <% if (follows.length == 0) { %>
   	    <%= 'nobody' %>
@@ -255,11 +254,10 @@
     </script>
 
     <script type="text/template" id="story-funding-template">
-	<div class="listItem"> 
-	  <div class="regularSize"> <span class="amount"> <%= fundedStr %> </span>
+	  <div> <span class="amount"> <%= fundedStr %> </span>
 	    <span class="fund-from"> from </span>
 	    <%= rMake('#person-link-template', user) %> 
-	    <%= rMake('#supporting-editors-template', {eds: supportingEditors}) %> </div> </div> </script>
+	    <%= rMake('#supporting-editors-template', {eds: supportingEditors}) %> </div> </script>
 
     <script type="text/template" id="supporting-editors-template">
       <div class="supportingEditors"> 
@@ -284,7 +282,7 @@
           <div class="supported"> You did <span class="emphatic"> not </span> support this story. </div>	
 	<% } %>
 
-	<div class="mainHeader spaceOnTop"> Funding during 
+	<div class="middleHeader"> Funding during 
 	  <a href="#topStories/<%= edition.number %>"> <%= edition.displayStr %> </div>
 
     </div> </script>
@@ -322,7 +320,7 @@
       <%= objectLink %>.</script>
 
     <script type="text/template" id="person-recent-header">
-      <div class="mainHeader spaceOnTop"> Recently </div> </script>
+      <div class="middleHeader"> Recently </div> </script>
 
     <script type="text/template" id="person-template">
       <div class="mainHeader"> 
