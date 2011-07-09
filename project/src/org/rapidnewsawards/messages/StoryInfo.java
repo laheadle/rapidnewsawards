@@ -1,5 +1,6 @@
 package org.rapidnewsawards.messages;
 
+import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.Link;
 import org.rapidnewsawards.core.Periodical;
 import org.rapidnewsawards.core.User;
@@ -15,7 +16,6 @@ public class StoryInfo {
 	public int getRevenue() {
 		return funding;
 	}
-	public int editionId;
 	public User submitter;
 	public Link link;
 	public int score;
@@ -26,4 +26,5 @@ public class StoryInfo {
 	// only read by clients
 	@SuppressWarnings("unused")
 	private String fundingStr;
+	public EditionMessage edition;
 }

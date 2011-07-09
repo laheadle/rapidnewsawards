@@ -523,6 +523,17 @@ $(function(){
 	    if (this.edition.number === 0) {
 		$(rMake('#signup-explanation')).insertAfter($(this.el).children().first());
 	    }
+	    else if (this.order == 'top') {
+		if (this.influence == 'judge') {
+		    $(rMake('#top-judges-explanation')).insertAfter($(this.el).children().first());
+		}
+		else {
+		    $(rMake('#top-editors-explanation')).insertAfter($(this.el).children().first());
+		}
+	    }
+	    else {
+		$(rMake('#recent-socials-explanation')).insertAfter($(this.el).children().first());
+	    }
 
 	    this.$('#editionTabsMinor').html(rMake('#network-order-tab-template', args));
 	    if (this.order == 'top') {
@@ -853,7 +864,7 @@ $(function(){
 	    this.model.bind('change', function () { self.render() });
 	    this.model.view = this;	    
 	    // fixme refactor
-	    $(this.el).append(this.make('div', {'class': 'list large'}));
+	    $(this.el).append(this.make('div', {'class': 'list'}));
 	    // add StoryFundingsList
 	    this.list = 
 		new GenList({parent: this, 

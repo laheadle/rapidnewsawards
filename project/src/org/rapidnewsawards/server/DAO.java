@@ -365,7 +365,7 @@ public class DAO extends DAOBase {
 			StoryInfo si = new StoryInfo();
 			si.link = link;
 			si.score = sl.score;
-			si.editionId = editionNum;
+			si.edition = makeEditionMessage(ofy(), getEdition(editionNum));
 			si.submitter = ofy().get(link.submitter);
 			si.setFunding(funding(sl.score, space.totalScore, space.balance));
 			si.isCurrent = isCurrent(editionKey);
@@ -450,7 +450,7 @@ public class DAO extends DAOBase {
 				StoryInfo si = new StoryInfo();
 				si.link = linkMap.get(sl.link);
 				si.score = sl.score;
-				si.editionId = e.getNumber();
+				si.edition = makeEditionMessage(ofy(), e);
 				si.submitter = userMap.get(si.link.submitter);
 				si.setFunding(funding(sl.score, space.totalScore, space.balance));
 				stories.add(si);

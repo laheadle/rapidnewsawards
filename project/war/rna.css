@@ -55,7 +55,6 @@ body {
 
 a.titleLink {
     font-size: 1.2em;
-    display: block;
 }
 
 h1.title {
@@ -96,8 +95,8 @@ h1.title {
 .mainHeader {
     background-color: #F0F0F0;
     width: 850px;
-    font-size: 1.4em;
-    margin-bottom: 10px;
+    font-size: 1.2em;
+    margin-bottom: 20px;
 }
 
 .mainDescription {
@@ -145,8 +144,11 @@ a.help {
 }
 
 .supported {
-    display: block;
     padding-top: 5px;
+}
+
+.emphatic {
+    color: #e000ff;
 }
 
 .menu {
@@ -226,7 +228,7 @@ a.help {
 }
 
 .spaceOnTop {
-    margin-top: 20px;
+    margin-top: 15px;
 }
 
 #editionTabsMinor {
@@ -291,7 +293,7 @@ a.help {
 .bigRevenue {
     padding: 2px;
     font-size: 1.2em;
-    background-color:  #F0F0F0;
+    color: green;
 }
 
 .signup {
