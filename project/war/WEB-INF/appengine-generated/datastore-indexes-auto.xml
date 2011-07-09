@@ -1,0 +1,41 @@
+<!-- Indices written at Sat, 9 Jul 2011 20:10:02 UTC -->
+
+<datastore-indexes>
+
+    <!-- Used 15 times in query history -->
+    <datastore-index kind="ScoredLink" ancestor="true" source="auto">
+        <property name="score" direction="desc"/>
+    </datastore-index>
+
+    <!-- Used 2 times in query history -->
+    <datastore-index kind="SocialEvent" ancestor="false" source="auto">
+        <property name="edition" direction="asc"/>
+        <property name="time" direction="desc"/>
+    </datastore-index>
+
+    <!-- Used 29 times in query history -->
+    <datastore-index kind="Vote" ancestor="false" source="auto">
+        <property name="edition" direction="asc"/>
+        <property name="time" direction="desc"/>
+    </datastore-index>
+
+    <datastore-index kind="Vote" ancestor="true" source="auto">
+        <property name="time" direction="desc"/>
+    </datastore-index>
+
+    <datastore-index kind="Vote" ancestor="false" source="auto">
+        <property name="edition" direction="asc"/>
+        <property name="link" direction="asc"/>
+    </datastore-index>
+
+    <datastore-index kind="Vote" ancestor="true" source="auto">
+        <property name="edition" direction="asc"/>
+        <property name="link" direction="asc"/>
+    </datastore-index>
+
+    <!-- Used 3 times in query history -->
+    <datastore-index kind="Vote" ancestor="true" source="auto">
+        <property name="time" direction="desc"/>
+    </datastore-index>
+
+</datastore-indexes>
