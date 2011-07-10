@@ -6,6 +6,7 @@ import java.util.Locale;
 import java.util.TimeZone;
 
 import org.rapidnewsawards.core.Link;
+import org.rapidnewsawards.core.Periodical;
 import org.rapidnewsawards.core.Vote;
 
 
@@ -22,10 +23,7 @@ public class Vote_Link {
 	}
 
 	public void setTime(Date time) {
-		DateFormat df = DateFormat.getDateTimeInstance(DateFormat.SHORT, 
-				DateFormat.SHORT, Locale.US);
-		df.setTimeZone(TimeZone.getTimeZone("GMT-4"));
-		this.timeStr = (df.format(time));
+		this.timeStr = Periodical.timeFormat(time);
 	}
 
 	public String getTimeStr() {

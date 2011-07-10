@@ -10,10 +10,16 @@ import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.core.Donation;
 import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.EditorInfluence;
+import org.rapidnewsawards.core.EditorVote;
 import org.rapidnewsawards.core.Follow;
+import org.rapidnewsawards.core.FollowedBy;
+import org.rapidnewsawards.core.JudgeInfluence;
 import org.rapidnewsawards.core.Link;
 import org.rapidnewsawards.core.Periodical;
 import org.rapidnewsawards.core.Root;
+import org.rapidnewsawards.core.ScoreRoot;
+import org.rapidnewsawards.core.ScoreSpace;
 import org.rapidnewsawards.core.ScoredLink;
 import org.rapidnewsawards.core.SocialEvent;
 import org.rapidnewsawards.core.User;
@@ -35,27 +41,39 @@ public class KillDataServlet extends HttpServlet {
 		d = DAO.instance;
 		
 		String result;
+		result = kill(Donation.class);
+		out.println(result + "<br>");
 		result = kill(Edition.class);
 		out.println(result + "<br>");
-		result = kill(Periodical.class);
+		result = kill(EditorInfluence.class);
 		out.println(result + "<br>");
-		result = kill(User.class);
-		out.println(result + "<br>");
-		result = kill(Root.class);
-		out.println(result + "<br>");
-		result = kill(Vote.class);
-		out.println(result + "<br>");
-		result = kill(SocialEvent.class);
+		result = kill(EditorVote.class);
 		out.println(result + "<br>");
 		result = kill(Follow.class);
 		out.println(result + "<br>");
+		result = kill(FollowedBy.class);
+		out.println(result + "<br>");
+		result = kill(JudgeInfluence.class);
+		out.println(result + "<br>");
 		result = kill(Link.class);
 		out.println(result + "<br>");
-		result = kill(Donation.class);
+		result = kill(Periodical.class);
+		out.println(result + "<br>");
+		result = kill(Root.class);
 		out.println(result + "<br>");
 		result = kill(ScoredLink.class);
 		out.println(result + "<br>");
-
+		result = kill(ScoreRoot.class);
+		out.println(result + "<br>");
+		result = kill(ScoreSpace.class);
+		out.println(result + "<br>");
+		result = kill(SocialEvent.class);
+		out.println(result + "<br>");
+		result = kill(User.class);
+		out.println(result + "<br>");
+		result = kill(Vote.class);
+		out.println(result + "<br>");
+	
 	}
 
 	private <T> String kill(Class<T> class1) {

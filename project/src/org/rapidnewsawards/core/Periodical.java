@@ -1,5 +1,9 @@
 package org.rapidnewsawards.core;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+import java.util.TimeZone;
+
 import javax.persistence.Entity;
 import javax.persistence.Id;
 
@@ -81,6 +85,12 @@ public class Periodical {
 
 	public static String moneyPrint(int amount) {
 		return "$" + amount / 100 + "." + String.format("%02d", amount % 100);	
+	}
+
+	public static String timeFormat(Date time) {
+		SimpleDateFormat format = new SimpleDateFormat("EEE d/M 'at' h:mm a 'ET'");
+		format.setTimeZone(TimeZone.getTimeZone("America/New_York"));
+		return format.format(time);
 	}
 	
 }

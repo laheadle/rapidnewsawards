@@ -141,14 +141,17 @@ public class MakeDataServlet extends HttpServlet {
 		welcome(makeEditor("joshuanyoung@gmail.com"), "Josh Young");
 		welcome(makeEditor("ohthatmeg@gmail.com"), "Megan Garber");
 		User paul = welcome(makeEditor("ftrain@gmail.com"), "Paul Ford");
-		
-		User so = makeJudge("steveouting@gmail.com");
+		User so = makeEditor("steveouting@gmail.com");
 		welcome(so, "Steve Outing");
+		welcome(makeEditor("jthomas100@gmail.com"), "Jeff Thomas");
+
+		welcome(makeEditor("pattonprice@gmail.com"), "Patton Price");
+		welcome(makeEditor("laheadle@gmail.com"), "Lyn Headley");
+
 
 		User jq = makeJudge("johnqpublic@gmail.com");
 		welcome(jq, "john q public");
 
-		welcome(makeJudge("jthomas100@gmail.com"), "Jeff Thomas");
 
 
 		if (numUsers != null) {

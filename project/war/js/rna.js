@@ -649,8 +649,8 @@ $(function(){
 
 	    // Bookmarklet
 	    if (app.loginView.isCurrentUser(u) && !this.user().isEditor) {
-		var arg='\'http://localhost:8888/rna.html#nominate/\'+encodeURIComponent(document.location.href)'
-		var link = '<a href="javascript:(function(){window.open('+arg+')})()"> RNA Nominate </a>';
+		var arg='\'http://newskraft-testing.appspot.com/#nominate/\'+encodeURIComponent(document.location.href)'
+		var link = '<a href="javascript:(function(){window.open('+arg+')})()"> Nominate </a>';
 		flashLog({type: 'notice', 
 			  header: 'For Nominating Stories:',
 			  content: 'Drag ' + link + ' to your bookmarks toolbar now.'});
@@ -1164,7 +1164,6 @@ $(function(){
 		if (data && data.edition) {
 		    // fixme main list doesn't immediately update 
 		    // with welcome message after join
-		    data.edition = window.Utils.processEdition(data.edition);
 		    var initParams = 
 			{order: order,
 			 edition: data.edition,
@@ -1294,8 +1293,7 @@ $(function(){
 	    doRequest({ fun: 'allEditions'}, 
 		      function(data) {
 			      self.setVolumeView({current: data.current, 
-						  data: _.map(data.editions,
-							  window.Utils.processEdition)});
+						  data: data.editions});
 		      });
 	},
 

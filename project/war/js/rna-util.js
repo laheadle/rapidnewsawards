@@ -176,22 +176,6 @@ window.initRNA = function () {
 	return _.template($(templateSelector).html())(args || {});
     };
 
-    window.Utils = {
-
-	processEdition: function(edition) {
-	    var _edition = _.clone(edition);
-	    _edition.endStr = window.Utils.displayDate(edition.end);
-	    return _edition;
-	},
-
-	displayDate: function(dateStr) {
-	    var d = new Date(dateStr + ' UTC');
-	    return '' + (d.getMonth() + 1) + '/' +
-		d.getDate() + ' at ' + (d.toLocaleTimeString())
-	    .replace(/:[0-9][0-9]$/, '');
-	},
-    };
-
     $.ajaxSetup({timeout: 30000});
     $('body').ajaxError(function() { flashError("Communication error.  Please Check your network connection."); });
 

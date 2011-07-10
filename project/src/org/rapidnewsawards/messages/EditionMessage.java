@@ -1,6 +1,10 @@
 package org.rapidnewsawards.messages;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.Date;
+import java.util.Locale;
+import java.util.TimeZone;
 
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.Periodical;
@@ -18,7 +22,7 @@ public class EditionMessage {
 	public final String totalSpendStr;
 	public final String revenueStr;
 	public String displayStr;
-	
+	public String endStr;
 
 	public EditionMessage(Edition e, ScoreSpace s) {
 		this.id = e.getNumber();
@@ -38,5 +42,6 @@ public class EditionMessage {
 		else {
 			this.displayStr = String.format("Edition Number %d", this.number);
 		}
+		this.endStr = Periodical.timeFormat(end);
 	}
 }

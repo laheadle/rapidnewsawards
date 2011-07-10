@@ -42,15 +42,13 @@ h3, h4 {
 
 /* foundations */
 
-html, body {
+body {
     margin: 0;
     padding: 0;
     border: none;
     background: white;
     display: block;
-}
-
-body {
+    font-size: 100%;
 }
 
 a.titleLink {
@@ -69,7 +67,7 @@ h1.title {
 #rna-app {
     position: relative;
     left: 100px;
-    width: 1000px;
+    width: 100%;
     height: 100%;
 }
 
@@ -130,11 +128,14 @@ a.help {
 }
 
 #flash {
-    position: absolute;
-    top: 30px;
-    left: 150px;
+    position: fixed;
+    top: 25px;
+    left: 245px;
     height: 1.2em;
     margin: 0.67em 0 0 0;
+    z-index: 9999;
+    background-color: #ffffff;
+    padding: 5px;
 }
 
 .supported {

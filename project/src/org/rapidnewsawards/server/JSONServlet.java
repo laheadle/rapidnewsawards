@@ -2,6 +2,7 @@ package org.rapidnewsawards.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.util.HashMap;
 import java.util.Map;
@@ -351,7 +352,10 @@ public class JSONServlet extends HttpServlet {
 			re.payload = null;
 			re.status = SERVER_ERROR;
 			re.message = "";
-			e.printStackTrace();
+			StringWriter sw = new StringWriter();
+			PrintWriter pw = new PrintWriter(sw);
+			e.printStackTrace(pw);		
+			log.severe(sw.toString());
 		}
 		finally {
 			re.requester = DAO.instance.user;
