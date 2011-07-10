@@ -1392,13 +1392,15 @@ public class DAO extends DAOBase {
 			if (!c && !user.isEditor) {
 				throw new RNAException("You did not check the consent form.");
 			}
-			
-
-			Objectify txn = fact().beginTransaction();
+			if (ofy().query(User.class).filter("nickname", nickname).get() != null) {
+				throw new RNAException("That name is already in use; please modify yours slightly.");				
+			}
 			user.nickname = nickname;
 			user.isInitialized = true;
 			user.webPage = normalizeWebPage(webPage);
-			
+
+			Objectify txn = fact().beginTransaction();
+						
 			txn.put(user);
 			txn.getTxn().commit();
 			

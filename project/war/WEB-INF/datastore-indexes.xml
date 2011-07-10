@@ -1,12 +1,8 @@
 <!-- Indices written at Sat, 9 Jul 2011 20:10:02 UTC -->
 
-<datastore-indexes>
+<datastore-indexes autoGenerate="false">
 
     <datastore-index kind="EditorInfluence" ancestor="true" source="auto">
-        <property name="editor" direction="asc"/>
-    </datastore-index>
-
-    <datastore-index kind="EditorVote" ancestor="false" source="auto">
         <property name="editor" direction="asc"/>
     </datastore-index>
 

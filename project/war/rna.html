@@ -32,7 +32,9 @@
 	<div id="login" class="large">
 	  <a class="login"> </a>
 	  <a class="logout"> </a>
-	</div> </div>
+	</div> 
+
+	<span id="time"> </span> </div>
 
       <div id="headerLine"> </div>
 
@@ -236,6 +238,7 @@
       <div class="social-links">
         <div class="middleHeader"> Following or About to Follow  
 	  <%= rMake('#help-link', {topic: 'about-to-follow'}) %> </div>
+	<div class="item">
           <% if (follows.length == 0) { %>
   	    <%= 'nobody' %>
   	  <% } else {
@@ -245,10 +248,12 @@
 	      <%= i++ < follows.length ? 'and' : '' %>
             <% });
   	  } %>
+	<div>
       </div>
     </script>
 
     <script type="text/template" id="person-set-template">
+	<div class="item">
       <% if (people.length == 0) { %>
       <%= 'nobody' %>
       <% } else {
@@ -258,6 +263,7 @@
       <%= i++ < people.length ? 'and' : '' %>
           <% });
           } %>
+	<div>
     </script>
 
     <script type="text/template" id="story-funding-template">
@@ -326,13 +332,15 @@
       <%= objectLink %>. <span class="smallTime"> <%= timeStr %> </span> </script>
 
     <script type="text/template" id="person-recent-header">
-      <div class="middleHeader"> Recently </div> </script>
+      <div class="middleHeader"> Recently
+	<%= rMake('#help-link', {topic: 'recently'}) %> </div> </script>
 
     <script type="text/template" id="person-template">
       <div class="mainHeader"> 
 	<span class="userNickname"> <%= nickname %> </span> 
 	<span class="userType"> 
-	  is <%= isEditor? 'an editor' : 'a judge' %> </span> </div> </script>
+	  is <%= isEditor? 'an editor' : 'a judge' %> </span> </div> 
+    <div class="item"> Web Page: <a href="<%= webPage %>"> <%= webPage %> </a> </div> </script>
 
     <script type="text/template" id="is-following-template">
       <span> Follow: </span>

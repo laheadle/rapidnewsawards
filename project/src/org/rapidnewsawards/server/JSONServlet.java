@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.logging.Logger;
@@ -14,6 +15,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.core.Edition;
+import org.rapidnewsawards.core.Periodical;
 import org.rapidnewsawards.core.Response;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.messages.Name;
@@ -306,6 +308,7 @@ public class JSONServlet extends HttpServlet {
 		public String message;
 		public User requester;
 		public Object payload;
+		public String requestTime;
 	}
 	
 	@Override
@@ -359,6 +362,7 @@ public class JSONServlet extends HttpServlet {
 		}
 		finally {
 			re.requester = DAO.instance.user;
+			re.requestTime = Periodical.timeFormat(new Date());
 			out.println(g.toJson(re));
 		}
 	}
