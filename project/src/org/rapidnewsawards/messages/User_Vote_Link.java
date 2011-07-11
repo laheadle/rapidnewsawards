@@ -1,9 +1,6 @@
 package org.rapidnewsawards.messages;
 
-import java.text.DateFormat;
 import java.util.Date;
-import java.util.Locale;
-import java.util.TimeZone;
 
 import org.rapidnewsawards.core.Link;
 import org.rapidnewsawards.core.Periodical;

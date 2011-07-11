@@ -6,7 +6,6 @@ import javax.persistence.Entity;
 import javax.persistence.Id;
 
 import com.googlecode.objectify.Key;
-import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Parent;
 import com.googlecode.objectify.annotation.Unindexed;
 
@@ -14,7 +13,6 @@ import com.googlecode.objectify.annotation.Unindexed;
 /*
  * SocialEvent Events -- Follows, Unfollows, and Joins
  */
-@Cached
 public class SocialEvent {
 	@Id
 	Long id;

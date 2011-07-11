@@ -8,11 +8,8 @@ import javax.servlet.http.HttpServlet;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
-import org.rapidnewsawards.core.Periodical;
 import org.rapidnewsawards.core.Root;
 import org.rapidnewsawards.core.User;
-
-import com.googlecode.objectify.Objectify;
 
 
 @SuppressWarnings("serial")

@@ -970,21 +970,28 @@ $(function(){
 	    // fixme refactor
 	    $(this.el).append(this.make('div', {'class': 'mainHeader'}));
 	    $(this.el).append(this.make('div', {'class': 'list'}));
+	    this.glist = 
+		new GenList({parent: this, 
+			     list: new EditionList});
+	    this.total = attrs.data.length;
+	    if(attrs.data) {
+		attrs.data.sort(
+		    function(left, right) {
+			return parseInt(left.number) < parseInt(right.number) ? -1 :
+			    parseInt(right.number) < parseInt(left.number) ? 1 : 0;
+		    });
+	    }
+	    if (this.current) {
+		// chop off unpublished editions
+		attrs.data.splice(this.current.number, 
+				  this.total - this.current.number + 1);
+	    }
 	    if(attrs.data) {
 		attrs.data.sort(
 		    function(left, right) {
 			return parseInt(left.number) < parseInt(right.number) ? 1 :
 			    parseInt(right.number) < parseInt(left.number) ? -1 : 0;
 		    });
-	    }
-	    this.glist = 
-		new GenList({parent: this, 
-			     list: new EditionList});
-	    this.total = attrs.data.length;
-	    if (this.current) {
-		// chop off unpublished editions
-		attrs.data.splice(this.current.number, 
-				  this.total - this.current.number + 1);
 	    }
 	    this.glist.refresh(attrs.data);
 	},
