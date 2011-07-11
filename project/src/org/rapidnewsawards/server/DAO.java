@@ -669,7 +669,10 @@ public class DAO extends DAOBase {
 		
 		public LockedPeriodical() throws RNAException {		
 			Objectify oTxn = fact().beginTransaction();
-			Periodical p = oTxn.get(Periodical.getKey(periodicalName.name));
+			
+			// retry task on nullpointer
+			// TODO 2.0 assumes one periodical
+			Periodical p = oTxn.query(Periodical.class).ancestor(Periodical.rootKey()).get();
 			if (p.isFinished() && !p.inTransition) {
 				throw new RNAException("The periodical is finished");
 			}
@@ -1015,16 +1018,6 @@ public class DAO extends DAOBase {
 
 	public class Transition {
 
-		public void doTransition(Key<Edition> e) throws RNAException {
-			Edition current = editions.getCurrentEdition();
-			if (!current.getKey().equals(e)) {
-				throw new RNAException(e + " != " + current);
-			}
-			else {
-				transition.transitionEdition();
-			}
-		}
-
 		public void setPeriodicalBalance() throws RNAException {
 			assert(getPeriodical().inTransition);
 			assert(!getPeriodical().isFinished());
@@ -1261,39 +1254,47 @@ public class DAO extends DAOBase {
 		public VoteResult voteFor(String link, String fullLink,
 				Key<Edition> edition, Boolean on) throws RNAException {
 			VoteResult vr = new VoteResult();
-			UserService userService = UserServiceFactory.getUserService();
 
-			// TODO test user login state for votes
-			if (user == null) {
-				vr.returnVal = Response.NOT_LOGGED_IN;
-				vr.authUrl = userService.createLoginURL(fullLink);
-				return vr;
-			}
+			try {
+				UserService userService = UserServiceFactory.getUserService();
 
-			if (user.isEditor) {
-				vr.returnVal = Response.ONLY_JUDGES_CAN_VOTE;
-				return vr;
-			}
-
-			if (Edition.getNumber(edition) == 0) {
-				vr.returnVal = Response.VOTING_FORBIDDEN_DURING_SIGNUP;
-				return vr;
-			}
-
-			Link l = ofy().query(Link.class).ancestor(Periodical.rootKey()).filter(Name.URL.name, link).get();
-			if (l == null) {
-				String title = TitleGrabber.getTitle(link);
-				vr.suggestedTitle = title;
-				vr.returnVal = Response.SUCCESS;
-				vr.submit = true;
-			} else {
-				vr.returnVal = voteFor(
-						user, edition, l, on);
-				vr.linkId = l.id;
 				// TODO test user login state for votes
-				vr.authUrl = userService.createLogoutURL("FIXME");
+				if (user == null) {
+					vr.returnVal = Response.NOT_LOGGED_IN;
+					vr.authUrl = userService.createLoginURL(fullLink);
+					return vr;
+				}
+
+				if (user.isEditor) {
+					vr.returnVal = Response.ONLY_JUDGES_CAN_VOTE;
+					return vr;
+				}
+
+				if (Edition.getNumber(edition) == 0) {
+					vr.returnVal = Response.VOTING_FORBIDDEN_DURING_SIGNUP;
+					return vr;
+				}
+
+				Link l = ofy().query(Link.class).ancestor(Periodical.rootKey()).filter(Name.URL.name, link).get();
+				if (l == null) {
+					String title = TitleGrabber.getTitle(link);
+					vr.suggestedTitle = title;
+					vr.returnVal = Response.SUCCESS;
+					vr.submit = true;
+				} else {
+					vr.returnVal = voteFor(
+							user, edition, l, on);
+					vr.linkId = l.id;
+					// TODO test user login state for votes
+					vr.authUrl = userService.createLogoutURL("FIXME");
+				}
+				return vr;
 			}
-			return vr;
+			finally {
+				if (!vr.returnVal.equals(Response.SUCCESS)) {
+					log.warning(vr.returnVal.toString());
+				}
+			}
 		}
 
 		public Response voteFor(User u, Key<Edition> e, Link l, boolean on)
@@ -1351,7 +1352,9 @@ public class DAO extends DAOBase {
 			Vote v = null;
 			if (on) {
 				// TODO pass in date
-				JudgeInfluence ji = getJudgeInfluence(ofy(), uk, ek);
+				Objectify txn2 = fact().beginTransaction();
+				JudgeInfluence ji = getJudgeInfluence(txn2, uk, ek);
+				txn2.getTxn().commit();
 				int authority = ji.authority;
 				v = new Vote(uk, ek, lk, new Date(), authority);
 				txn.put(v);
@@ -1366,6 +1369,7 @@ public class DAO extends DAOBase {
 		public JudgeInfluence getJudgeInfluence(Objectify ofy, Key<User> uk, Key<Edition> ek) {
 			JudgeInfluence ji = ofy.query(JudgeInfluence.class).ancestor(ScoreSpace.keyFromEditionKey(ek))
 			.filter("user", uk).get();
+			if (ji == null) { log.severe("no Judge Influence for " + uk); }
 			return ji;
 		}
 

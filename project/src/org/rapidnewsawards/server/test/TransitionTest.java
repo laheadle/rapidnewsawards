@@ -16,8 +16,8 @@ public class TransitionTest extends RNATest {
 	@Test
 	public void testFinalEditionCurrent() throws RNAException {
 		for (int i = 0;i < numEditions - 1;i++) {
-			doTransition();
-		}		
+			DAO.instance.transition.transitionEdition();
+		}
 		Edition e = DAO.instance.editions.getCurrentEdition();
 		assertNotNull(e);
 		assertEquals(e.number, numEditions - 1);
@@ -25,7 +25,7 @@ public class TransitionTest extends RNATest {
 
 	@Test
 	public void testTransition() throws RNAException {
-		d.transition.doTransition(Edition.createKey(0));
+		d.transition.transitionEdition();
 		assertFalse(d.getPeriodical().isFinished());
 		assertTrue(d.getPeriodical().inTransition);
 		assertFalse(d.getPeriodical().userlocked);
@@ -33,7 +33,7 @@ public class TransitionTest extends RNATest {
 
 	@Test(expected = RNAException.class)
 	public void testBadCurrentTransition() throws Exception {
-		d.transition.doTransition(Edition.createKey(1));
+		d.transition.transitionEdition();
 	}
 	
 	@Test(expected = RNAException.class)
@@ -41,7 +41,7 @@ public class TransitionTest extends RNATest {
 		Periodical p = d.getPeriodical();
 		p.setFinished();
 		d.ofy().put(p);
-		d.transition.doTransition(Edition.createKey(0));
+		d.transition.transitionEdition();
 	}
 	
 	@Test(expected = RNAException.class)
@@ -49,7 +49,7 @@ public class TransitionTest extends RNATest {
 		Periodical p = d.getPeriodical();
 		p.setcurrentEditionKey(null);
 		d.ofy().put(p);
-		d.transition.doTransition(Edition.createKey(0));
+		d.transition.transitionEdition();
 	}
 	
 	// TODO This should throw an unchecked exception
@@ -58,12 +58,12 @@ public class TransitionTest extends RNATest {
 		Periodical p = d.getPeriodical();
 		p.setcurrentEditionKey(Edition.createKey(2));
 		d.ofy().put(p);
-		d.transition.doTransition(Edition.createKey(0));
+		d.transition.transitionEdition();
 	}
 	
 	@Test
 	public void testSetBalance() throws RNAException {
-		d.transition.doTransition(Edition.createKey(0));
+		d.transition.transitionEdition();
 		d.transition.setPeriodicalBalance();
 		d.editions.setSpaceBalance(1, 100);
 		d.transition.finishTransition();

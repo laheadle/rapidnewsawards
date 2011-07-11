@@ -30,16 +30,16 @@ public class TransitionTask {
 	}
 	
 	public static void scheduleTransition(final Edition e) {
-		scheduleTransitionAt(e.getKey(), e.end);
+		scheduleTransitionAt(e.end);
 	}
 
-	public static void scheduleTransitionAt(final Key<Edition> e, Date date) {
+	public static void scheduleTransitionAt(Date date) {
 		Queue queue = QueueFactory.getDefaultQueue();
 		queue.add(withPayload(new Task() {
 			private static final long serialVersionUID = 1L;
 			@Override
 			public void rnaRun() throws RNAException {
-				d.transition.doTransition(e);
+				d.transition.transitionEdition();
 			}
 			@Override
 			public String fun() {

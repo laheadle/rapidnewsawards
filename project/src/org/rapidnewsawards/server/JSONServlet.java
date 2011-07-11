@@ -190,6 +190,9 @@ public class JSONServlet extends HttpServlet {
 				Edition ed = d.editions.getEdition(edition);
 				Boolean on = new Boolean(request.getParameter("on"));
 				VoteResult vr = d.users.voteFor(link, fullLink, ed.getKey(), on);
+				if (!vr.returnVal.equals(Response.SUCCESS)) {
+					throw new RNAException(vr.returnVal.toString());
+				}
 				vr.currentEdition = Edition.getNumber(d.editions.getCurrentEdition().getKey());
 				return vr;
 			}
@@ -311,11 +314,14 @@ public class JSONServlet extends HttpServlet {
 		public String requestTime;
 	}
 	
-	// 2s total
-	public static final int FEW = 10;
-	public static final int LONG = 200;
+	// 2.5s total
+	public static final int FEW = 5;
+	public static final int LONG = 500;
 
 
+	// 5 requests * 80ms per request + 2500ms waiting = 2900ms
+	// 5 requests * 500ms per request + 2500ms waiting = 5000ms
+	
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse resp)
 			throws ServletException, IOException {
@@ -340,7 +346,7 @@ public class JSONServlet extends HttpServlet {
 				}
 			};
 			re.payload = command.run(request, resp);
-			if (command.getRetries() > 5) {
+			if (command.getRetries() > 3) {
 				log.warning(String.format(
 						"command needed %d retries.", command.getRetries()));
 			}

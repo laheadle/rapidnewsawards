@@ -11,7 +11,7 @@ public abstract class ConcurrentCommand implements DeferredTask {
 
 	private static final int WARM  = 50;
 
-	private static final int HOT = 1000;
+	private static final int HOT = 200;
 
 	// from lowest to highest priority tasks
 
@@ -20,8 +20,8 @@ public abstract class ConcurrentCommand implements DeferredTask {
 	 */
 	private static final long serialVersionUID = 1L;
 
-	// 2s total
-	public static final int MANY = 2000;
+	// assume 25ms latency, so 5m total
+	public static final int MANY = 12000;
 	public static final int BRIEF = 1;
 
 	private static final Logger log = Logger.getLogger(ConcurrentServletCommand.class
@@ -51,6 +51,7 @@ public abstract class ConcurrentCommand implements DeferredTask {
 	@Override
 	public void run() {
 		try {
+			log.info(String.format("BEGIN deferred call %s", fun()));
 			while (getRetries() < maxTries) {
 				try {
 					rnaRun();
@@ -64,7 +65,7 @@ public abstract class ConcurrentCommand implements DeferredTask {
 				} catch (RNAException e) {
 					StringWriter sw = new StringWriter();
 					PrintWriter pw = new PrintWriter(sw);
-					e.printStackTrace(pw); 
+					e.printStackTrace(pw);
 					log.severe((e.message == null? "" : e.message) + sw.toString());
 					return; // GIVE UP!
 				}

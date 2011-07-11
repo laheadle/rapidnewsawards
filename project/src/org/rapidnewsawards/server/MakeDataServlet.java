@@ -45,10 +45,14 @@ public class MakeDataServlet extends HttpServlet {
 	public final static long ONE_HOUR = 60 * ONE_MINUTE; 		
 	public final static long FIVE_MINUTES = 5 * ONE_MINUTE; 
 	public final static int  NUM_EDITIONS = 12;
-
+	static HttpServletRequest req;
+	private static User judge;
+	private static User editor;
+	
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse response) {
 		try {
+			req = request;
 			out = response.getWriter();
 		} catch (IOException e1) {
 			throw new AssertionError();
@@ -83,7 +87,7 @@ public class MakeDataServlet extends HttpServlet {
 
 			if (doTransition) {
 				Date da = new Date(new Date().getTime() + 500L);
-				TransitionTask.scheduleTransitionAt(Edition.createKey(0), da);
+				TransitionTask.scheduleTransitionAt(da);
 			}
 			
 			if (numLinks > 0) {
@@ -137,20 +141,28 @@ public class MakeDataServlet extends HttpServlet {
 			}
 			catch (IllegalStateException e) {}
 		}
-		
+
+		User paul = welcome(makeEditor("ftrain@gmail.com"), "Paul Ford");
+		try {
+			if (req.getParameter("role").equals("judge")) {
+				judge = welcome(makeJudge("laheadle@gmail.com"), "Lyn Headley");
+				editor = paul;
+			}
+		}
+		catch (NullPointerException np) {
+			editor = welcome(makeEditor("laheadle@gmail.com"), "Lyn Headley");
+			judge = makeJudge("jqpublic909@gmail.com");
+			welcome(judge, "john q public");
+		}
+
 		welcome(makeEditor("joshuanyoung@gmail.com"), "Josh Young");
 		welcome(makeEditor("ohthatmeg@gmail.com"), "Megan Garber");
-		User paul = welcome(makeEditor("ftrain@gmail.com"), "Paul Ford");
 		User so = makeEditor("steveouting@gmail.com");
 		welcome(so, "Steve Outing");
 		welcome(makeEditor("jthomas100@gmail.com"), "Jeff Thomas");
 
 		welcome(makeEditor("pattonprice@gmail.com"), "Patton Price");
-		welcome(makeEditor("laheadle@gmail.com"), "Lyn Headley");
-
-
-		User jq = makeJudge("jqpublic909@gmail.com");
-		welcome(jq, "john q public");
+		
 
 
 
@@ -167,9 +179,9 @@ public class MakeDataServlet extends HttpServlet {
 		}
 
 		if (doFollow) {
-				d.user = paul;
-				Response r = d.social.doSocial(jq.getKey(), true);
-				assert(r.equals(Response.ABOUT_TO_FOLLOW));
+			d.user = editor;
+			Response r = d.social.doSocial(judge.getKey(), true);
+			assert(r.equals(Response.ABOUT_TO_FOLLOW));
 		}
 	}
 
