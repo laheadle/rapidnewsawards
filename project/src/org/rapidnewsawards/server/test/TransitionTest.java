@@ -25,7 +25,7 @@ public class TransitionTest extends RNATest {
 
 	@Test
 	public void testTransition() throws RNAException {
-		d.transition.doTransition(0);
+		d.transition.doTransition(Edition.createKey(0));
 		assertFalse(d.getPeriodical().isFinished());
 		assertTrue(d.getPeriodical().inTransition);
 		assertFalse(d.getPeriodical().userlocked);
@@ -33,7 +33,7 @@ public class TransitionTest extends RNATest {
 
 	@Test(expected = RNAException.class)
 	public void testBadCurrentTransition() throws Exception {
-		d.transition.doTransition(1);
+		d.transition.doTransition(Edition.createKey(1));
 	}
 	
 	@Test(expected = RNAException.class)
@@ -41,7 +41,7 @@ public class TransitionTest extends RNATest {
 		Periodical p = d.getPeriodical();
 		p.setFinished();
 		d.ofy().put(p);
-		d.transition.doTransition(0);
+		d.transition.doTransition(Edition.createKey(0));
 	}
 	
 	@Test(expected = RNAException.class)
@@ -49,7 +49,7 @@ public class TransitionTest extends RNATest {
 		Periodical p = d.getPeriodical();
 		p.setcurrentEditionKey(null);
 		d.ofy().put(p);
-		d.transition.doTransition(0);
+		d.transition.doTransition(Edition.createKey(0));
 	}
 	
 	// TODO This should throw an unchecked exception
@@ -58,12 +58,12 @@ public class TransitionTest extends RNATest {
 		Periodical p = d.getPeriodical();
 		p.setcurrentEditionKey(Edition.createKey(2));
 		d.ofy().put(p);
-		d.transition.doTransition(0);
+		d.transition.doTransition(Edition.createKey(0));
 	}
 	
 	@Test
 	public void testSetBalance() throws RNAException {
-		d.transition.doTransition(0);
+		d.transition.doTransition(Edition.createKey(0));
 		d.transition.setPeriodicalBalance();
 		d.editions.setSpaceBalance(1, 100);
 		d.transition.finishTransition();

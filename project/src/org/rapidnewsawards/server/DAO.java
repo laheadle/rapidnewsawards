@@ -198,7 +198,7 @@ public class DAO extends DAOBase {
 				if (p.isFinished())	
 					return getEdition(FINAL);
 				if (Edition.getNumber(p.getcurrentEditionKey()) == INITIAL) {
-					throw new RNAException("There is no current edition because we are just getting started. Now is the time for joining and following.");
+					throw new RNAException("There is no current edition because nothing has been published. Now is the time for joining and following.");
 				}
 				return o.get(Edition.getPreviousKey(p.getcurrentEditionKey()));
 			}
@@ -1015,10 +1015,10 @@ public class DAO extends DAOBase {
 
 	public class Transition {
 
-		public void doTransition(int editionNum) throws RNAException {
+		public void doTransition(Key<Edition> e) throws RNAException {
 			Edition current = editions.getCurrentEdition();
-			if (Edition.getNumber(current.getKey()) != editionNum) {
-				throw new RNAException(Integer.toString(editionNum) + " != " + current);
+			if (!current.getKey().equals(e)) {
+				throw new RNAException(e + " != " + current);
 			}
 			else {
 				transition.transitionEdition();
@@ -1338,7 +1338,7 @@ public class DAO extends DAOBase {
 			}
 			
 			lp.setUserLock();
-			TallyTask.writeVote(lp.transaction.getTxn(), u, e, l, on);
+			TallyTask.writeVote(lp.transaction.getTxn(), u.getKey(), e, l.getKey(), on);
 			lp.commit();
 			log.info(u + (on ? " FUND-> " : " DEFUND-> ") + l.url);
 			return Response.SUCCESS;
@@ -1359,7 +1359,7 @@ public class DAO extends DAOBase {
 				// non-ancestor query: we know this vote is present because the task was enqueued
 				v = ofy().query(Vote.class).filter("edition", ek).filter("link", lk).get();
 			}
-			TallyTask.tallyVote(txn.getTxn(), v, on);
+			TallyTask.tallyVote(txn.getTxn(), v.getKey(), on);
 			txn.getTxn().commit();
 		}
 
@@ -1497,7 +1497,7 @@ public class DAO extends DAOBase {
 			}
 		}
 		otx.put(space);
-		TallyTask.addJudgeScore(otx.getTxn(), v, v.authority, on);			
+		TallyTask.addJudgeScore(otx.getTxn(), v.getKey(), v.authority, on);			
 		otx.getTxn().commit();
 	}
 
@@ -1508,7 +1508,7 @@ public class DAO extends DAOBase {
 		JudgeInfluence ji = users.getJudgeInfluence(otx, v.voter, v.edition);
 		ji.score += on? authority : -authority;
 		otx.put(ji);
-		TallyTask.findEditorsToScore(otx.getTxn(), v, on);
+		TallyTask.findEditorsToScore(otx.getTxn(), vkey, on);
 		otx.getTxn().commit();
 	}
 	
@@ -1523,10 +1523,10 @@ public class DAO extends DAOBase {
 		}
 		
 		if (!on) {
-			TallyTask.deleteEditorVotes(otx.getTxn(), v, editors, v.edition);
+			TallyTask.deleteEditorVotes(otx.getTxn(), vkey, editors, v.edition);
 		}
 		else {
-			TallyTask.addEditorVotes(otx.getTxn(), v, editors, v.edition, on);
+			TallyTask.addEditorVotes(otx.getTxn(), v.getKey(), editors, v.edition, on, v.voter, v.link);
 		}
 		otx.getTxn().commit();
 	}
@@ -1534,7 +1534,7 @@ public class DAO extends DAOBase {
 	public void deleteEditorVotes(Key<Vote> v, Set<Key<User>> editors, Key<Edition> edition) {
 		Objectify otx = fact().beginTransaction();
 		otx.delete(otx.query(EditorVote.class).ancestor(v));
-		TallyTask.deleteVote(otx.getTxn(), ofy().get(v), editors, edition);
+		TallyTask.deleteVote(otx.getTxn(), v, editors, edition);
 		otx.getTxn().commit();
 	}
 

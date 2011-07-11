@@ -1,6 +1,6 @@
 package org.rapidnewsawards.server;
 
-public class TooBusyException extends Exception {
+public class TooBusyException extends Error {
 	private static final long serialVersionUID = 1L;
 	public int tries;
 

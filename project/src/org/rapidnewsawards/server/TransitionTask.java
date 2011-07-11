@@ -1,8 +1,11 @@
 package org.rapidnewsawards.server;
 
 import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withUrl;
+import static com.google.appengine.api.taskqueue.TaskOptions.Builder.withPayload;
 
 import java.io.IOException;
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
 import java.util.logging.Logger;
@@ -15,137 +18,108 @@ import javax.servlet.http.HttpServletResponse;
 import org.rapidnewsawards.core.Edition;
 
 import com.google.appengine.api.datastore.Transaction;
+import com.google.appengine.api.taskqueue.DeferredTask;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.google.appengine.api.taskqueue.TaskOptions;
 import com.googlecode.objectify.Key;
 
-public class TransitionTask  extends HttpServlet {
-	private static final Logger log = Logger.getLogger(TransitionTask.class
-			.getName());
-	private static final long serialVersionUID = 1L;
+public class TransitionTask {
 	private static DAO d = DAO.instance;
 
-	public static void scheduleTransition(Edition e) {
-		Queue queue = QueueFactory.getDefaultQueue();
-		queue.add(withUrl("/tasks/transition").method(TaskOptions.Method.GET)
-				.param("fun", "transition")
-				.param("fromEdition", Integer.toString(e.getNumber()))
-				.etaMillis(e.end.getTime()));
+	public static abstract class Task extends ConcurrentCommand implements DeferredTask {
+		
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 1L;
+
+		public Task() {
+			super(TONS, VERY_BRIEF);
+		}
+
+		public abstract void rnaRun() throws RNAException;
+	}
+	
+	public static void scheduleTransition(final Edition e) {
+		scheduleTransitionAt(e.getKey(), e.end);
 	}
 
-	public static void scheduleTransitionAt(Edition e, Date d) {
+	public static void scheduleTransitionAt(final Key<Edition> e, Date date) {
 		Queue queue = QueueFactory.getDefaultQueue();
-		queue.add(withUrl("/tasks/transition").method(TaskOptions.Method.GET)
-				.param("fun", "transition")
-				.param("fromEdition", Integer.toString(e.getNumber()))
-				.etaMillis(d.getTime()));
-
+		queue.add(withPayload(new Task() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public void rnaRun() throws RNAException {
+				d.transition.doTransition(e);
+			}
+			@Override
+			public String fun() {
+				return "doTransition";
+			}		
+		}).etaMillis(date.getTime()));
 	}
 
 	// these are all called, in this order, directly or indirectly by transitionEdition
 
-	public static void setEditionFinished(Transaction txn, Key<Edition> e) {
+	public static void setEditionFinished(final Transaction txn, final Key<Edition> e) {
 		Queue queue = QueueFactory.getDefaultQueue();
-		queue.add(txn, withUrl("/tasks/transition").method(TaskOptions.Method.GET)
-				.param("fun", "setEditionFinished")
-				.param("edition", Integer.toString(Edition.getNumber(e))));
+		queue.add(txn, withPayload(new Task() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public void rnaRun() throws RNAException {
+				d.editions.setEditionFinished(Edition.getNumber(e));
+			}
+			@Override
+			public String fun() {
+				return "setEditionFinished";
+			}		
+		}));
 	}
 	
 	public static void setPeriodicalBalance(Transaction txn) {
 		Queue queue = QueueFactory.getDefaultQueue();
-		queue.add(txn, withUrl("/tasks/transition").method(TaskOptions.Method.GET)
-				.param("fun", "setPeriodicalBalance"));		
+		queue.add(txn, withPayload(new Task() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public void rnaRun() throws RNAException {
+				d.transition.setPeriodicalBalance();
+			}
+			@Override
+			public String fun() {
+				return "setPeriodicalBalance";
+			}		
+		}));
 	}
 
-
-	public static void setSpaceBalance(Transaction txn, Edition e, int revenue) {
+	public static void setSpaceBalance(Transaction txn, final Edition e, final int balance) {
 		Queue queue = QueueFactory.getDefaultQueue();
-		queue.add(txn, withUrl("/tasks/transition").method(TaskOptions.Method.GET)
-				.param("fun", "setSpaceBalance")
-				.param("edition", Integer.toString(e.getNumber()))
-				.param("revenue", Integer.toString(revenue)));
+		queue.add(txn, withPayload(new Task() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public void rnaRun() throws RNAException {
+				d.editions.setSpaceBalance(e.number, balance);
+			}
+			@Override
+			public String fun() {
+				return "setSpaceBalance";
+			}		
+		}));
 	}
 
 	public static void finish(Transaction txn) {
 		Queue queue = QueueFactory.getDefaultQueue();
-		queue.add(txn, withUrl("/tasks/transition").method(TaskOptions.Method.GET)
-				.param("fun", "finish"));
-	}
-
-	@Override
-	public void doGet(HttpServletRequest request, HttpServletResponse response)
-	throws ServletException, IOException {
-		ConcurrentServletCommand command =
-			// highest priority task
-			new ConcurrentServletCommand(ConcurrentServletCommand.TONS, ConcurrentServletCommand.VERY_BRIEF) {
+		queue.add(txn, withPayload(new Task() {
+			private static final long serialVersionUID = 1L;
 			@Override
-			public Object perform(HttpServletRequest request, HttpServletResponse resp) 
-			throws RNAException {
-				_doGet(request, resp);
-				return Boolean.TRUE;
+			public void rnaRun() throws RNAException {
+				d.transition.finishTransition();
 			}
-		};
-		try {
-			command.run(request, response);
-			if (command.getRetries() > 0) {
-				log.warning(String.format(
-						"command %s needed %d retries.", request, command.getRetries()));
-			}			
-		} catch (RNAException e) {
-			throw new IllegalStateException(e);
-		} catch (TooBusyException e) {
-			throw new ConcurrentModificationException("too many retries");
-		}
-	}
-
-	private void _doGet(HttpServletRequest request, HttpServletResponse response) 
-	throws RNAException {
-
-		String fun = request.getParameter("fun");
-		if (fun == null) {
-			throw new IllegalArgumentException("fun");
-		}
-		if (fun.equals("transition")) {
-			String _from = request.getParameter("fromEdition");
-			if (_from == null) {
-				throw new IllegalArgumentException("from");
-			}
-			int from = Integer.valueOf(_from);
-			d.transition.doTransition(from);
-		}
-		else if (fun.equals("setEditionFinished")) {
-			String _edition = request.getParameter("edition");
-			if (_edition == null) {
-				throw new IllegalArgumentException("edition");
-			}
-			int edition = Integer.valueOf(_edition);
-			d.editions.setEditionFinished(edition);
-		}		
-		else if (fun.equals("setPeriodicalBalance")) {
-			d.transition.setPeriodicalBalance();
-		}		
-		else if (fun.equals("setSpaceBalance")) {
-			String _edition = request.getParameter("edition");
-			if (_edition == null) {
-				throw new IllegalArgumentException("edition");
-			}
-			String _revenue = request.getParameter("revenue");
-			if (_revenue == null) {
-				throw new IllegalArgumentException("revenue");
-			}
-			int edition = Integer.valueOf(_edition);
-			int revenue = Integer.valueOf(_revenue);
-			d.editions.setSpaceBalance(edition, revenue);
-		}		
-		else if (fun.equals("finish")) {
-			d.transition.finishTransition();
-		}
-		else {
-			throw new IllegalArgumentException("unknown fun: " + fun);
-		}
-	}
-
-	
+			@Override
+			public String fun() {
+				return "finishTransition";
+			}		
+		}));
+	}	
 
 }

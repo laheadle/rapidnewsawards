@@ -1,5 +1,6 @@
 package org.rapidnewsawards.core;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Id;
@@ -8,8 +9,13 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cached;
 
 @Cached
-public class Edition implements Comparable<Edition> {
+public class Edition implements Serializable, Comparable<Edition> {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
 	@Id	
 	private String id;
 	

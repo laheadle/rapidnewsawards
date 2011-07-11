@@ -343,9 +343,10 @@
     <div class="item"> Web Page: <a href="<%= webPage %>"> <%= webPage %> </a> </div> </script>
 
     <script type="text/template" id="is-following-template">
-      <span> Follow: </span>
-      <input id="is-following" type="checkbox" 
-	     <%= isFollowing? 'checked="yes"' : '' %>> </input> </script>
+      <div class="item"> 
+	<span> Follow: </span>
+	<input id="is-following" type="checkbox" 
+	       <%= isFollowing? 'checked="yes"' : '' %>> </input> </div> </script>
 
     <script type="text/template" id="person-link-template">
       <a href="<%= '#person/' + id %>"><%= nickname %></a></script>

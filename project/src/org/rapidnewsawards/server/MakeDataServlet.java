@@ -83,7 +83,7 @@ public class MakeDataServlet extends HttpServlet {
 
 			if (doTransition) {
 				Date da = new Date(new Date().getTime() + 500L);
-				TransitionTask.scheduleTransitionAt(d.editions.getEdition(0), da);
+				TransitionTask.scheduleTransitionAt(Edition.createKey(0), da);
 			}
 			
 			if (numLinks > 0) {
