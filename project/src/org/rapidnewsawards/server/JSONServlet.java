@@ -315,10 +315,12 @@ public class JSONServlet extends HttpServlet {
 	}
 	
 	// 2.5s total
-	public static final int FEW = 5;
+	public static final int FEW = 50;
+	public static final int LONG = 20;
+
+/*	public static final int FEW = 5;
 	public static final int LONG = 500;
-
-
+*/
 	// 5 requests * 80ms per request + 2500ms waiting = 2900ms
 	// 5 requests * 500ms per request + 2500ms waiting = 5000ms
 	

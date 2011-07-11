@@ -39,6 +39,7 @@ public class User {
 		this.isInitialized = false;
 		this.isEditor = isEditor;
 		this.lastLogin = new Date();
+		this.webPage = "";
 	}
 
 	@Override

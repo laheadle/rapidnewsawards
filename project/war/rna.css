@@ -37,7 +37,18 @@ a {
 }
 
 a.personLink:link, a.personLink:visited {
-    color: #a00060;
+    color: black;
+    text-decoration: underline;
+}
+
+a.personLink:active {
+    color: blue;
+    text-decoration: underline;
+}
+
+a.personLink:hover {
+    background-color: #00ffff;
+    text-decoration: underline;
 }
 
 a.personLink {
@@ -212,9 +223,36 @@ a.help {
 }
 
 
-#flash span.error { color: red }
-#flash span.redNotice { color: red }
-#flash span.notice { color: green }
+#flash span.error { 
+    padding-right: .4em;
+    padding-left: .4em;
+    font-weight: bold; 
+    background-color: red; 
+    color: black; 
+}
+#flash span.redNotice { 
+    padding-right: .4em;
+    padding-left: .4em;
+    font-weight: bold; 
+    background-color: red; 
+    color: black; 
+}
+
+#flash span.notice { 
+    padding-right: .4em;
+    padding-left: .4em;
+    font-weight: bold; 
+    background-color: #00f050; 
+    color: black; 
+}
+
+#flash span.reminderNotice { 
+    color: green; 
+}
+
+.italic {
+    font-style: italic;
+}
 
 #flash span.success { 
     padding-right: .4em;
@@ -228,6 +266,10 @@ a.help {
 
 
 /* --- supporting id's --- */
+
+.supportingEditors {
+    padding: 5px;
+}
 
 .collapsedEdition {
     margin-top: 5px;
@@ -359,7 +401,7 @@ a.help {
     width: 4.2em;
 }
 
-.userNickname {
+.boldHeader {
     font-size: 1em;
     font-weight: bold;
 }

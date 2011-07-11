@@ -651,7 +651,7 @@ $(function(){
 	    if (app.loginView.isCurrentUser(u) && !this.user().isEditor) {
 		var arg='\'http://newskraft-testing.appspot.com/#nominate/\'+encodeURIComponent(document.location.href)'
 		var link = '<a href="javascript:(function(){window.open('+arg+')})()"> Nominate </a>';
-		flashLog({type: 'notice', 
+		flashLog({type: 'reminderNotice', 
 			  header: 'For Easily Nominating Stories:',
 			  content: 'Drag ' + link + ' to your bookmarks toolbar now.'});
 	    }
@@ -1395,7 +1395,7 @@ $(function(){
 	app.hashRecent();
     });
 
-    $('a').live('click', function() {
+    $('a, input').live('click', function() {
 	flashClear('');
 	app.clearAllMenuSelections();
     });

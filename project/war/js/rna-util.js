@@ -20,8 +20,10 @@ window.initRNA = function () {
 	    }
 	    
 	    var span = this.$('span.flag');
+	    span.hide();
 	    span.removeClass('error success info notice redNotice').addClass(type);
 	    span.text(header || text[type]);
+	    span.fadeIn(300);
 	},
 
 	render: function() {
