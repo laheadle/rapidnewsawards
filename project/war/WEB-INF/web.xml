@@ -38,40 +38,14 @@
 		<servlet-class>org.rapidnewsawards.server.DoSomethingServlet</servlet-class>
 	</servlet>
 
-	<servlet>
-		<servlet-name>transitionTask</servlet-name>
-		<servlet-class>org.rapidnewsawards.server.TransitionTask</servlet-class>
-	</servlet>
-	<servlet>
-		<servlet-name>tallyTask</servlet-name>
-		<servlet-class>org.rapidnewsawards.server.TallyTask</servlet-class>
-	</servlet>
-	<servlet>
-		<servlet-name>socialTask</servlet-name>
-		<servlet-class>org.rapidnewsawards.server.SocialTask</servlet-class>
-	</servlet>
-
-
 	<servlet-mapping>
 		<servlet-name>killDataServlet</servlet-name>
 		<url-pattern>/killData</url-pattern>
 	</servlet-mapping>
 
 	<servlet-mapping>
-		<servlet-name>transitionTask</servlet-name>
-		<url-pattern>/tasks/transition</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
 		<servlet-name>JSONServlet</servlet-name>
 		<url-pattern>/JSONrpc</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>tallyTask</servlet-name>
-		<url-pattern>/tasks/tally</url-pattern>
-	</servlet-mapping>
-	<servlet-mapping>
-		<servlet-name>socialTask</servlet-name>
-		<url-pattern>/tasks/social</url-pattern>
 	</servlet-mapping>
 
 	<servlet-mapping>
@@ -97,16 +71,10 @@
             <web-resource-name> Tasks </web-resource-name>
             <url-pattern>/tasks/*</url-pattern>
         </web-resource-collection>
-        <auth-constraint>
-            <role-name>admin</role-name>
-        </auth-constraint>
         <web-resource-collection>
             <web-resource-name> AlterData </web-resource-name>
             <url-pattern>/*Data</url-pattern>
         </web-resource-collection>
-        <auth-constraint>
-            <role-name>admin</role-name>
-        </auth-constraint>
         <web-resource-collection>
             <web-resource-name> DoSomething </web-resource-name>
             <url-pattern>/do*</url-pattern>

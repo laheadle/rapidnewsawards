@@ -35,7 +35,7 @@ public class TransitionTask {
 		private static final long serialVersionUID = 1L;
 
 		public Task() {
-			super(TONS, VERY_BRIEF);
+			super(MANY, BRIEF);
 		}
 
 		public abstract void rnaRun() throws RNAException;

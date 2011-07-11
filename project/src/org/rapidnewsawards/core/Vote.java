@@ -7,6 +7,7 @@ import javax.persistence.Id;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Parent;
+import com.googlecode.objectify.annotation.Unindexed;
 
 @Cached
 public class Vote implements Comparable<Vote> {
@@ -17,7 +18,7 @@ public class Vote implements Comparable<Vote> {
 	
 	public Key<Link> link;
 	
-	public int authority;
+	@Unindexed public int authority;
 	
 	public Date time;
 	

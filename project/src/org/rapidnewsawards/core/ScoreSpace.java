@@ -4,6 +4,7 @@ import javax.persistence.Id;
 
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Parent;
+import com.googlecode.objectify.annotation.Unindexed;
 
 public class ScoreSpace {
 	@Id
@@ -12,15 +13,15 @@ public class ScoreSpace {
 	@Parent 
 	public Key<ScoreRoot> root;
 
-	public int balance;
+	@Unindexed public int balance;
 
-	public int totalSpend;
+	@Unindexed public int totalSpend;
 	
-	public int numFundedLinks;
+	@Unindexed public int numFundedLinks;
 
-	public int totalScore;
+	@Unindexed public int totalScore;
 
-	public boolean finished;
+	@Unindexed public boolean finished;
 	
 
 	public ScoreSpace() {}

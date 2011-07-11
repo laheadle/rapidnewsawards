@@ -13,19 +13,16 @@ public class ScoredLink {
 
     @Parent
     public Key<ScoreRoot> root;
-    
-	public Key<Edition> edition;
 
-	public Key<Link> link;
+    public Key<Link> link;
 	
 	public int score;
 
 	public ScoredLink() {}
 	
-	public ScoredLink(Key<Edition> edition, Key<ScoreRoot> root, 
+	public ScoredLink(Key<ScoreRoot> root, 
 			Key<Link> link, int score) {
 		this.root = root;
-		this.edition = edition;
 		this.link = link;
 		this.score = score;
 	}

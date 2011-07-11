@@ -8,21 +8,6 @@ import javax.servlet.http.HttpServletResponse;
 
 
 abstract class ConcurrentServletCommand {
-
-	// from lowest to highest priority tasks
-	
-	// 2s total
-	public static final int FEW = 20;
-	public static final int LONG = 100;
-
-	// 1s total
-	public static final int MANY = 100;
-	public static final int BRIEF = 10;
-	
-	// 5s total
-	public static final int TONS = 2500;
-	public static final int VERY_BRIEF = 2;
-
 	
 	private static final Logger log = Logger.getLogger(ConcurrentServletCommand.class
 			.getName());

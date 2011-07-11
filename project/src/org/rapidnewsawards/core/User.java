@@ -9,16 +9,17 @@ import com.googlecode.objectify.annotation.Unindexed;
 public class User {
 
 	@Id public Long id;
-	public Date lastLogin;
+
+	@Unindexed public Date lastLogin;
 
 	public String email;
 	public String domain;
 
 	public String nickname;
 
-	public boolean isInitialized;
+	@Unindexed public boolean isInitialized;
 	
-	public boolean isEditor;
+	@Unindexed public boolean isEditor;
 
 	@Unindexed
 	public String webPage;

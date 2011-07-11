@@ -311,6 +311,11 @@ public class JSONServlet extends HttpServlet {
 		public String requestTime;
 	}
 	
+	// 2s total
+	public static final int FEW = 10;
+	public static final int LONG = 200;
+
+
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse resp)
 			throws ServletException, IOException {
@@ -327,7 +332,7 @@ public class JSONServlet extends HttpServlet {
 		ResponseMessage re = new ResponseMessage();
 		try {
 			ConcurrentServletCommand command =
-				new ConcurrentServletCommand(ConcurrentServletCommand.FEW, ConcurrentServletCommand.LONG) {
+				new ConcurrentServletCommand(FEW, LONG) {
 				@Override
 				public Object perform(HttpServletRequest request, HttpServletResponse resp)
 				throws RNAException {
@@ -335,15 +340,16 @@ public class JSONServlet extends HttpServlet {
 				}
 			};
 			re.payload = command.run(request, resp);
-			if (command.getRetries() > 0) {
+			if (command.getRetries() > 5) {
 				log.warning(String.format(
-						"command %s needed %d retries.", c, command.getRetries()));
+						"command needed %d retries.", command.getRetries()));
 			}
 			re.status = OK;
 		} catch (RNAException e) {
 			re.payload = null;
 			re.status = BAD_REQUEST;
 			re.message = e.message;
+			log.warning(String.format("command issued bad request: %s %s", re.message, c));
 		}
 		catch (TooBusyException e) {
 			re.payload = null;

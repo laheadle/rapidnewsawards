@@ -31,9 +31,17 @@
 }
 
 a { 
-    color: blue; 
+    color: blue;
     cursor: pointer;
     text-decoration: none;
+}
+
+a.personLink:link, a.personLink:visited {
+    color: #a00060;
+}
+
+a.personLink {
+    color: #a00060;
 }
 
 h3, h4 {
@@ -87,8 +95,20 @@ h1.title {
 
 #time {
     float: right;
-    padding: 15px 30px 0 0;
+    padding: 13px 30px 0 0;
     vertical-align: bottom;
+}
+
+.floatRight {
+    float: right;
+}
+
+.padLeft {
+    padding-left: 40px;
+}
+
+.halfSize {
+    width: 50%;
 }
 
 .mainHeader {

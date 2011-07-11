@@ -9,6 +9,10 @@ import com.google.appengine.api.taskqueue.DeferredTask;
 
 public abstract class ConcurrentCommand implements DeferredTask {
 
+	private static final int WARM  = 50;
+
+	private static final int HOT = 1000;
+
 	// from lowest to highest priority tasks
 
 	/**
@@ -17,17 +21,8 @@ public abstract class ConcurrentCommand implements DeferredTask {
 	private static final long serialVersionUID = 1L;
 
 	// 2s total
-	public static final int FEW = 20;
-	public static final int LONG = 100;
-
-	// 1s total
-	public static final int MANY = 100;
-	public static final int BRIEF = 10;
-
-	// 5s total
-	public static final int TONS = 2500;
-	public static final int VERY_BRIEF = 2;
-
+	public static final int MANY = 2000;
+	public static final int BRIEF = 1;
 
 	private static final Logger log = Logger.getLogger(ConcurrentServletCommand.class
 			.getName());
@@ -70,14 +65,23 @@ public abstract class ConcurrentCommand implements DeferredTask {
 					StringWriter sw = new StringWriter();
 					PrintWriter pw = new PrintWriter(sw);
 					e.printStackTrace(pw); 
-					log.severe((e.getMessage() == null? "" : e.getMessage()) + sw.toString());
+					log.severe((e.message == null? "" : e.message) + sw.toString());
 					return; // GIVE UP!
 				}
 			}
 			throw new TooBusyException(getRetries());
 		}
 		finally {
-			log.info(String.format("end DEFERRED call %s: %d tries", fun(), getRetries() + 1));
+			int re = getRetries() + 1;
+			if (re > HOT) {
+				log.severe(String.format("HOT - end DEFERRED call %s: %d tries", fun(), re));
+			}
+			else if (re > WARM ) {
+				log.warning(String.format("WARM - end DEFERRED call %s: %d tries", fun(), re));
+			}
+			else {
+				log.info(String.format("end DEFERRED call %s: %d tries", fun(), re));
+			}
 		}
 	}
 }

@@ -1476,7 +1476,7 @@ public class DAO extends DAOBase {
 		
 		if (sl == null) {
 			if (on) {
-				sl = new ScoredLink(v.edition, space.root, v.link, v.authority);
+				sl = new ScoredLink(space.root, v.link, v.authority);
 				if (v.authority > 0) {
 					space.numFundedLinks++;
 				}

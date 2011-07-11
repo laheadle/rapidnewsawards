@@ -652,7 +652,7 @@ $(function(){
 		var arg='\'http://newskraft-testing.appspot.com/#nominate/\'+encodeURIComponent(document.location.href)'
 		var link = '<a href="javascript:(function(){window.open('+arg+')})()"> Nominate </a>';
 		flashLog({type: 'notice', 
-			  header: 'For Nominating Stories:',
+			  header: 'For Easily Nominating Stories:',
 			  content: 'Drag ' + link + ' to your bookmarks toolbar now.'});
 	    }
 
@@ -952,7 +952,7 @@ $(function(){
 	view: CollapsedEditionView,
 
 	comparator: function(edition) {
-	    return - edition.get('number');
+	    return - parseInt(edition.get('number'));
 	}
 
     });
@@ -970,6 +970,13 @@ $(function(){
 	    // fixme refactor
 	    $(this.el).append(this.make('div', {'class': 'mainHeader'}));
 	    $(this.el).append(this.make('div', {'class': 'list'}));
+	    if(attrs.data) {
+		attrs.data.sort(
+		    function(left, right) {
+			return parseInt(left.number) < parseInt(right.number) ? 1 :
+			    parseInt(right.number) < parseInt(left.number) ? -1 : 0;
+		    });
+	    }
 	    this.glist = 
 		new GenList({parent: this, 
 			     list: new EditionList});
@@ -1070,11 +1077,11 @@ $(function(){
 	    if (this.loggedIn()) {
 		var nick = this.model.get('nickname');
 		this.$('a.login').text(nick);
-		this.$('a.logout').text('[Log out]')
+		this.$('a.logout').text('[Sign out]')
 		.css('padding-left', '5px');
 	    }
 	    else {
-		this.$('a.login').text('[Log In / Join]');
+		this.$('a.login').text('[Sign In / Join]');
 		this.$('a.logout').text('')
 		.css('padding-left', '0');
 	    }

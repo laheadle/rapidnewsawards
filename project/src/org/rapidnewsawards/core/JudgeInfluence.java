@@ -4,17 +4,16 @@ import javax.persistence.Id;
 
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Parent;
+import com.googlecode.objectify.annotation.Unindexed;
 
 public class JudgeInfluence {
 
-	@Id
-	public Long id;
+	@Id public Long id;
 
-	public int authority; 
-	public int score;
+	@Unindexed public int authority; 
+	@Unindexed public int score;
 	
-	@Parent
-	public Key<ScoreSpace> space;
+	@Parent public Key<ScoreSpace> space;
 	public Key<User> user;
 
 

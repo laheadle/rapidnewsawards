@@ -6,6 +6,7 @@ import javax.persistence.Id;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Parent;
+import com.googlecode.objectify.annotation.Unindexed;
 
 @Entity
 
@@ -21,6 +22,8 @@ public class Follow {
 	public Key<User> editor;
 	public Key<User> judge;
 	public Key<Edition> edition;
+	
+	@Unindexed
 	public Key<SocialEvent> event; // the event establishing the follow
 
 	public Follow() {}

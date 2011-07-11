@@ -8,6 +8,7 @@ import javax.persistence.Id;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Parent;
+import com.googlecode.objectify.annotation.Unindexed;
 
 @Entity
 /*
@@ -29,7 +30,7 @@ public class SocialEvent {
 	/*
 	 * false if this is an unfollow
 	 */
-	public boolean on;
+	@Unindexed public boolean on;
 	
 	public SocialEvent() {}
 	
