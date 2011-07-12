@@ -41,6 +41,22 @@ a.personLink:link, a.personLink:visited {
     text-decoration: underline;
 }
 
+a.linkButton:link, a.linkButton:visited {
+    background-color: #0060af;
+    color: white;
+    padding: 5px;
+    border: 1px solid black;
+    margin: 5px;
+}
+
+a.linkButton:active {
+    background-color: #00f060;
+}
+
+a.linkButton:hover {
+    color: black;
+}
+
 a.personLink:active {
     color: blue;
     text-decoration: underline;

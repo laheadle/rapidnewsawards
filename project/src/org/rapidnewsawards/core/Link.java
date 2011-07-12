@@ -24,7 +24,7 @@ public class Link {
 	}
 
 	public Link(String url, String title, String domain, Key<User> submitter) {
-		this.parent = Periodical.rootKey();
+		this.parent = rootKey();
 		this.submitter = submitter;
 		this.title = title;
 		this.url = url;
@@ -35,5 +35,9 @@ public class Link {
 
 	public static Key<Link> createKey(Long linkId) {
 		return new Key<Link>(Periodical.rootKey(), Link.class, linkId);	
+	}
+
+	public static Key<Root> rootKey() {
+		return new Key<Root>(Root.class, Periodical.LINK_ROOT_ID);
 	}
 }

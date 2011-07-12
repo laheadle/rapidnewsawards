@@ -1111,7 +1111,7 @@ public class DAO extends DAOBase {
 			assert (submitter != null);
 			Objectify txn = fact().beginTransaction();
 			String domain = new java.net.URL(url).getHost();
-			Link l = txn.query(Link.class).ancestor(Periodical.rootKey()).filter(Name.URL.name, url).get();
+			Link l = txn.query(Link.class).ancestor(Link.rootKey()).filter(Name.URL.name, url).get();
 			if (l == null) {
 				l = new Link(url, title, domain, submitter);
 				txn.put(l);
@@ -1275,7 +1275,7 @@ public class DAO extends DAOBase {
 					return vr;
 				}
 
-				Link l = ofy().query(Link.class).ancestor(Periodical.rootKey()).filter(Name.URL.name, link).get();
+				Link l = ofy().query(Link.class).ancestor(Link.rootKey()).filter(Name.URL.name, link).get();
 				if (l == null) {
 					String title = TitleGrabber.getTitle(link);
 					vr.suggestedTitle = title;

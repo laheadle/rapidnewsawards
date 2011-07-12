@@ -888,6 +888,7 @@ $(function(){
 				     // story info
 				     _copy));
 	    this.bindEvents(this);
+	    $('.fadeIn').hide().fadeIn(2000);
 	},
 
 	bindEvents: function(self) {

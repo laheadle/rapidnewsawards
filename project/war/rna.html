@@ -279,23 +279,27 @@
 	&#9657 <%= rMake('#person-set-template', {people: eds}) %> </div> </script>
 
     <script type="text/template" id="full-story-template">
-      <div>
+      <div class="mainHeader"> Supported Work </div>
+      <div class="item">
 	<span class="bigRevenue"> <%= fundingStr %></span>
 	<a class="titleLink" target="_blank" href="<%= link.url %>"> <%= link.title %> </a>
 	<div class="submitterLine"> 
 	  nominated by <%= rMake('#person-link-template', submitter) %> 
 	  from <%= link.domain %> </div>
 
+	<div class="fadeIn supported">
+	  <a class="linkButton" target="_blank" href="<%= link.url %>"> Visit Story </a> 
         <% if (isCurrent && !app.loginView.isEditor()) { %>
           <span> Fund this work: </span>
 	  <input id="is-funding" type="checkbox" 
 		 <%= userIsFunding? 'checked="yes"' : '' %>> </input>
 
   	<% } else if (userIsFunding && app.loginView.isLoggedInJudge()) { %>
-          <div class="supported"> You <span class="emphatic"> supported </span> this work. </div>	
+          You <span class="emphatic"> supported </span> this work.
 	<% } else if (app.loginView.isLoggedInJudge()) { %>
-          <div class="supported"> You did <span class="emphatic"> not </span> support this story. </div>	
+          You did <span class="emphatic"> not </span> support this story.
 	<% } %>
+	</div>
 
 	<div class="middleHeader"> Funding during 
 	  <a href="#topStories/<%= edition.number %>"> <%= edition.displayStr %> </div>

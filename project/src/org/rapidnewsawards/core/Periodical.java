@@ -20,6 +20,7 @@ public class Periodical {
 	private static final int TEST_INITIAL_BALANCE = 780000;
 
 	public static final long ROOT_ID = 1L;
+	public static final long LINK_ROOT_ID = 2L;
 
 	// TODO 2.0 rename to nextEditionKey
 	private Key<Edition> currentEditionKey;

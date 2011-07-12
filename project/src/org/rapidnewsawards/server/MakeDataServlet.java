@@ -222,7 +222,10 @@ public class MakeDataServlet extends HttpServlet {
 		final Root root = new Root();
 		root.id = Periodical.ROOT_ID;
 		o.put(root);
-		
+		final Root link_root = new Root();
+		link_root.id = Periodical.LINK_ROOT_ID;
+		o.put(link_root);
+
 		final Periodical p = new Periodical(Name.AGGREGATOR_NAME);
 		p.numEditions = editionCount;
 		assert(o.put(p) != null);
