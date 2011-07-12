@@ -34,7 +34,7 @@ public class Link {
 	public Link() {}
 
 	public static Key<Link> createKey(Long linkId) {
-		return new Key<Link>(Periodical.rootKey(), Link.class, linkId);	
+		return new Key<Link>(rootKey(), Link.class, linkId);	
 	}
 
 	public static Key<Root> rootKey() {

@@ -314,10 +314,14 @@ public class JSONServlet extends HttpServlet {
 		public String requestTime;
 	}
 	
-	// 2.5s total
+	// 1S waiting + 800-5000 ms in operations = 1.8 - 6s
+	public static final int FEW = 10;
+	public static final int LONG = 100;
+	
+/*	// 2.5s total
 	public static final int FEW = 50;
 	public static final int LONG = 20;
-
+*/
 /*	public static final int FEW = 5;
 	public static final int LONG = 500;
 */
