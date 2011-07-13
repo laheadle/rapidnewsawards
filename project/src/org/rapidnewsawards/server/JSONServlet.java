@@ -7,6 +7,7 @@ import java.net.MalformedURLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -34,9 +35,14 @@ public class JSONServlet extends HttpServlet {
 	private static final long serialVersionUID = 1L;
 	private static final Logger log = Logger.getLogger(JSONServlet.class
 			.getName());
+	
 	private static final String TRY_AGAIN = "TRY_AGAIN";
 	private static final String SERVER_ERROR = "SERVER_ERROR";
 
+	static {
+		log.addHandler(new ErrorMailer());
+	}
+	
 	private static abstract class Parser {
 		public abstract Object parse(String value);
 	}
@@ -121,6 +127,15 @@ public class JSONServlet extends HttpServlet {
 			@Override
 			public Object getResult() {
 				return d.editions.getAllEditions();
+			}
+		});
+
+		commandsMap.put("error", new AbstractCommand() {
+			@Override
+			public Object getResult() {
+				String str = request.getParameter("str");
+				log.severe(str);
+				return "ok";
 			}
 		});
 
@@ -334,7 +349,7 @@ public class JSONServlet extends HttpServlet {
 		String fun = request.getParameter("fun");
 		PrintWriter out = resp.getWriter();
 		if (fun == null) {
-			out.println("invalid function");
+			out.println("invalid user function (null)");
 			return;
 		}
 		Gson g = new Gson();
@@ -354,20 +369,20 @@ public class JSONServlet extends HttpServlet {
 			re.payload = command.run(request, resp);
 			if (command.getRetries() > 3) {
 				log.warning(String.format(
-						"command needed %d retries.", command.getRetries()));
+						"user needed %d retries.", command.getRetries()));
 			}
 			re.status = OK;
 		} catch (RNAException e) {
 			re.payload = null;
 			re.status = BAD_REQUEST;
 			re.message = e.message;
-			log.warning(String.format("command issued bad request: %s %s", re.message, c));
+			log.warning(String.format("bad user request: %s %s", re.message, c));
 		}
 		catch (TooBusyException e) {
 			re.payload = null;
 			re.status = TRY_AGAIN;
 			re.message = "Things are busy...please try again!";
-			log.severe(String.format("%s command gave up after %d retries!", c, e.tries));
+			log.severe(String.format("user gave up after %d retries! %s", e.tries, c));
 		}
 		catch (Exception e) {
 			re.payload = null;

@@ -13,6 +13,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
 
+import net.sf.jsr107cache.Cache;
+import net.sf.jsr107cache.CacheException;
+import net.sf.jsr107cache.CacheManager;
+
 import org.rapidnewsawards.core.Donation;
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.EditorInfluence;
@@ -105,9 +109,22 @@ public class DAO extends DAOBase {
 
 	public Editions editions;
 
+	private Cache cache;
+	
 	public static final Logger log = Logger.getLogger(DAO.class.getName());
 
+	static {
+		log.addHandler(new ErrorMailer());
+	}
+	
 	public DAO() {
+        try {
+            cache = CacheManager.getInstance().getCacheFactory().createCache(Collections.emptyMap());
+        } catch (CacheException e) {
+        	log.severe("unable to init cache!");
+        	cache = null;
+        }
+	
 		user = null;
 		social = new Social();
 		transition = new Transition();
@@ -642,6 +659,7 @@ public class DAO extends DAOBase {
 
 
 		public void setEditionFinished(int edition) throws RNAException {
+			lockCache();
 			Objectify oTxn = fact().beginTransaction();
 			ScoreSpace s = getScoreSpace(oTxn, Edition.createKey(edition));
 			s.finished = true;
@@ -704,6 +722,7 @@ public class DAO extends DAOBase {
 		public void writeSocialEvent(
 				final Key<User> from, final Key<User> to, final Key<Edition> e, 
 				boolean on, boolean cancelPending) throws RNAException {
+			lockCache();
 			assert(getPeriodical().userlocked);
 			assert(!getPeriodical().inTransition);
 			if (from.equals(to)) {
@@ -838,6 +857,10 @@ public class DAO extends DAOBase {
 		/* Do a follow, unfollow, or cancel pending follow, unfollow */
 		public Response doSocial(Key<User> from, Key<User> to, Key<Edition> e, boolean on) 
 		throws RNAException {
+
+			if (isCacheLocked()) {
+				throw new CacheWait();
+			}
 			
 			if (Edition.isFinal(e, editions.getNumEditions())){
 				log.warning(String.format(
@@ -1095,6 +1118,7 @@ public class DAO extends DAOBase {
 		}
 
 		public void finishTransition() throws RNAException {
+			unLockCache();
 			assert(getPeriodical().inTransition);
 			// the final step in transition machinery!
 			LockedPeriodical lp = lockPeriodical();
@@ -1301,6 +1325,10 @@ public class DAO extends DAOBase {
 				throws RNAException {
 			assert(e != null && l != null);
 			
+			if (isCacheLocked()) {
+				throw new CacheWait();
+			}
+			
 			// obtain lock
 			LockedPeriodical lp = lockPeriodical();
 
@@ -1347,6 +1375,7 @@ public class DAO extends DAOBase {
 		
 		public void writeVote(Key<User> uk, Key<Edition> ek,
 				Key<Link> lk, boolean on) {
+				// lock 
 			assert(getPeriodical().userlocked);
 			Objectify txn = fact().beginTransaction();
 			Vote v = null;
@@ -1579,9 +1608,32 @@ public class DAO extends DAOBase {
 	}
 
 	public void releaseUserLock() throws RNAException {
+		unLockCache();        
 		LockedPeriodical lp = lockPeriodical();
 		lp.releaseUserLock();
 		lp.commit();
+	}
+
+	private void unLockCache() {
+		if (cache != null) {
+			cache.put("locked", Boolean.FALSE);
+		}
+	}
+
+	private void lockCache() {
+		if (cache != null) {
+			cache.put("locked", Boolean.TRUE);
+		}
+	}
+
+	private boolean isCacheLocked() {
+		if (cache != null) {
+			Object o = cache.get("locked");
+			if (o != null) {
+				return (Boolean) o;
+			}
+		}
+		return false;
 	}
 
 	public void donate(String name, String donation, String webPage,

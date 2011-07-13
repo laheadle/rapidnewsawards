@@ -20,10 +20,9 @@ window.initRNA = function () {
 	    }
 	    
 	    var span = this.$('span.flag');
-	    span.hide();
 	    span.removeClass('error success info notice reminderNotice redNotice').addClass(type);
 	    span.text(header || text[type]);
-	    span.fadeIn(300);
+	    span.fadeIn(900);
 	},
 
 	render: function() {
@@ -82,7 +81,7 @@ window.initRNA = function () {
     Requester.prototype.request = function (method, attrs, success, err) {
 	log({info: 'doRequest: ' + JSON.stringify(attrs)});
 	var self = this;
-	var reactTo = function (data) {
+	var _reactTo = function (data) {
 	    var empty = !data || data == "" || data.match(/^[ \t\r\n]+$/);
 	    log(attrs.fun + ' returned ' + 
 		(empty? 'null' : JSON.stringify(data)));
@@ -120,6 +119,18 @@ window.initRNA = function () {
 		    self.state = self.state.supercede(success, payload);
 		}
 	};
+	var reactTo = function(data) {
+	    try {
+		return _reactTo(data);
+	    }
+	    catch (e) {
+		var str = ('----error: ' + e + ' --- request: ' +
+			   JSON.stringify(attrs));
+		method.apply($, ['JSONrpc', {fun: 'error', str: str}, 
+				 function() { log('error report received');}]);
+		flashError("You have discovered a bug: it has been reported to laheadle@gmail.com");
+	    }
+	}
 	method.apply($, ['JSONrpc', attrs, reactTo]);
     };
 

@@ -1176,6 +1176,7 @@ $(function(){
 	_edition: function(edNum, fun, order, view, getAttrs, inits) {	    
 	    var self = this;
 	    var fetch = function(data) { 
+		this.foo.bar.baz = 6;
 		if (data && data.edition) {
 		    // fixme main list doesn't immediately update 
 		    // with welcome message after join

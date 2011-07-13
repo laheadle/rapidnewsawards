@@ -15,9 +15,11 @@ abstract class ConcurrentServletCommand {
 	private final int maxTries;
 	private final int sleepInterval;
 	private int retries;
-
+	private int cacheWaits;
+	
 	public ConcurrentServletCommand(int maxTries, int sleepInterval) {
 		this.setRetries(0);
+		this.setCacheWaits(0);
 		this.maxTries = maxTries;
 		this.sleepInterval = sleepInterval;
 	}
@@ -41,15 +43,30 @@ abstract class ConcurrentServletCommand {
 						Thread.sleep(sleepInterval);
 					} catch (InterruptedException e1) {}
 				}
+				catch (CacheWait e) {
+					setRetries(getRetries() + 1);
+					setCacheWaits(getCacheWaits() + 1);
+					try {
+						Thread.sleep(sleepInterval);
+					} catch (InterruptedException e1) {}
+				}
 			}
 			throw new TooBusyException(getRetries());
 		}
 		finally {
 			assert(fun != null);
-			log.info(String.format("end call %s: %d tries", fun, getRetries() + 1));			
+			log.info(String.format("end call %s: %d tries, %d cache waits", fun, getRetries() + 1, getCacheWaits()));			
 		}
 	}
 	
+	private void setCacheWaits(int i) {
+		cacheWaits = i;
+	}
+
+	private int getCacheWaits() {
+		return cacheWaits;
+	}
+
 	protected abstract Object perform(HttpServletRequest request, HttpServletResponse resp) 
 	throws RNAException;
 
