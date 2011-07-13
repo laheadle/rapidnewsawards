@@ -32,11 +32,11 @@ public class TitleGrabber {
                 }
             }
             reader.close();
-            return "Not sure";
+            return "?";
         } catch (MalformedURLException e) {
             return "Bad URL";
         } catch (IOException e) {
-            return "Network Error";
+            return "?";
         }
 	}
 	

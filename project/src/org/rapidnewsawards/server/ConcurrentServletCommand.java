@@ -1,7 +1,6 @@
 package org.rapidnewsawards.server;
 
 import java.util.ConcurrentModificationException;
-import java.util.Random;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;

@@ -2,6 +2,7 @@ package org.rapidnewsawards.server;
 
 import java.io.Serializable;
 import java.net.MalformedURLException;
+import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
@@ -15,7 +16,6 @@ import java.util.Set;
 import java.util.logging.Logger;
 
 import net.sf.jsr107cache.Cache;
-import net.sf.jsr107cache.CacheException;
 import net.sf.jsr107cache.CacheManager;
 
 import org.rapidnewsawards.core.Donation;
@@ -1286,6 +1286,10 @@ public class DAO extends DAOBase {
 			try {
 				UserService userService = UserServiceFactory.getUserService();
 
+				try { new URL(link); } catch (MalformedURLException e) {
+						vr.returnVal = Response.BAD_URL;
+						return vr;
+				}				
 				// TODO test user login state for votes
 				if (user == null) {
 					vr.returnVal = Response.NOT_LOGGED_IN;
@@ -1319,7 +1323,7 @@ public class DAO extends DAOBase {
 				return vr;
 			}
 			finally {
-				if (!vr.returnVal.equals(Response.SUCCESS)) {
+				if ((vr.returnVal != null) && !vr.returnVal.equals(Response.SUCCESS)) {
 					log.warning(vr.returnVal.toString());
 				}
 			}
@@ -1627,14 +1631,14 @@ public class DAO extends DAOBase {
 				Operation op = getCacheLock();
 				long when = op.when;
 				long diff = new Date().getTime() - when;
-				if (diff > 2000) {
-					log.severe(String.format("time to unlock %s (ms): %d", op.what, diff));
+				if (diff > 3000) {
+					log.severe(String.format("time to perform %s (ms): %d", op.what, diff));
 				}
 				else if (diff > 1000) {
-					log.warning(String.format("time to unlock %s (ms): %d", op.what, diff));
+					log.warning(String.format("time to perform %s (ms): %d", op.what, diff));
 				}
 				else {
-					log.info(String.format("time to unlock %s (ms): %d", op.what, diff));
+					log.info(String.format("time to perform %s (ms): %d", op.what, diff));
 				}
 			}
 			cache.put("locked", Boolean.FALSE);

@@ -7,8 +7,6 @@ import java.net.MalformedURLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
-import java.util.logging.Level;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -260,17 +258,10 @@ public class JSONServlet extends HttpServlet {
 					vr.currentEdition = ed.getNumber();
 					return vr;
 				}
-				catch (MalformedURLException ex) {
-					try {
-						VoteResult vr = d.editions.submitStory("http://" + url, title, ed.getKey());
-						vr.currentEdition = ed.getNumber();
-						return vr;
-					}
-					catch (MalformedURLException ex2) {
-						// TODO Test on frontend
-						log.warning("bad url " +  url + "submitted by " + d.user == null? "anon" : d.user.toString());
-						throw new RNAException("Malformed URL");
-					}
+				catch (MalformedURLException ex2) {
+					// TODO Test on frontend
+					log.warning("bad url " +  url + "submitted by " + d.user == null? "anon" : d.user.toString());
+					throw new RNAException("Malformed URL");
 				}
 			}
 		});

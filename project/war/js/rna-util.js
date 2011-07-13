@@ -74,8 +74,7 @@ window.initRNA = function () {
 
     var Requester = function() {
 	this.living = true;
-	this.maxTries = 6;
-	this.numTries = 1;
+	this.giveUpWhen = new Date().getTime() + (1000 * 15);
 	this.state = {
 	    interrupted: false
 	};
@@ -139,8 +138,7 @@ window.initRNA = function () {
 	    $('#loadMessage').html('');
 
 	    if (response.status == 'TRY_AGAIN') {
-		if (self.numTries < self.maxTries) {
-		    self.numTries++;
+		if (new Date().getTime() < self.giveUpWhen) {
 		    flashInfo('Working on it...');
 		    self.request(method, attrs, success, err);
 		}
