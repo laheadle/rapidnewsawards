@@ -1,5 +1,6 @@
 package org.rapidnewsawards.server;
 
+import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -110,6 +111,8 @@ public class DAO extends DAOBase {
 	public Editions editions;
 
 	private Cache cache;
+
+	public boolean useCacheLock = false;
 	
 	public static final Logger log = Logger.getLogger(DAO.class.getName());
 
@@ -120,8 +123,9 @@ public class DAO extends DAOBase {
 	public DAO() {
         try {
             cache = CacheManager.getInstance().getCacheFactory().createCache(Collections.emptyMap());
-        } catch (CacheException e) {
-        	log.severe("unable to init cache!");
+            cache.put("locked", Boolean.FALSE);
+        } catch (Exception e) {
+        	log.severe("unable to init cache! " + e.toString());
         	cache = null;
         }
 	
@@ -136,11 +140,11 @@ public class DAO extends DAOBase {
 	public class Editions {
 
 		// TODO 2.0 make enums
-		private static final int INITIAL = 0;
+		public static final int INITIAL = 0;
 		public static final int CURRENT = -1;
 		public static final int NEXT = -2;
 		public static final int FINAL = -3;
-		private static final int PREVIOUS = -4;
+		static final int PREVIOUS = -4;
 		public static final int CURRENT_OR_FINAL = -5;
 
 		private EditionMessage makeEditionMessage(Objectify ofy, Edition e) {
@@ -659,7 +663,6 @@ public class DAO extends DAOBase {
 
 
 		public void setEditionFinished(int edition) throws RNAException {
-			lockCache();
 			Objectify oTxn = fact().beginTransaction();
 			ScoreSpace s = getScoreSpace(oTxn, Edition.createKey(edition));
 			s.finished = true;
@@ -722,7 +725,6 @@ public class DAO extends DAOBase {
 		public void writeSocialEvent(
 				final Key<User> from, final Key<User> to, final Key<Edition> e, 
 				boolean on, boolean cancelPending) throws RNAException {
-			lockCache();
 			assert(getPeriodical().userlocked);
 			assert(!getPeriodical().inTransition);
 			if (from.equals(to)) {
@@ -850,6 +852,10 @@ public class DAO extends DAOBase {
 			if (from.equals(to)) {
 				throw new RNAException("can't follow self");
 			}
+			if (isCacheLocked() && useCacheLock ) {
+				throw new CacheWait();
+			}
+			
 			return doSocial(from, to, editions.getEdition(
 					Editions.CURRENT_OR_FINAL).getKey(), on);
 		}
@@ -858,10 +864,6 @@ public class DAO extends DAOBase {
 		public Response doSocial(Key<User> from, Key<User> to, Key<Edition> e, boolean on) 
 		throws RNAException {
 
-			if (isCacheLocked()) {
-				throw new CacheWait();
-			}
-			
 			if (Edition.isFinal(e, editions.getNumEditions())){
 				log.warning(String.format(
 						"Attempted to socialize during final edition: User %s, Edition %s",
@@ -944,7 +946,8 @@ public class DAO extends DAOBase {
 				SocialTask.writeSocialEvent(
 						from, to, Edition.getNextKey(e), on, 
 						aboutToSocial != null, lp.transaction.getTxn());
-				lp.commit(); 
+				lp.commit();
+				lockCache("social"); 
 				// no-op: only used for ancestor read query
 				socialTxn.getTxn().commit();
 				assert(!getPeriodical().inTransition);
@@ -1115,6 +1118,7 @@ public class DAO extends DAOBase {
 			TransitionTask.setEditionFinished(locked.transaction.getTxn(), 
 					current.getKey());
 			locked.commit();
+			lockCache("transition");
 		}
 
 		public void finishTransition() throws RNAException {
@@ -1325,7 +1329,7 @@ public class DAO extends DAOBase {
 				throws RNAException {
 			assert(e != null && l != null);
 			
-			if (isCacheLocked()) {
+			if (isCacheLocked() && useCacheLock) {
 				throw new CacheWait();
 			}
 			
@@ -1369,6 +1373,7 @@ public class DAO extends DAOBase {
 			lp.setUserLock();
 			TallyTask.writeVote(lp.transaction.getTxn(), u.getKey(), e, l.getKey(), on);
 			lp.commit();
+			lockCache("vote");
 			log.info(u + (on ? " FUND-> " : " DEFUND-> ") + l.url);
 			return Response.SUCCESS;
 		}
@@ -1616,13 +1621,43 @@ public class DAO extends DAOBase {
 
 	private void unLockCache() {
 		if (cache != null) {
+			if (!isCacheLocked()) {
+				log.warning("cache not locked!");
+			} else {
+				Operation op = getCacheLock();
+				long when = op.when;
+				long diff = new Date().getTime() - when;
+				if (diff > 2000) {
+					log.severe(String.format("time to unlock %s (ms): %d", op.what, diff));
+				}
+				else if (diff > 1000) {
+					log.warning(String.format("time to unlock %s (ms): %d", op.what, diff));
+				}
+				else {
+					log.info(String.format("time to unlock %s (ms): %d", op.what, diff));
+				}
+			}
 			cache.put("locked", Boolean.FALSE);
 		}
 	}
 
-	private void lockCache() {
+	private Operation getCacheLock() {
+		Object o = cache.get("op");
+		return o == null? null : (Operation) o;
+	}
+
+	private static class Operation implements Serializable {
+		private static final long serialVersionUID = 1L;
+		public long when; public String what; 
+	}
+	
+	private void lockCache(String func) {
 		if (cache != null) {
 			cache.put("locked", Boolean.TRUE);
+			Operation op = new Operation();
+			op.when = new Date().getTime();
+			op.what = func;
+			cache.put("op", op);	
 		}
 	}
 

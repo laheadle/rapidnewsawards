@@ -3,7 +3,7 @@
     <name>default</name>
     <rate>80/s</rate>
     <bucket-size>100</bucket-size>
-    <max-concurrent-requests>20</max-concurrent-requests>
+    <max-concurrent-requests>80</max-concurrent-requests>
     
     <retry-parameters>
       <task-age-limit>25m</task-age-limit>
@@ -11,6 +11,21 @@
       <max-backoff-seconds>1</max-backoff-seconds>
       <min-backoff-seconds>1</min-backoff-seconds>
       <max-doublings>0</max-doublings>
+    </retry-parameters>
+    
+      </queue>
+  <queue>
+    <name>mail</name>
+    <rate>3/m</rate>
+    <bucket-size>5</bucket-size>
+    <max-concurrent-requests>2</max-concurrent-requests>
+    
+    <retry-parameters>
+      <task-age-limit>25m</task-age-limit>
+      <task-retry-limit>5</task-retry-limit>
+      <max-backoff-seconds>60</max-backoff-seconds>
+      <min-backoff-seconds>10</min-backoff-seconds>
+      <max-doublings>3</max-doublings>
     </retry-parameters>
     
       </queue>

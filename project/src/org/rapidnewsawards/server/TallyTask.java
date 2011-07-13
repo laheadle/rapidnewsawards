@@ -10,7 +10,6 @@ import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.core.Vote;
 
 import com.google.appengine.api.datastore.Transaction;
-import com.google.appengine.api.taskqueue.DeferredTask;
 import com.google.appengine.api.taskqueue.Queue;
 import com.google.appengine.api.taskqueue.QueueFactory;
 import com.googlecode.objectify.Key;
@@ -18,7 +17,7 @@ import com.googlecode.objectify.Key;
 public class TallyTask {
 	private static DAO d = DAO.instance;
 
-	public static abstract class Task extends ConcurrentCommand implements DeferredTask {
+	public static abstract class Task extends ConcurrentCommand {
 		
 		/**
 		 * 

@@ -1,6 +1,7 @@
 package org.rapidnewsawards.server;
 
 import java.util.ConcurrentModificationException;
+import java.util.Random;
 import java.util.logging.Logger;
 
 import javax.servlet.http.HttpServletRequest;
@@ -33,6 +34,7 @@ abstract class ConcurrentServletCommand {
 		}
 		log.info("begin call " + fun);
 		try {
+
 			while (getRetries() < maxTries) {
 				try {
 					return perform(request, resp);
@@ -63,7 +65,7 @@ abstract class ConcurrentServletCommand {
 		cacheWaits = i;
 	}
 
-	private int getCacheWaits() {
+	public int getCacheWaits() {
 		return cacheWaits;
 	}
 

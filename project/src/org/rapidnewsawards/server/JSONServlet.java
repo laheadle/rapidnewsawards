@@ -7,6 +7,7 @@ import java.net.MalformedURLException;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.Random;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 
@@ -136,6 +137,30 @@ public class JSONServlet extends HttpServlet {
 				String str = request.getParameter("str");
 				log.severe(str);
 				return "ok";
+			}
+		});
+
+		commandsMap.put("defaultAction", new AbstractCommand() {
+			@Override
+			public Object getResult() {
+				int editionNum = 0;
+				try {
+					TopStories ts = d.editions.getTopStories(DAO.Editions.PREVIOUS);
+					if ((editionNum = ts.edition.number) == DAO.Editions.INITIAL) {
+						// TODO return d.editions.getTopJudges(editionNum);
+						return ts;
+					}
+					else {
+						return ts;
+					}
+				}
+				catch (RNAException ex) {
+					try {
+						return d.social.getRecentSocials(DAO.Editions.CURRENT);
+					} catch (RNAException e1) {
+						throw new IllegalStateException(); 
+					}
+				}
 			}
 		});
 
@@ -330,8 +355,8 @@ public class JSONServlet extends HttpServlet {
 	}
 	
 	// 1S waiting + 800-5000 ms in operations = 1.8 - 6s
-	public static final int FEW = 10;
-	public static final int LONG = 100;
+	public static final int FEW = 1;
+	public static final int LONG = 1;
 	
 /*	// 2.5s total
 	public static final int FEW = 50;
@@ -369,7 +394,7 @@ public class JSONServlet extends HttpServlet {
 			re.payload = command.run(request, resp);
 			if (command.getRetries() > 3) {
 				log.warning(String.format(
-						"user needed %d retries.", command.getRetries()));
+						"user needed %d retries, %d cache waits", command.getRetries(), command.getCacheWaits()));
 			}
 			re.status = OK;
 		} catch (RNAException e) {
@@ -382,7 +407,7 @@ public class JSONServlet extends HttpServlet {
 			re.payload = null;
 			re.status = TRY_AGAIN;
 			re.message = "Things are busy...please try again!";
-			log.severe(String.format("user gave up after %d retries! %s", e.tries, c));
+			log.info("retry");
 		}
 		catch (Exception e) {
 			re.payload = null;
@@ -390,7 +415,7 @@ public class JSONServlet extends HttpServlet {
 			re.message = "";
 			StringWriter sw = new StringWriter();
 			PrintWriter pw = new PrintWriter(sw);
-			e.printStackTrace(pw);		
+			e.printStackTrace(pw);
 			log.severe(sw.toString());
 		}
 		finally {

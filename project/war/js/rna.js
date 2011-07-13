@@ -15,7 +15,7 @@ $(function(){
     function defaultAction() {
 	flashInfo('');
 	if (Backbone.history.getFragment() == '') {
-	    window.app.topStories();
+	    window.app.defaultAction();
 	}
 	app.loginView.checkCreatingAccount();
     }
@@ -1176,7 +1176,6 @@ $(function(){
 	_edition: function(edNum, fun, order, view, getAttrs, inits) {	    
 	    var self = this;
 	    var fetch = function(data) { 
-		this.foo.bar.baz = 6;
 		if (data && data.edition) {
 		    // fixme main list doesn't immediately update 
 		    // with welcome message after join
@@ -1250,6 +1249,27 @@ $(function(){
 	// default view for edition
 	edition: function(edNum) {
 	    return this.topStories(edNum);
+	},
+
+	defaultAction: function() {
+	    var self = this;
+	    var fetch = function(data) { 
+		if (data && data.edition) {
+		    var view = data.isStoryList? StoriesView : NetworkView;
+		    var initParams =
+			{order: data.order,
+			 edition: data.edition,
+			 numEditions: data.numEditions,
+			 isCurrent: data.isCurrent,
+			 isNext: data.isNext,
+			 storiesSelected: data.isStoryList,
+			 networkSelected: data.isNetworkList,
+			 getAttrs: undefined,
+			 data: data.list};
+		    self.setEditionView(view, initParams);
+		}
+	    }
+	    doRequest({fun: 'defaultAction'}, fetch);
 	},
 
 	story: function(edNum, linkId) {

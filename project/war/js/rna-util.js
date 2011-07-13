@@ -73,27 +73,28 @@ window.initRNA = function () {
     };
 
     var Requester = function() {
+	this.living = true;
+	this.maxTries = 6;
+	this.numTries = 1;
 	this.state = {
 	    interrupted: false
 	};
     };
     
+    Requester.prototype.cancel = Requester.prototype.finish = function() {
+	this.living = false;
+    }
+
     Requester.prototype.request = function (method, attrs, success, err) {
 	log({info: 'doRequest: ' + JSON.stringify(attrs)});
 	var self = this;
-	var _reactTo = function (data) {
-	    var empty = !data || data == "" || data.match(/^[ \t\r\n]+$/);
-	    log(attrs.fun + ' returned ' + 
-		(empty? 'null' : JSON.stringify(data)));
-	    var bitOfProblem = 'bit of a problem...working on it.';
-	    var response = empty? {status: false, message: bitOfProblem} : JSON.parse(data);
+	var empty = function(data) { return !data || data == "" || data.match(/^[ \t\r\n]+$/); };
+	var finalResponseReceived = function (response) {
+	    self.finish();
+	    flashInfo('');
+
 	    var payload = response.payload;
 
-	    app.loginView.model.set(response.requester || {cid: 'guest'});
-	    
-	    $('#time').html(response.requestTime || '');
-
-	    $('#loadMessage').html('');
 	    if (response.status === 'BAD_REQUEST') { 
 		if (err) { err(response); } else { flashError(response.message); }
 		return;
@@ -106,22 +107,58 @@ window.initRNA = function () {
 		flashError("Server Error.  We are looking into it, please try again in a bit.");
 		return;
 	    }
-		if (!self.state.interrupted) {
-		    self.state = function (state, payload) { 
-			var s = success(payload, state);
-			if (s == undefined) {
-			    return state;
-			}
-			return s;
-		    }(self.state, payload); // ensure state
+	    if (!self.state.interrupted) {
+		self.state = function (state, payload) { 
+		    var s = success(payload, state);
+		    if (s == undefined) {
+			return state;
+		    }
+		    return s;
+		}(self.state, payload); // ensure state
+	    }
+	    else {
+		self.state = self.state.supercede(success, payload);
+	    }
+	};
+
+	var _reactTo = function(data) {
+	    var emp = empty(data);
+	    if (emp) {
+		finalResponseReceived({status: 'SERVER_UNRESPONSIVE'});
+		return;
+	    }	    
+	    log(attrs.fun + ' returned ' + JSON.stringify(data));
+	    var response = JSON.parse(data);
+	    if (empty(response.status)) {
+		finalResponseReceived({status: 'SERVER_GARBLED'});
+		return;
+	    }
+
+	    app.loginView.model.set(response.requester || {cid: 'guest'});	    
+	    $('#time').html(response.requestTime || '');
+	    $('#loadMessage').html('');
+
+	    if (response.status == 'TRY_AGAIN') {
+		if (self.numTries < self.maxTries) {
+		    self.numTries++;
+		    flashInfo('Working on it...');
+		    self.request(method, attrs, success, err);
 		}
 		else {
-		    self.state = self.state.supercede(success, payload);
+		    finalResponseReceived(response);
 		}
+	    }
+	    else {
+		finalResponseReceived(response);
+	    }
 	};
+
 	var reactTo = function(data) {
+	    if (!self.living) {
+		return;
+	    }
 	    try {
-		return _reactTo(data);
+		_reactTo(data);
 	    }
 	    catch (e) {
 		var str = ('----error: ' + e + ' --- request: ' +
@@ -139,15 +176,22 @@ window.initRNA = function () {
     }
 
     // ajax call where method is either $.get or $.post
-    window.requester = new Requester;
+    window.requester = undefined;
+
+    window._doRequest = function(func, attrs, success, err) {
+	if (window.requester && !window.requester.finished) {
+	    window.requester.cancel();
+	}
+	requester = new Requester;
+	window.requester.request(func, attrs, success, err);
+    }
 
     window.doRequest = function(attrs, success, err) {
-	requester.request($.get, attrs, success, err);
+	window._doRequest($.get, attrs, success, err);
     };
 
-
     window.doPostRequest = function(attrs, success, err) {
-	requester.request($.post, attrs, success, err);
+	window._doRequest($.post, attrs, success, err);
     };
 
     window.redirectForLogin = function(command) {
@@ -193,7 +237,13 @@ window.initRNA = function () {
     };
 
     $.ajaxSetup({timeout: 30000});
-    $('body').ajaxError(function() { flashError("Communication error.  Please Check your network connection."); });
+    $('body').ajaxError(function(xhr, status) { 
+	if (!status || status != "timeout") {
+	    flashError("The Server is not available. Please check back later.");
+	    return;
+	}
+	flashError("Communication error.  Please Check your network connection."); 
+    });
 
     // via http://stackoverflow.com/questions/68485/how-to-show-loading-spinner-in-jquery
     $('#loading')

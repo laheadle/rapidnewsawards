@@ -3,15 +3,16 @@ package org.rapidnewsawards.server;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.ConcurrentModificationException;
+import java.util.Date;
 import java.util.logging.Logger;
 
 import com.google.appengine.api.taskqueue.DeferredTask;
 
 public abstract class ConcurrentCommand implements DeferredTask {
 
-	private static final int WARM  = 50;
+	private static final int WARM  = 150;
 
-	private static final int HOT = 200;
+	private static final int HOT = 2000;
 
 	// from lowest to highest priority tasks
 
@@ -26,6 +27,10 @@ public abstract class ConcurrentCommand implements DeferredTask {
 
 	private static final Logger log = Logger.getLogger(ConcurrentServletCommand.class
 			.getName());
+
+	private static final int WAY_TOO_LONG = 1500;
+
+	private static final int LONG_TIME = 500;
 
 	private final int maxTries;
 	private final int sleepInterval;
@@ -50,6 +55,7 @@ public abstract class ConcurrentCommand implements DeferredTask {
 
 	@Override
 	public void run() {
+		long begin = new Date().getTime();
 		try {
 			log.info(String.format("BEGIN deferred call %s", fun()));
 			while (getRetries() < maxTries) {
@@ -75,13 +81,23 @@ public abstract class ConcurrentCommand implements DeferredTask {
 		finally {
 			int re = getRetries() + 1;
 			if (re > HOT) {
-				log.severe(String.format("HOT - end DEFERRED call %s: %d tries", fun(), re));
+				log.severe(String.format("HOT: %s: %d tries", fun(), re));
 			}
 			else if (re > WARM ) {
-				log.warning(String.format("WARM - end DEFERRED call %s: %d tries", fun(), re));
+				log.warning(String.format("WARM: %s: %d tries", fun(), re));
 			}
 			else {
-				log.info(String.format("end DEFERRED call %s: %d tries", fun(), re));
+				log.info(String.format("%s: %d tries", fun(), re));
+			}
+			long diff = new Date().getTime() - begin;
+			if (diff > WAY_TOO_LONG) {
+				log.severe(String.format("VERY SLOW: %d ms", diff));
+			}
+			else if (diff > LONG_TIME ) {
+				log.warning(String.format("SLOW: %d ms", diff));
+			}
+			else {
+				log.info(String.format("%d ms", diff));
 			}
 		}
 	}
