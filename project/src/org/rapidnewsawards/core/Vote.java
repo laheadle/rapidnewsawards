@@ -1,5 +1,6 @@
 package org.rapidnewsawards.core;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import javax.persistence.Id;
@@ -8,7 +9,8 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Parent;
 import com.googlecode.objectify.annotation.Unindexed;
 
-public class Vote implements Comparable<Vote> {
+public class Vote implements Comparable<Vote>, Serializable {
+	private static final long serialVersionUID = 1L;
 	@Parent
 	public Key<User> voter;
 

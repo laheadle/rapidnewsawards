@@ -1,5 +1,6 @@
 package org.rapidnewsawards.messages;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.rapidnewsawards.core.Link;
@@ -8,7 +9,8 @@ import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.core.Vote;
 
 
-public class User_Vote_Link {
+public class User_Vote_Link implements Serializable {
+	private static final long serialVersionUID = 1L;
 	public User user;
 	public Link link;
 	public Vote vote;

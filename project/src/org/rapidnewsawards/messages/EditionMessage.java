@@ -1,12 +1,14 @@
 package org.rapidnewsawards.messages;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.rapidnewsawards.core.Edition;
 import org.rapidnewsawards.core.Periodical;
 import org.rapidnewsawards.core.ScoreSpace;
 
-public class EditionMessage {
+public class EditionMessage implements Serializable {
+	private static final long serialVersionUID = 1L;
 	public final int id;
 	public final Date end;
 	public final int revenue;

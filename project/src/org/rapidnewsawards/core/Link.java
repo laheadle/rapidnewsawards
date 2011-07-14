@@ -1,5 +1,7 @@
 package org.rapidnewsawards.core;
 
+import java.io.Serializable;
+
 import javax.persistence.Id;
 
 import com.googlecode.objectify.Key;
@@ -9,7 +11,8 @@ import com.googlecode.objectify.annotation.Unindexed;
 
 
 @Cached
-public class Link {
+public class Link implements Serializable {
+	private static final long serialVersionUID = 1L;
 
 	@Parent public Key<Root> parent;
 	

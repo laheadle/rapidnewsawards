@@ -1,11 +1,14 @@
 package org.rapidnewsawards.messages;
 
+import java.io.Serializable;
+
 import org.rapidnewsawards.core.Link;
 import org.rapidnewsawards.core.Periodical;
 import org.rapidnewsawards.core.User;
 
 
-public class StoryInfo {
+public class StoryInfo implements Serializable {
+	private static final long serialVersionUID = 1L;
 	public StoryInfo () {}
 
 	public void setFunding(int funding) {

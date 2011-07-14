@@ -1122,7 +1122,7 @@ public class DAO extends DAOBase {
 		}
 
 		public void finishTransition() throws RNAException {
-			unLockCache();
+			clearCache();
 			assert(getPeriodical().inTransition);
 			// the final step in transition machinery!
 			LockedPeriodical lp = lockPeriodical();
@@ -1617,7 +1617,7 @@ public class DAO extends DAOBase {
 	}
 
 	public void releaseUserLock() throws RNAException {
-		unLockCache();        
+		clearCache();        
 		LockedPeriodical lp = lockPeriodical();
 		lp.releaseUserLock();
 		lp.commit();
@@ -1645,6 +1645,15 @@ public class DAO extends DAOBase {
 		}
 	}
 
+
+	private void clearCache() {
+		if (isCacheLocked()) {
+			unLockCache();
+		}
+		cache.clear();
+		cache.put("locked", Boolean.FALSE);
+	}
+	
 	private Operation getCacheLock() {
 		Object o = cache.get("op");
 		return o == null? null : (Operation) o;
@@ -1674,6 +1683,17 @@ public class DAO extends DAOBase {
 		}
 		return false;
 	}
+
+	public Object getCached(Serializable cacheKeys) {
+		return cache.get(cacheKeys);
+	}
+
+	public void putCached(LinkedList<Serializable> cacheKeys,
+			Object object) {
+			cache.put(cacheKeys, object);
+	}
+
+
 
 	public void donate(String name, String donation, String webPage,
 			String statement, String consent) throws RNAException {
@@ -1724,6 +1744,5 @@ public class DAO extends DAOBase {
 			}
 		}
 	}
-
 
 }

@@ -133,7 +133,7 @@
 <span class="amount"> <%= fundedStr %> </span> Overseen by
 	  <%= rMake('#person-link-template', user) %>
 	  <span class="floatRight">
-	    <a href="#editorFundings/<%= edition.number %>/<%= id %>"> See fundings </a> </span> </div> </script>
+	    <a href="#editorFundings/<%= edition.number %>/<%= id %>"> See awards </a> </span> </div> </script>
     
     <script type="text/template" id="none-followed-template">
 	<div class="empty"> 
@@ -176,7 +176,7 @@
 
     <script type="text/template" id="editor-fundings-header-template">
       <div class="mainHeader">
-  	Funding overseen by 
+  	Awards overseen by 
 	<%= rMake('#person-link-template', editor) %> during 
 	<a href="#topStories/<%= edition.number %>"> <%= edition.displayStr %>  </a>
     <%= rMake('#help-link', {topic: 'overseen'}) %> </div> </script>
@@ -226,15 +226,19 @@
     <div class="editionExplanation"> The judges who have awarded the most money are on top. </div> </script>
 
     <script type="text/template" id="top-stories-explanation">
-    <div class="editionExplanation"> Stories with the most funding for this edition appear on top.  All funding is hypothetical and non-binding. </div> </script>
+    <div class="editionExplanation"> Stories with the most funding for this edition appear on top.  All awards are hypothetical and non-binding. </div> </script>
 
     <script type="text/template" id="funding-amounts-explanation">
       <div class="fundingExplanation"> 
-	Funding amounts will continue to change until this edition is published. </div> </script>
+	Award amounts will continue to change until this edition is published. </div> </script>
 
 
     <script type="text/template" id="recent-stories-explanation">
-    <div class="editionExplanation"> Recent acts of funding for this edition appear on top.  All funding is hypothetical and non-binding.  </div> </script>
+    <div class="editionExplanation"> Recent awards for this edition appear on top.  All awards are hypothetical and non-binding.  </div> </script>
+
+
+    <script type="text/template" id="list-header">
+    <div class="mainHeader boldHeader"> <%= text %> </div> </script>
 
 
     <script type="text/template" id="follows-template">

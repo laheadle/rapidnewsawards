@@ -1,8 +1,10 @@
 package org.rapidnewsawards.messages;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 
-public class AllEditions {
+public class AllEditions implements Serializable {
+	private static final long serialVersionUID = 1L;
 	public LinkedList<EditionMessage> editions;
 	public EditionMessage current;
 	

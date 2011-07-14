@@ -1,5 +1,6 @@
 package org.rapidnewsawards.messages;
 
+import java.io.Serializable;
 import java.util.Date;
 
 import org.rapidnewsawards.core.Periodical;
@@ -9,7 +10,8 @@ import org.rapidnewsawards.core.User;
 /* User Interface Info Package
  * 
  */
-public class SocialInfo {
+public class SocialInfo implements Serializable {
+	private static final long serialVersionUID = 1L;
 	public User editor;
 	public User judge;
 	/*

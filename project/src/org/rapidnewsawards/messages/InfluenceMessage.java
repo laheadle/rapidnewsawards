@@ -1,12 +1,15 @@
 package org.rapidnewsawards.messages;
 
+import java.io.Serializable;
 import java.util.LinkedList;
 
 import org.rapidnewsawards.core.Periodical;
 import org.rapidnewsawards.core.User;
 
 
-public class InfluenceMessage implements Comparable<InfluenceMessage> {
+public class InfluenceMessage implements Comparable<InfluenceMessage>, 
+Serializable {
+	private static final long serialVersionUID = 1L;
 	public User user;
 	public String fundedStr;
 	public int funded;

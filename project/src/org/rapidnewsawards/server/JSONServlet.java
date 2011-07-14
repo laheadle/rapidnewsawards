@@ -2,10 +2,12 @@ package org.rapidnewsawards.server;
 
 import java.io.IOException;
 import java.io.PrintWriter;
+import java.io.Serializable;
 import java.io.StringWriter;
 import java.net.MalformedURLException;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.LinkedList;
 import java.util.Map;
 import java.util.logging.Logger;
 
@@ -51,11 +53,15 @@ public class JSONServlet extends HttpServlet {
 		public static Map<String, Object> defaults = new HashMap<String, Object>();
 		private static Map<Class<?>, Parser> parsers = new HashMap<Class<?>, Parser>();
 		public DAO d;
+		private LinkedList<Serializable> cacheKeys;
 
 		public AbstractCommand() {
 			this.d = DAO.instance;
+			this.cacheKeys = null;
 		}
 		
+		public void setCacheKeys() throws RNAException {}
+
 		static {
 			defaults.put("edition", DAO.Editions.CURRENT_OR_FINAL);
 			parsers.put(Integer.class, new Parser() {
@@ -70,17 +76,24 @@ public class JSONServlet extends HttpServlet {
 			});
 		}
 
-		public <T> T get(String key, Class<T> clazz) {
+		public <T> T get(String key, Class<T> clazz) throws RNAException {
 			String value = request.getParameter(key);
 			if (value == null) {
-				return clazz.cast(defaults.get(key));
+				Object o = defaults.get(key);
+				if (o == null) {
+					throw new RNAException("Missing required argument: " + key);
+				}
+				return clazz.cast(o);
 			}
-			// TODO handle null pointer returned (throws)
-			return clazz.cast(parsers.get(clazz).parse(value));
+			try {
+				return clazz.cast(parsers.get(clazz).parse(value));
+			}
+			catch(Exception e) {
+				throw new RNAException("Invalid " + key);				
+			}
 		}
 
-		public Object perform(HttpServletRequest request) throws RNAException {
-			this.request = request;
+		public Object perform() throws RNAException {
 			return this.getResult();
 		}
 
@@ -96,6 +109,31 @@ public class JSONServlet extends HttpServlet {
 
 		protected abstract Object getResult() throws RNAException;
 
+		protected void setCacheKeys(Serializable[] keys) {
+			this.cacheKeys = new LinkedList<Serializable>();
+			for (int i = 0;i < keys.length;i++) {
+				this.cacheKeys.add(keys[i]);
+			}
+		}
+		
+		public Object getCached(HttpServletRequest request2) {
+			if (this.cacheKeys == null)
+				return null;
+			return DAO.instance.getCached(this.cacheKeys);
+		}
+
+		public boolean shouldCacheResult() {
+			return this.cacheKeys != null;
+		}
+
+		public void putCached(Object obj) {
+			DAO.instance.putCached(this.cacheKeys, obj);			
+		}
+
+		public void setRequest(HttpServletRequest request) {
+			this.request = request;
+		}
+
 	}
 
 	public static Map<String, AbstractCommand> commandsMap;
@@ -104,6 +142,11 @@ public class JSONServlet extends HttpServlet {
 		commandsMap = new HashMap<String, AbstractCommand>();
 
 		commandsMap.put("topStories", new AbstractCommand() {
+			@Override
+			public void setCacheKeys() throws RNAException {
+				setCacheKeys(new Serializable[]{ "topStories", get("edition", Integer.class) });
+			}
+
 			@Override
 			public Object getResult() throws RNAException {
 				int edition = get("edition", Integer.class);
@@ -115,6 +158,11 @@ public class JSONServlet extends HttpServlet {
 
 		commandsMap.put("recentSocials", new AbstractCommand() {
 			@Override
+			public void setCacheKeys() throws RNAException {
+				setCacheKeys(new Serializable[]{ "recentSocials", get("edition", Integer.class) });
+			}
+			
+			@Override
 			public Object getResult() throws RNAException {
 				int edition = get("edition", Integer.class);
 				RecentSocials rs = d.social.getRecentSocials(edition);
@@ -123,6 +171,11 @@ public class JSONServlet extends HttpServlet {
 		});
 
 		commandsMap.put("allEditions", new AbstractCommand() {
+			@Override
+			public void setCacheKeys() {
+				setCacheKeys(new Serializable[]{ "allEditions" });
+			}
+
 			@Override
 			public Object getResult() {
 				return d.editions.getAllEditions();
@@ -139,6 +192,7 @@ public class JSONServlet extends HttpServlet {
 		});
 
 		commandsMap.put("defaultAction", new AbstractCommand() {
+			
 			@Override
 			public Object getResult() {
 				int editionNum = 0;
@@ -172,6 +226,15 @@ public class JSONServlet extends HttpServlet {
 		// TODO 2.0 Rename to getStory
 		commandsMap.put("story", new AbstractCommand() {
 			@Override
+			public void setCacheKeys() throws RNAException {
+				setCacheKeys(new Serializable[]{ 
+						"story",
+						get("edition", Integer.class),
+						get("linkId", Long.class)
+				});
+			}
+			
+			@Override
 			public Object getResult() throws RNAException {
 				int edition = get("edition", Integer.class);
 				long link = get("linkId", Long.class);
@@ -180,6 +243,14 @@ public class JSONServlet extends HttpServlet {
 		});
 
 		commandsMap.put("editorFundings", new AbstractCommand() {
+			@Override
+			public void setCacheKeys() throws RNAException {
+				setCacheKeys(new Serializable[]{ 
+						"editorFundings",
+						get("edition", Integer.class),
+						get("editor", Long.class)
+				});
+			}
 			@Override
 			public Object getResult() throws RNAException {
 				int edition = get("edition", Integer.class);
@@ -190,6 +261,10 @@ public class JSONServlet extends HttpServlet {
 
 		commandsMap.put("recentFundings", new AbstractCommand() {
 			@Override
+			public void setCacheKeys() throws RNAException {
+				setCacheKeys(new Serializable[]{ "recentFundings", get("edition", Integer.class) });
+			}
+			@Override
 			public Object getResult() throws RNAException {
 				return d.editions.getRecentVotes(get("edition", Integer.class));
 			}
@@ -197,12 +272,26 @@ public class JSONServlet extends HttpServlet {
 
 		commandsMap.put("topEditors", new AbstractCommand() {
 			@Override
+			public void setCacheKeys() throws RNAException {
+				setCacheKeys(new Serializable[]{ 
+						"topEditors",
+						get("edition", Integer.class)
+				});
+			}
+			@Override
 			public Object getResult() throws RNAException {
 				return d.editions.getTopEditors(get("edition", Integer.class));
 			}
 		});
 
 		commandsMap.put("topJudges", new AbstractCommand() {
+			@Override
+			public void setCacheKeys() throws RNAException {
+				setCacheKeys(new Serializable[]{ 
+						"topJudges",
+						get("edition", Integer.class)
+				});
+			}
 			@Override
 			public Object getResult() throws RNAException {
 				return d.editions.getTopJudges(get("edition", Integer.class));
@@ -287,28 +376,24 @@ public class JSONServlet extends HttpServlet {
 				return userService.createLogoutURL(url);
 			}
 		});
+		
 		commandsMap.put("relatedUser", new AbstractCommand() {
 			@Override
+			public void setCacheKeys() throws RNAException {
+				setCacheKeys(new Serializable[]{ 
+						"relatedUser",
+						get("id", Long.class)
+				});
+			}
+
+			@Override
 			public Object getResult() throws RNAException {
-				long userId = 0L;
-				try {
-					userId = new Long(request.getParameter("id"));
-				}
-				catch (NumberFormatException e) {
-					throw new RNAException("Bad User Id");
-				}
+				Long userId = get("id", Long.class);
 				return d.users.getRelatedUserInfo(Name.AGGREGATOR_NAME, d.user,
 						User.createKey(userId));
 			}
 		});
-		commandsMap.put("getFollowers", new AbstractCommand() {
-			@Override
-			public Object getResult() {
-				long userId = new Long(request.getParameter("id"));
-				return d.users.getFollowers(User.createKey(userId));
-			}
-		});
-
+		
 		commandsMap.put("doSocial", new AbstractCommand() {
 			@Override
 			public Object getResult() throws RNAException {
@@ -379,13 +464,25 @@ public class JSONServlet extends HttpServlet {
 				@Override
 				public Object perform(HttpServletRequest request, HttpServletResponse resp)
 				throws RNAException {
-					return c.perform(request);
+					c.setRequest(request);
+					c.setCacheKeys();
+					Object cached = c.getCached(request);
+					if (cached != null) {
+						log.info("cache hit");
+						return cached;
+					}
+					log.info("cache miss");
+					Object result = c.perform();
+					if (c.shouldCacheResult()) {
+						c.putCached(result);
+					}
+					return result;
 				}
 			};
 			re.payload = command.run(request, resp);
 			if (command.getRetries() > 3) {
 				log.warning(String.format(
-						"user needed %d retries, %d cache waits", command.getRetries(), command.getCacheWaits()));
+						"user needed %d retries, %d waits", command.getRetries(), command.getCacheWaits()));
 			}
 			re.status = OK;
 		} catch (RNAException e) {

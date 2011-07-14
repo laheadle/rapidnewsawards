@@ -262,6 +262,12 @@ $(function(){
 		$(rMake('#recent-stories-explanation')).insertAfter($(this.el).children().first());
 	    }
 
+	    if (this.order == 'top') {
+		$(rMake('#list-header', {text: 'Top Stories'})).insertAfter(this.$('.editionTabs'));
+	    } else {
+		$(rMake('#list-header', {text: 'Recent Story Awards'})).insertAfter(this.$('.editionTabs'));
+	    }
+
 	    if (this.list.length == 0) {
 		if (this.edition.finished) {
  		    var message = this.edition.number > 0 ?
@@ -535,6 +541,18 @@ $(function(){
 	    }
 	    else {
 		$(rMake('#recent-socials-explanation')).insertAfter($(this.el).children().first());
+	    }
+
+	    if (this.order == 'top') {
+		if (this.influence == 'judge') {
+		    $(rMake('#list-header', {text: 'Top Judges'})).insertAfter(this.$('.editionTabs'));
+		}
+		else {
+		    $(rMake('#list-header', {text: 'Top Editors'})).insertAfter(this.$('.editionTabs'));
+		}
+	    }
+	    else {
+		$(rMake('#list-header', {text: 'Recent Network Activity'})).insertAfter(this.$('.editionTabs'));
 	    }
 
 	    this.$('#editionTabsMinor').html(rMake('#network-order-tab-template', args));
