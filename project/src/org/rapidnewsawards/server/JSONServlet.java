@@ -192,7 +192,12 @@ public class JSONServlet extends HttpServlet {
 		});
 
 		commandsMap.put("defaultAction", new AbstractCommand() {
-			
+
+			@Override
+			public void setCacheKeys() throws RNAException {
+				setCacheKeys(new Serializable[]{ "defaultAction" });
+			}
+
 			@Override
 			public Object getResult() {
 				int editionNum = 0;

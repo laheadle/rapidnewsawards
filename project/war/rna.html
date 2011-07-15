@@ -27,7 +27,7 @@
     <div id="rna-app">
 
       <div id="header">
-        <h1 class="title">newskraft.org</h1>
+        <a href="http://newskraft.org" class="title">newskraft.org</a>
 	<span id="loading"> <img src="ajax-loader.gif" alt="loader image"/> </span>
 	<div id="login" class="large">
 	  <a class="login"> </a>
@@ -285,9 +285,9 @@
     <script type="text/template" id="full-story-template">
       <div class="mainHeader"> Supported Work </div>
       <div class="item">
-	<span class="bigRevenue"> <%= fundingStr %></span>
 	<a class="titleLink" target="_blank" href="<%= link.url %>"> <%= link.title %> </a>
 	<div class="submitterLine"> 
+	  Awarded <span class="amount"> <%= fundingStr %></span>,
 	  nominated by <%= rMake('#person-link-template', submitter) %> 
 	  from <%= link.domain %> </div>
 

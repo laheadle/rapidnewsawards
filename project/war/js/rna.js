@@ -180,7 +180,7 @@ $(function(){
 	className: "listItem", // fixme
 
 	events: {
-	    "click a": 'person'
+	    "click a.personLink": 'person'
 	}, 
 
 	initialize: function() {
@@ -414,7 +414,7 @@ $(function(){
 	className: "listItem", // fixme
 
 	events: {
-	    "click a": 'person'
+	    "click a.personLink": 'person'
 	}, 
 
 	initialize: function() {
@@ -451,7 +451,7 @@ $(function(){
 	className: "listItem", // fixme
 
 	events: {
-	    "click a": 'person'
+	    "click a.personLink": 'person'
 	}, 
 
 	initialize: function() {
@@ -850,7 +850,7 @@ $(function(){
 	className: "listItem", // fixme
 
 	events: {
-	    "click a": 'person'
+	    "click a.personLink": 'person'
 	}, 
 
 	initialize: function() {

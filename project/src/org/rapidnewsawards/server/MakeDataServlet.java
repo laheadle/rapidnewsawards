@@ -27,6 +27,7 @@ import org.rapidnewsawards.messages.VoteResult;
 import com.googlecode.objectify.Objectify;
 
 public class MakeDataServlet extends HttpServlet {
+	private static final String JOHNQPUBLIC = "jqpublic909@gmail.com";
 	private static final int FIRST_EDITION = 0;
 	private static final long serialVersionUID = 1L;
 	public static PrintWriter out;
@@ -86,7 +87,7 @@ public class MakeDataServlet extends HttpServlet {
 			makeData(NUM_EDITIONS, minutes * ONE_MINUTE, numUsers);
 
 			if (doTransition) {
-				Date da = new Date(new Date().getTime() + 500L);
+				Date da = new Date(new Date().getTime());
 				TransitionTask.scheduleTransitionAt(da);
 			}
 			
@@ -104,7 +105,7 @@ public class MakeDataServlet extends HttpServlet {
 
 	private void makeLinks() throws RNAException {
 		Edition current = d.editions.getEdition(1);
-		User jq = d.users.findUserByLogin("johnqpublic@gmail.com", User.GMAIL);
+		User jq = d.users.findUserByLogin(JOHNQPUBLIC, User.GMAIL);
 		for (int i = 0;i < numLinks;i++) {
 			d.user = jq;
 			VoteResult vr = null;
@@ -151,7 +152,7 @@ public class MakeDataServlet extends HttpServlet {
 		}
 		catch (NullPointerException np) {
 			editor = welcome(makeEditor("laheadle@gmail.com"), "Lyn Headley");
-			judge = makeJudge("jqpublic909@gmail.com");
+			judge = makeJudge(JOHNQPUBLIC);
 			welcome(judge, "john q public");
 		}
 
