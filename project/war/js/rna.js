@@ -179,10 +179,6 @@ $(function(){
 	tagName:  "div",
 	className: "listItem", // fixme
 
-	events: {
-	    "click a.personLink": 'person'
-	}, 
-
 	initialize: function() {
 	    var self = this;
 	    this.model.bind('change', function () { self.render() });
@@ -271,16 +267,16 @@ $(function(){
 	    if (this.list.length == 0) {
 		if (this.edition.finished) {
  		    var message = this.edition.number > 0 ?
-			"The judges did not fund this edition, " + 
+			"The judges did not act, " + 
 			(this.order == 'top'? 'so there were no top stories.' :
 			 'so there were no recently funded stories.') :
-		    "No stories were funded during the signup round, because the signup round was for socializing.";
+		    "No awards were given during the signup round, because the signup round was for socializing.";
 		    this.appendElt(this.make("div", {'class': 'empty listItem'}, 
 					     message));
 		}
 		else {
  		    var message = this.edition.number > 0 ?
-			"The judges have not funded this edition, " + 
+			"The judges have not acted yet, " + 
 			(this.order == 'top'? 'so there are no top stories.' :
 			 'so there are no recently funded stories.') :
 		    "No stories will be funded during the signup round, because the signup round is for socializing.";
@@ -413,18 +409,10 @@ $(function(){
 	tagName:  "div",
 	className: "listItem", // fixme
 
-	events: {
-	    "click a.personLink": 'person'
-	}, 
-
 	initialize: function() {
 	    var self = this;
 	    this.model.bind('change', function () { self.render() });
 	    this.model.view = this;
-	},
-
-	person: function() {
-	    app.hashPerson(this.model.get('id'));
 	},
 
 	render: function() {
@@ -450,18 +438,10 @@ $(function(){
 	tagName:  "div",
 	className: "listItem", // fixme
 
-	events: {
-	    "click a.personLink": 'person'
-	}, 
-
 	initialize: function() {
 	    var self = this;
 	    this.model.bind('change', function () { self.render() });
 	    this.model.view = this;
-	},
-
-	person: function() {
-	    app.hashPerson(this.model.get('id'));
 	},
 
 	render: function() {
@@ -528,31 +508,40 @@ $(function(){
 	    var args = 
 		{topSelected: this.order == 'top'? 'selected' : 'unselected',
 		 recentSelected: this.order == 'recent'? 'selected' : 'unselected'};
+
+	    // Explanation
 	    if (this.edition.number === 0) {
 		$(rMake('#signup-explanation')).insertAfter($(this.el).children().first());
 	    }
 	    else if (this.order == 'top') {
 		if (this.influence == 'judge') {
-		    $(rMake('#top-judges-explanation')).insertAfter($(this.el).children().first());
+		    $(rMake('#top-judges-explanation'))
+			.insertAfter($(this.el).children().first());
 		}
 		else {
-		    $(rMake('#top-editors-explanation')).insertAfter($(this.el).children().first());
+		    $(rMake('#top-editors-explanation'))
+			.insertAfter($(this.el).children().first());
 		}
 	    }
 	    else {
-		$(rMake('#recent-socials-explanation')).insertAfter($(this.el).children().first());
+		$(rMake('#recent-socials-explanation'))
+		    .insertAfter($(this.el).children().first());
 	    }
 
+	    // List Header
 	    if (this.order == 'top') {
 		if (this.influence == 'judge') {
-		    $(rMake('#list-header', {text: 'Top Judges'})).insertAfter(this.$('.editionTabs'));
+		    $(rMake('#list-header', {text: 'Top Judges'}))
+			.insertAfter(this.$('.editionTabs'));
 		}
 		else {
-		    $(rMake('#list-header', {text: 'Top Editors'})).insertAfter(this.$('.editionTabs'));
+		    $(rMake('#list-header', {text: 'Top Editors'}))
+			.insertAfter(this.$('.editionTabs'));
 		}
 	    }
 	    else {
-		$(rMake('#list-header', {text: 'Recent Network Activity'})).insertAfter(this.$('.editionTabs'));
+		$(rMake('#list-header', {text: 'Recent Network Activity'}))
+		    .insertAfter(this.$('.editionTabs'));
 	    }
 
 	    this.$('#editionTabsMinor').html(rMake('#network-order-tab-template', args));
@@ -849,18 +838,10 @@ $(function(){
 	tagName:  "div",
 	className: "listItem", // fixme
 
-	events: {
-	    "click a.personLink": 'person'
-	}, 
-
 	initialize: function() {
 	    var self = this;
 	    this.model.bind('change', function () { self.render() });
 	    this.model.view = this;
-	},
-
-	person: function() {
-	    app.hashPerson(this.model.get('user').id);
 	},
 
 	render: function() {
@@ -1222,27 +1203,13 @@ $(function(){
 
 	topAuthorities: function(edNum) {
 	    this._edition(edNum, 'topJudges', 'top', NetworkView,
-			  function (influence) {
-			      var a = _.clone(influence.user);
-			      a.authority = influence.authority;
-			      a.funded = influence.funded;
-			      a.fundedStr = influence.fundedStr;
-			      return a;
-			  },
+			  this.judgeInfluenceTransform,
 			  {influence: 'judge'});
 	},
 
 	topEditors: function(edNum) {
 	    this._edition(edNum, 'topEditors', 'top', NetworkView,
-			  function (influence) {
-			      var a = _.clone(influence.user);
-			      a.user = _.clone(influence.user); // for passing to link renderer
-			      a.funded = influence.funded;
-			      a.fundedStr = influence.fundedStr;
-			      // <this> is the NetworkView
-			      a.edition = this.edition;
-			      return a;
-			  },
+			  this.editorInfluenceTransform,
 			  {influence: 'editor'});
 	},
 
@@ -1282,8 +1249,10 @@ $(function(){
 			 isNext: data.isNext,
 			 storiesSelected: data.isStoryList,
 			 networkSelected: data.isNetworkList,
-			 getAttrs: undefined,
-			 data: data.list};
+			 getAttrs: (data.influence == 'judge'? 
+				    this.judgeInfluenceTransform : undefined),
+			 data: data.list,
+			 influence: data.influence};
 		    self.setEditionView(view, initParams);
 		}
 	    }
@@ -1409,6 +1378,26 @@ $(function(){
 	hashRecent: function() {
 	    this.setHash('volume');
 	},
+
+
+	judgeInfluenceTransform: function(influence) {
+	    var a = _.clone(influence.user);
+	    a.authority = influence.authority;
+	    a.funded = influence.funded;
+	    a.fundedStr = influence.fundedStr;
+	    return a;
+	},
+
+	editorInfluenceTransform: function(influence) {
+	    var a = _.clone(influence.user);
+	    a.user = _.clone(influence.user); // for passing to link renderer
+	    a.funded = influence.funded;
+	    a.fundedStr = influence.fundedStr;
+	    // <this> is the NetworkView
+	    a.edition = this.edition;
+	    return a;
+	},
+
     });
 
     //* init

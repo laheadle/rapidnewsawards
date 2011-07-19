@@ -22,6 +22,7 @@ import org.rapidnewsawards.core.Response;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.messages.Name;
 import org.rapidnewsawards.messages.RecentSocials;
+import org.rapidnewsawards.messages.RecentVotes;
 import org.rapidnewsawards.messages.TopStories;
 import org.rapidnewsawards.messages.VoteResult;
 
@@ -200,12 +201,16 @@ public class JSONServlet extends HttpServlet {
 
 			@Override
 			public Object getResult() {
-				int editionNum = 0;
 				try {
 					TopStories ts = d.editions.getTopStories(DAO.Editions.PREVIOUS);
-					if ((editionNum = ts.edition.number) == DAO.Editions.INITIAL) {
-						// TODO return d.editions.getTopJudges(editionNum);
-						return ts;
+					if (ts.edition.number == DAO.Editions.INITIAL) {
+						RecentVotes rv = d.editions.getRecentFundings((DAO.Editions.CURRENT));
+						if (rv.list.isEmpty()) {
+							return d.editions.getTopJudges(DAO.Editions.CURRENT);
+						}
+						else {
+							return rv;
+						}
 					}
 					else {
 						return ts;
@@ -271,7 +276,7 @@ public class JSONServlet extends HttpServlet {
 			}
 			@Override
 			public Object getResult() throws RNAException {
-				return d.editions.getRecentVotes(get("edition", Integer.class));
+				return d.editions.getRecentFundings(get("edition", Integer.class));
 			}
 		});
 

@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.Date;
@@ -179,12 +181,30 @@ public class DAO extends DAOBase {
 		}
 
 		/*
-		 * Get the requested edition
+		 * Get the requested edition, utilizing the cache if possible
 		 * 
 		 * @param number the edition number requested
 		 */
 		public Edition getEdition(final int editionNum) throws RNAException {
+			Serializable[] keys = new Serializable[]{ "getEdition", new Integer(editionNum) };
+			
+			Object cached = getCached(keys);
+			if (cached != null) {
+				return (Edition) cached;
+			}
+			
+			Edition result = _getEdition(editionNum);
+			putCached(Arrays.asList(keys), result);
+			return result;
+		}
 
+
+		/*
+		 * Get the requested edition
+		 * 
+		 * @param number the edition number requested
+		 */
+		private Edition _getEdition(final int editionNum) throws RNAException {
 			final Objectify o = ofy();
 			final Periodical p = getPeriodical();
 
@@ -389,7 +409,7 @@ public class DAO extends DAOBase {
 			return numEditions;
 		}
 
-		public RecentVotes getRecentVotes(int edition) throws RNAException {
+		public RecentVotes getRecentFundings(int edition) throws RNAException {
 			Edition e = getEdition(edition);
 			RecentVotes recent = new RecentVotes();
 			// no aggregate score info needed
@@ -1047,7 +1067,7 @@ public class DAO extends DAOBase {
 		public void setPeriodicalBalance() throws RNAException {
 			assert(getPeriodical().inTransition);
 			assert(!getPeriodical().isFinished());
-			assert(Edition.getNumber(editions.getEdition(Editions.CURRENT).getKey()) > 0);
+			assert(Edition.getNumber(editions._getEdition(Editions.CURRENT).getKey()) > 0);
 			LockedPeriodical lp = lockPeriodical();
 
 			if (lp == null) {
@@ -1064,7 +1084,7 @@ public class DAO extends DAOBase {
 
 			Edition e;
 			
-			e = editions.getEdition(Editions.CURRENT);
+			e = editions._getEdition(Editions.CURRENT);
 			int n = editions.getNumEditions();
 			assert (e.number > 0);
 			int spaceBalance = p.balance / (n - e.number);
@@ -1646,7 +1666,7 @@ public class DAO extends DAOBase {
 	}
 
 
-	private void clearCache() {
+	void clearCache() {
 		if (isCacheLocked()) {
 			unLockCache();
 		}
@@ -1688,7 +1708,7 @@ public class DAO extends DAOBase {
 		return cache.get(cacheKeys);
 	}
 
-	public void putCached(LinkedList<Serializable> cacheKeys,
+	public void putCached(Collection<Serializable> cacheKeys,
 			Object object) {
 			cache.put(cacheKeys, object);
 	}

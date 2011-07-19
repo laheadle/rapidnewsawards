@@ -94,6 +94,9 @@ public class MakeDataServlet extends HttpServlet {
 			if (numLinks > 0) {
 				makeLinks();
 			}
+			
+			DAO.instance.clearCache();
+			
 		} catch (ParseException e) {
 			e.printStackTrace(out);
 		} catch (RNAException e) {

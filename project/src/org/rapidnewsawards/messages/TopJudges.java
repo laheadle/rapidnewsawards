@@ -12,5 +12,6 @@ public class TopJudges implements Serializable {
 	public boolean isStoryList = false;
 	public boolean isNetworkList = true;	
 	public String order = "top";
+	public String influence = "judge";
 	public LinkedList<InfluenceMessage> list;
 }

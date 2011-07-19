@@ -126,7 +126,7 @@
       <a class="editor <%= editorSelected %>"> Editors </a> </script>
     
     <script type="text/template" id="authority-template">
-      <%= fundedStr %> <a class="personLink"> <%= nickname %> </a> </script>
+      <%= fundedStr %> <%= rMake('#person-link-template', user) %> </script>
     
     <script type="text/template" id="top-editor-template">
       <div class="halfSize">
