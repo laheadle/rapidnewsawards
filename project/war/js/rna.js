@@ -17,7 +17,6 @@ $(function(){
 	if (Backbone.history.getFragment() == '') {
 	    window.app.defaultAction();
 	}
-	app.loginView.checkCreatingAccount();
     }
 
 
@@ -815,10 +814,13 @@ $(function(){
 			    nickname: nickname, 
 			    webPage: webPage,
 			    consent: consent }, 
+			  // 1) user data comes back in request.requester and then
+			  // 2) loginView.model is set by doRequest handler.
 			  function(data) {
-			      // 1) user data comes back in request.requester and then
-			      // 2) loginView.model is set by doRequest handler.
-			      window.app.setLocation(self.andThen);
+			      // Make sure the user info has been saved
+			      setTimeout(function() {
+				  window.app.setLocation(self.andThen);
+			      }, 200); 
 			  });
 	    });
 	},
@@ -1415,7 +1417,7 @@ $(function(){
     });
 
     $('a, input').live('click', function() {
-	flashClear('');
+	flashClear();
 	app.clearAllMenuSelections();
     });
 

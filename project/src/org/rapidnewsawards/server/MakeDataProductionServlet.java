@@ -52,8 +52,10 @@ public class MakeDataProductionServlet extends HttpServlet {
 			throw new AssertionError();
 		}
 		
-		if (d.user != null) {
-			out.println("Logged in user: " + d.user);
+		
+		Object _user = request.getAttribute("user");
+		if (_user != null) {
+			out.println("Logged in user: " + (User) _user);
 		}
 	}
 

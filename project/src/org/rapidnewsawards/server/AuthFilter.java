@@ -20,6 +20,7 @@ import org.rapidnewsawards.core.User;
 
 import com.google.appengine.api.users.UserService;
 import com.google.appengine.api.users.UserServiceFactory;
+import com.googlecode.objectify.NotFoundException;
 
 public class AuthFilter implements Filter {
 	private static final Logger log = Logger.getLogger(AuthFilter.class.getName());
@@ -38,8 +39,10 @@ public class AuthFilter implements Filter {
 		UserService userService = UserServiceFactory.getUserService();
 		com.google.appengine.api.users.User serviceUser = userService.getCurrentUser();
 		
+		User user = null;
+		
 		if (serviceUser == null) {
-			d.user = null;
+			user = null;
 		}
 		else {
 			User u = DAO.instance.users.findUserByLogin(serviceUser.getEmail(), serviceUser.getAuthDomain());
@@ -48,34 +51,39 @@ public class AuthFilter implements Filter {
 				// first time logging in; create new user unless this is the admin or an editor
 				u = new User(serviceUser.getEmail(), serviceUser.getAuthDomain(), false);
 				DAO.instance.ofy().put(u);
-				d.user = u;
+				user = u;
 			}
 			else if (isAdmin) {
-				ShadowUser shadow = DAO.instance.ofy().query(ShadowUser.class).get();
+				ShadowUser shadow = null;
+				try { shadow = d.ofy().query(ShadowUser.class).get(); }
+				catch (NotFoundException nfe) {}
 				if (shadow != null) {
-					User realUser = DAO.instance.ofy().get(shadow.user);
+					User realUser = null;
+					try { realUser = d.ofy().get(shadow.user); }
+					catch (NotFoundException nfe) {}
 					if (realUser != null) {
-						d.user = realUser;
+						user = realUser;
 					}
 				}
 				else if (u == null) {
-					d.user = null;
+					user = null;
 				}
 				else {
-					d.user = u;
+					user = u;
 				}
 			}
 			else {
 				u.lastLogin = new Date();
-				d.user = u;
+				user = u;
 				DAO.instance.ofy().put(u);
 			}
 		}
 
-		log.fine("User is " + d.user);
+		log.fine("User is " + user);
 		
 		// response.sendRedirect(userService.createLoginURL(request.getRequestURI())); 
 
+		request.setAttribute("user", user);
 		chain.doFilter(request, response);
 	}
 	

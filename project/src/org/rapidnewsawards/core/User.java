@@ -8,7 +8,7 @@ import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Unindexed;
 
 public class User implements Serializable {
-	private static final long serialVersionUID = 1L;
+	@Unindexed private static final long serialVersionUID = 1L;
 
 	@Id public Long id;
 
@@ -61,7 +61,7 @@ public class User implements Serializable {
 			if (email.indexOf('@') == -1) {
 				return "??";
 			}
-			return email.substring(0, email.indexOf('@'));
+			return "_" + email.substring(0, email.indexOf('@'));
 		}
 		else {
 			return nickname;

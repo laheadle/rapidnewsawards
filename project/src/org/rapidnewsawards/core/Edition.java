@@ -8,15 +8,13 @@ import javax.persistence.Id;
 import com.googlecode.objectify.Key;
 import com.googlecode.objectify.annotation.Cached;
 import com.googlecode.objectify.annotation.Entity;
+import com.googlecode.objectify.annotation.Unindexed;
 
 @Entity
 @Cached
 public class Edition implements Serializable, Comparable<Edition> {
 	
-	/**
-	 * 
-	 */
-	private static final long serialVersionUID = 1L;
+	@Unindexed private static final long serialVersionUID = 1L;
 
 	@Id	
 	private String id;

@@ -55,6 +55,7 @@ public class JSONServlet extends HttpServlet {
 		private static Map<Class<?>, Parser> parsers = new HashMap<Class<?>, Parser>();
 		public DAO d;
 		private LinkedList<Serializable> cacheKeys;
+		private User user;
 
 		public AbstractCommand() {
 			this.d = DAO.instance;
@@ -133,6 +134,19 @@ public class JSONServlet extends HttpServlet {
 
 		public void setRequest(HttpServletRequest request) {
 			this.request = request;
+			setUser();
+		}
+
+		public void setUser() {
+			this.user = null;
+			Object _user = this.request.getAttribute("user");
+			if (_user != null) {
+				this.user = (User) _user;
+			}
+		}
+
+		public User getUser() {
+			return this.user;
 		}
 
 	}
@@ -248,7 +262,7 @@ public class JSONServlet extends HttpServlet {
 			public Object getResult() throws RNAException {
 				int edition = get("edition", Integer.class);
 				long link = get("linkId", Long.class);
-				return d.editions.getStory(edition, link);
+				return d.editions.getStory(getUser(), edition, link);
 			}
 		});
 
@@ -326,7 +340,7 @@ public class JSONServlet extends HttpServlet {
 				int edition = get("edition", Integer.class);
 				Edition ed = d.editions.getEdition(edition);
 				Boolean on = new Boolean(request.getParameter("on"));
-				VoteResult vr = d.users.voteFor(link, fullLink, ed.getKey(), on);
+				VoteResult vr = d.users.voteFor(getUser(), link, fullLink, ed.getKey(), on);
 				if (!vr.returnVal.equals(Response.SUCCESS)) {
 					throw new RNAException(vr.returnVal.toString());
 				}
@@ -342,7 +356,7 @@ public class JSONServlet extends HttpServlet {
 				String nickname = request.getParameter("nickname");
 				String consent = request.getParameter("consent");
 				String webPage = request.getParameter("webPage");
-				return d.users.welcomeUser(nickname, consent, webPage);
+				return d.users.welcomeUser(getUser(), nickname, consent, webPage);
 			}
 		});
 
@@ -353,13 +367,13 @@ public class JSONServlet extends HttpServlet {
 				String title = request.getParameter("title");
 				Edition ed = d.editions.getCurrentEdition();
 				try {
-					VoteResult vr = d.editions.submitStory(url, title, ed.getKey());
+					VoteResult vr = d.editions.submitStory(getUser(), url, title, ed.getKey());
 					vr.currentEdition = ed.getNumber();
 					return vr;
 				}
 				catch (MalformedURLException ex2) {
 					// TODO Test on frontend
-					log.warning("bad url " +  url + "submitted by " + d.user == null? "anon" : d.user.toString());
+					log.warning("bad url " +  url + "submitted by " + getUser()  == null? "anon" : getUser().toString());
 					throw new RNAException("Malformed URL");
 				}
 			}
@@ -399,7 +413,7 @@ public class JSONServlet extends HttpServlet {
 			@Override
 			public Object getResult() throws RNAException {
 				Long userId = get("id", Long.class);
-				return d.users.getRelatedUserInfo(Name.AGGREGATOR_NAME, d.user,
+				return d.users.getRelatedUserInfo(Name.AGGREGATOR_NAME, getUser(),
 						User.createKey(userId));
 			}
 		});
@@ -411,14 +425,14 @@ public class JSONServlet extends HttpServlet {
 				Key<User> to = User.createKey(new Long(_to));
 				// TODO 2.0 pass in from client
 				Boolean on = new Boolean(request.getParameter("on"));
-				return d.social.doSocial(to, on).s;
+				return d.social.doSocial(getUser(), to, on).s;
 			}
 		});
 
 		commandsMap.put("sendUser", new AbstractCommand() {
 			@Override
 			public Object getResult() {
-				return d.user;
+				return getUser();
 			}
 		});
 
@@ -517,7 +531,7 @@ public class JSONServlet extends HttpServlet {
 			log.severe(sw.toString());
 		}
 		finally {
-			re.requester = DAO.instance.user;
+			re.requester = c.getUser();
 			re.requestTime = Periodical.timeFormat(new Date());
 			out.println(g.toJson(re));
 		}

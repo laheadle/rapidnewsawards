@@ -10,7 +10,7 @@ import com.googlecode.objectify.annotation.Parent;
 import com.googlecode.objectify.annotation.Unindexed;
 
 public class Vote implements Comparable<Vote>, Serializable {
-	private static final long serialVersionUID = 1L;
+	@Unindexed private static final long serialVersionUID = 1L;
 	@Parent
 	public Key<User> voter;
 

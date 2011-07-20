@@ -6,6 +6,8 @@ import java.util.logging.Logger;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
+import org.rapidnewsawards.core.User;
+
 
 abstract class ConcurrentServletCommand {
 	
@@ -16,7 +18,7 @@ abstract class ConcurrentServletCommand {
 	private final int sleepInterval;
 	private int retries;
 	private int cacheWaits;
-	
+
 	public ConcurrentServletCommand(int maxTries, int sleepInterval) {
 		this.setRetries(0);
 		this.setCacheWaits(0);

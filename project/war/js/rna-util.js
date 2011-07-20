@@ -91,6 +91,8 @@ window.initRNA = function () {
 	var finalResponseReceived = function (response) {
 	    self.finish();
 	    flashInfo('');
+	    app.loginView.model.set(response.requester || {cid: 'guest'});
+	    app.loginView.model.change(); // trigger render
 
 	    var payload = response.payload;
 
@@ -133,7 +135,6 @@ window.initRNA = function () {
 		return;
 	    }
 
-	    app.loginView.model.set(response.requester || {cid: 'guest'});	    
 	    $('#time').html(response.requestTime || '');
 	    $('#loadMessage').html('');
 

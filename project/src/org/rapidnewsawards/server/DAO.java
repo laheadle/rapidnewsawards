@@ -95,11 +95,6 @@ public class DAO extends DAOBase {
 		ObjectifyService.factory().register(Vote.class);
 	}
 	public static DAO instance = new DAO();
-
-	/*
-	 * The currently logged-in user. See AuthFilter
-	 */
-	public User user;
 	
 	public static final Name periodicalName = Name.AGGREGATOR_NAME;
 
@@ -133,7 +128,6 @@ public class DAO extends DAOBase {
         	cache = null;
         }
 	
-		user = null;
 		social = new Social();
 		transition = new Transition();
 		editions = new Editions();
@@ -440,7 +434,7 @@ public class DAO extends DAOBase {
 			return result;
 		}
 
-		public FullStoryInfo getStory(int editionNum, Long linkId) throws RNAException {
+		public FullStoryInfo getStory(User user, int editionNum, Long linkId) throws RNAException {
 			Key<Link> linkKey = Link.createKey(linkId);
 			Key<Edition> editionKey = Edition.createKey(editionNum);
 
@@ -570,7 +564,7 @@ public class DAO extends DAOBase {
 		}
 
 
-		public VoteResult submitStory(String url, String title,
+		public VoteResult submitStory(User user, String url, String title,
 				Key<Edition> e) throws RNAException, MalformedURLException {
 			// TODO put this and vote in transaction along with task
 			VoteResult vr = new VoteResult();
@@ -745,6 +739,71 @@ public class DAO extends DAOBase {
 
 	public class Social {
 
+		void getLockForJoin(User usr) throws RNAException {
+			LockedPeriodical lp = lockPeriodical();
+			if (lp.periodical.userlocked || lp.periodical.inTransition) {
+				lp.rollback();
+				throw new ConcurrentModificationException("waiting to join");
+		 	}
+			lp.setUserLock();
+			SocialTask.join(usr, lp.transaction.getTxn());
+			lp.commit();
+		}
+
+		void join(User usr) throws RNAException {
+			Objectify txn = fact().beginTransaction();
+			txn.put(usr);
+			
+			// GO ahead and accept their changes, but this should not happen.
+			if (users.hasAlreadyJoined(usr)) {
+				log.warning("user changed their information: " + usr);
+			}
+
+			log.info("joined: " + usr);
+			SocialTask.rnaFollow(usr, editions.getEdition(Editions.NEXT), txn.getTxn());
+			txn.getTxn().commit();
+		}
+		
+		void rnaFollow(User usr, Edition next) {
+			Objectify txn = fact().beginTransaction();
+			SocialEvent join = new SocialEvent(users.getRNAUser().getKey(),
+					usr.getKey(), next.getKey(), new Date(), true);
+			txn.put(join);			
+			SocialTask.welcomeJudgeInfluence(usr, txn.getTxn());
+			txn.getTxn().commit();
+		}
+		
+		void welcomeJudgeInfluence(User usr) throws RNAException {
+			Objectify txn = fact().beginTransaction();
+			if (!usr.isEditor) {
+				HashSet<JudgeInfluence> jiset = new HashSet<JudgeInfluence>();				
+				int curNum = editions.getCurrentEdition().number;
+				for(int i = curNum;i < editions.getNumEditions();i++) {
+					Key<ScoreSpace> parentKey = ScoreSpace.keyFromEditionKey(Edition.createKey(i));
+					JudgeInfluence ji = new JudgeInfluence(0, parentKey, usr.getKey());
+					// an optimization -- only use transactions for the current edition
+					if (i == curNum) {
+						txn.put(jiset);						
+					}
+					else {
+						jiset.add(ji);
+					}
+				}
+				if (jiset.size() > 0) {
+					SocialTask.finishWelcomeJudgeInfluence(jiset, txn.getTxn());
+				}
+			}
+			TallyTask.releaseUserLock(txn.getTxn());
+			txn.getTxn().commit();
+		}
+
+		public void finishWelcomeJudgeInfluence(HashSet<JudgeInfluence> jiset) {
+			Objectify txn = fact().beginTransaction();
+			ofy().put(jiset);
+			txn.getTxn().commit();
+		}
+
+
 		public void writeSocialEvent(
 				final Key<User> from, final Key<User> to, final Key<Edition> e, 
 				boolean on, boolean cancelPending) throws RNAException {
@@ -866,7 +925,7 @@ public class DAO extends DAOBase {
 		}
 
 		/* Wrapper which assumes a <from> of the current user */
-		public Response doSocial(Key<User> to, boolean on) throws RNAException {
+		public Response doSocial(User user, Key<User> to, boolean on) throws RNAException {
 			if (user == null) {
 				log.warning("attempt to follow with null user");
 				return Response.ILLEGAL_OPERATION;
@@ -890,7 +949,7 @@ public class DAO extends DAOBase {
 			if (Edition.isFinal(e, editions.getNumEditions())){
 				log.warning(String.format(
 						"Attempted to socialize during final edition: User %s, Edition %s",
-						user, e));
+						from, e));
 				return Response.FORBIDDEN_DURING_FINAL;
 			}
 
@@ -1302,7 +1361,7 @@ public class DAO extends DAOBase {
 			return u.isEditor;
 		}
 
-		public VoteResult voteFor(String link, String fullLink,
+		public VoteResult voteFor(User user, String link, String fullLink,
 				Key<Edition> edition, Boolean on) throws RNAException {
 			VoteResult vr = new VoteResult();
 
@@ -1440,10 +1499,9 @@ public class DAO extends DAOBase {
 			return ei;
 		}
 
-		public User welcomeUser(String nickname, String consent, String webPage) 
+		public User welcomeUser(User user, String nickname, String consent, String webPage) 
 		throws RNAException {
 			editions.getEdition(Editions.CURRENT);
-			// TODO Transactions!
 			if (user == null) {
 				throw new RNAException("You must log in first");
 			}
@@ -1458,42 +1516,18 @@ public class DAO extends DAOBase {
 				throw new RNAException("You did not check the consent form.");
 			}
 			if (ofy().query(User.class).filter("nickname", nickname).get() != null) {
-				throw new RNAException("That name is already in use; please modify yours slightly.");				
+				throw new RNAException(String.format("The name '%s' is already in use; please modify yours slightly.", nickname));				
 			}
+			
+			// success
 			user.nickname = nickname;
 			user.isInitialized = true;
 			user.webPage = normalizeWebPage(webPage);
-
-			Objectify txn = fact().beginTransaction();
-						
-			txn.put(user);
-			txn.getTxn().commit();
-			
-			// GO ahead and accept their changes, but this should not happen.
-			if (hasAlreadyJoined(user)) {
-				log.warning("user changed their information: " + user);
-				return user;
-			}
-
-			log.info("welcome: " + user);
-
-			Edition next = editions.getNextEdition();
-			SocialEvent join = new SocialEvent(users.getRNAUser().getKey(),
-					user.getKey(), next.getKey(), new Date(), true);
-			ofy().put(join);
-			
-			if (!user.isEditor) {
-					
-				for(int i = editions.getCurrentEdition().number;
-				i < editions.getNumEditions();
-				i++) {
-					Key<ScoreSpace> sKey = ScoreSpace.keyFromEditionKey(Edition.createKey(i));
-					ofy().put(new JudgeInfluence(0, 
-							sKey, user.getKey()));
-				}
-			}
+			ofy().put(user);
+			social.getLockForJoin(user);
 			return user;
 		}
+		
 
 		private boolean hasAlreadyJoined(User u) {
 			return ofy().query(SocialEvent.class)

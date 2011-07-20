@@ -58,8 +58,10 @@ public class MakeDataServlet extends HttpServlet {
 		} catch (IOException e1) {
 			throw new AssertionError();
 		}
-		if (d.user != null) {
-			out.println("Logged in user: " + d.user);
+
+		Object _user = request.getAttribute("user");
+		if (_user != null) {
+			out.println("Logged in user: " + (User) _user);
 		}
 
 		editors = new HashSet<User>();
@@ -112,10 +114,9 @@ public class MakeDataServlet extends HttpServlet {
 		Edition current = d.editions.getEdition(1);
 		User jq = d.users.findUserByLogin(JOHNQPUBLIC, User.GMAIL);
 		for (int i = 0;i < numLinks;i++) {
-			d.user = jq;
 			VoteResult vr = null;
 			try {
-				vr = d.editions.submitStory("http://www.example" + i + ".com", 
+				vr = d.editions.submitStory(jq, "http://www.example" + i + ".com", 
 						"example story", current.getKey());
 			} catch (MalformedURLException e) {
 				e.printStackTrace();
@@ -127,10 +128,7 @@ public class MakeDataServlet extends HttpServlet {
 	}
 
 	public static User welcome(User u, String nickname) throws RNAException {
-		User olduser = d.user;
-		d.user = u;
-		d.users.welcomeUser(nickname, "true", "http://example.com");		
-		d.user = olduser;
+		d.users.welcomeUser(u, nickname, "true", "http://example.com");		
 		return u;
 	}
 	
@@ -186,8 +184,7 @@ public class MakeDataServlet extends HttpServlet {
 		}
 
 		if (doFollow) {
-			d.user = editor;
-			Response r = d.social.doSocial(judge.getKey(), true);
+			Response r = d.social.doSocial(editor, judge.getKey(), true);
 			assert(r.equals(Response.ABOUT_TO_FOLLOW));
 		}
 	}
