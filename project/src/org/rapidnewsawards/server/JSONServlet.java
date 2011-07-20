@@ -253,6 +253,7 @@ public class JSONServlet extends HttpServlet {
 			public void setCacheKeys() throws RNAException {
 				setCacheKeys(new Serializable[]{ 
 						"story",
+						getUser(),
 						get("edition", Integer.class),
 						get("linkId", Long.class)
 				});

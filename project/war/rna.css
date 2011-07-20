@@ -136,8 +136,7 @@ a.title {
 
 #time {
     float: right;
-    padding: 13px 30px 0 0;
-    vertical-align: bottom;
+    padding: 11px 15px 0 0;
 }
 
 .floatRight {
@@ -252,10 +251,27 @@ a.help {
 }
 
 #login {
-    margin-top: 11px;
+    display: block;
     float: right;
 }
 
+.logout {
+    padding: 11px 0 0 0;
+    display: block;
+    float: right;
+    max-width: 80px;
+    height: 25px;
+    overflow: hidden;
+}
+
+.login {
+    padding: 11px 0 0 0;
+    display: block;
+    float: left;
+    max-width: 380px;
+    height: 25px;
+    overflow: hidden;
+}
 
 #flash span.error { 
     padding-right: .4em;

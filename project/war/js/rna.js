@@ -415,7 +415,7 @@ $(function(){
 	},
 
 	render: function() {
-	    $(this.el).html(rMake('#authority-template', this.model.toJSON()));
+	    $(this.el).html(rMake('#top-authority-template', this.model.toJSON()));
 	    return this;
 	},	
     });
