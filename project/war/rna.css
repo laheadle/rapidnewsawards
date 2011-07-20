@@ -335,9 +335,11 @@ a.help {
 
 .editionExplanation {
     margin-top: 5px;
+    font-size: 1.4em;
 }
 
 .fundingExplanation {
+    font-size: 1.4em;
     font-weight: bold;
 }
 

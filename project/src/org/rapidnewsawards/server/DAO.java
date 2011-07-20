@@ -34,6 +34,7 @@ import org.rapidnewsawards.core.Root;
 import org.rapidnewsawards.core.ScoreRoot;
 import org.rapidnewsawards.core.ScoreSpace;
 import org.rapidnewsawards.core.ScoredLink;
+import org.rapidnewsawards.core.ShadowUser;
 import org.rapidnewsawards.core.SocialEvent;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.core.Vote;
@@ -88,6 +89,7 @@ public class DAO extends DAOBase {
 		// TODO Replace with edition?
 		ObjectifyService.factory().register(ScoreRoot.class);
 		ObjectifyService.factory().register(ScoreSpace.class);
+		ObjectifyService.factory().register(ShadowUser.class);
 		ObjectifyService.factory().register(SocialEvent.class);
 		ObjectifyService.factory().register(User.class);
 		ObjectifyService.factory().register(Vote.class);
@@ -671,13 +673,14 @@ public class DAO extends DAOBase {
 			return s;
 		}
 
-		public void setSpaceBalance(int edition, int balance) {
+		public void setSpaceBalance(int edition, int balance) throws RNAException {
 			assert(getPeriodical().inTransition);
 			Objectify oTxn = fact().beginTransaction();
 			ScoreSpace s = getScoreSpace(oTxn, Edition.createKey(edition));
 			s.balance = balance;
 			oTxn.put(s);
 			TransitionTask.finish(oTxn.getTxn());
+			TransitionTask.scheduleTransition(oTxn.getTxn(), editions._getEdition(edition));
 			oTxn.getTxn().commit();
 		}
 
@@ -1713,7 +1716,9 @@ public class DAO extends DAOBase {
 			cache.put(cacheKeys, object);
 	}
 
-
+	public void removeCached(Collection<Serializable> cacheKeys) {
+		cache.remove(cacheKeys);
+	}
 
 	public void donate(String name, String donation, String webPage,
 			String statement, String consent) throws RNAException {

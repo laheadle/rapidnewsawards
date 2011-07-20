@@ -72,7 +72,7 @@ public abstract class ConcurrentCommand implements DeferredTask {
 					StringWriter sw = new StringWriter();
 					PrintWriter pw = new PrintWriter(sw);
 					e.printStackTrace(pw);
-					log.severe((e.message == null? "" : e.message) + sw.toString());
+					log.severe("Fatal: " + (e.message == null? "" : e.message) + sw.toString());
 					return; // GIVE UP!
 				}
 			}

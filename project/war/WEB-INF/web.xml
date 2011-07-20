@@ -32,6 +32,11 @@
 		<servlet-class>org.rapidnewsawards.server.MakeDataServlet</servlet-class>
 	</servlet>
 
+	<servlet>
+		<servlet-name>makeDataProductionServlet</servlet-name>
+		<servlet-class>org.rapidnewsawards.server.MakeDataProductionServlet</servlet-class>
+	</servlet>
+
 
 	<servlet>
 		<servlet-name>doSomethingServlet</servlet-name>
@@ -55,8 +60,13 @@
 
 
 	<servlet-mapping>
+		<servlet-name>makeDataProductionServlet</servlet-name>
+		<url-pattern>/makeProdData</url-pattern>
+	</servlet-mapping>
+
+	<servlet-mapping>
 		<servlet-name>makeDataServlet</servlet-name>
-		<url-pattern>/makeData</url-pattern>
+		<url-pattern>/makeDevelData</url-pattern>
 	</servlet-mapping>
 
 

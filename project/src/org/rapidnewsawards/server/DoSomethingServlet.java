@@ -1,6 +1,8 @@
 package org.rapidnewsawards.server;
 
 import java.io.IOException;
+import java.io.Serializable;
+import java.util.LinkedList;
 import java.util.logging.Logger;
 
 import javax.servlet.ServletException;
@@ -9,6 +11,7 @@ import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.core.Root;
+import org.rapidnewsawards.core.ShadowUser;
 import org.rapidnewsawards.core.User;
 
 
@@ -20,31 +23,27 @@ public class DoSomethingServlet extends HttpServlet {
 	@Override
 	public void doGet(HttpServletRequest request, HttpServletResponse resp)
 	throws ServletException, IOException {
-		makeRoot();
-		makeRnaEditor();
-		makeUser("jjj@example.com");
-		resp.getWriter().write("ok");
-	}
-
-	private void makeRoot() {
-		final Root root = new Root();
-		root.id = 1L;
-		dao.ofy().put(root);
-	}
-
-	private void makeRnaEditor() {
-		User rna = new User(User.RNA_EDITOR_EMAIL, "gmail.com", true);
-		//rna.id = 1L;
-		log.info(String.format("rna 1: %s", rna));
-		dao.ofy().put(rna);
-		log.info(String.format("rna 2: %s", rna));
-	}
-	public static void makeUser(String email) {
-		User rna = dao.users.getRNAUser();
-		log.info(String.format("rna 3: %s", rna));
-		User u = new User(email, "gmail.com", true);
-		log.info(String.format("u 1: %s", u));
-		dao.ofy().put(u);
-		log.info(String.format("u 2: %s", u));		
+		String fun = request.getParameter("fun");
+		if (fun.equals("become")) {
+			String whom = request.getParameter("whom");
+			if (whom.equals("clear")) {
+				DAO.instance.ofy().delete(DAO.instance.ofy().query(ShadowUser.class));
+				resp.getWriter().write("cleared");
+			}
+			else {
+				User user = dao.users.findUserByLogin(whom, User.GMAIL);
+				if (user == null) {
+					resp.getWriter().write("failed");
+				}
+				else {
+					ShadowUser su = new ShadowUser(user.getKey());
+					DAO.instance.ofy().put(su);
+					resp.getWriter().write("ok");
+				}
+			}
+		}
+		else {
+			resp.getWriter().write("huh??");			
+		}
 	}
 }

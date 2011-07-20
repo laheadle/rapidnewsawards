@@ -89,9 +89,14 @@ public class Periodical {
 	}
 
 	public static String timeFormat(Date time) {
+		SimpleDateFormat format = getDateFormat();
+		return format.format(time);
+	}
+
+	public static SimpleDateFormat getDateFormat() {
 		SimpleDateFormat format = new SimpleDateFormat("EEE M/d h:mm a 'ET'");
 		format.setTimeZone(TimeZone.getTimeZone("America/New_York"));
-		return format.format(time);
+		return format;
 	}
 	
 }

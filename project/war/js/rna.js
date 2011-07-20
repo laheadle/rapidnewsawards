@@ -1203,13 +1203,13 @@ $(function(){
 
 	topAuthorities: function(edNum) {
 	    this._edition(edNum, 'topJudges', 'top', NetworkView,
-			  this.judgeInfluenceTransform,
+			  this.influenceTransform,
 			  {influence: 'judge'});
 	},
 
 	topEditors: function(edNum) {
 	    this._edition(edNum, 'topEditors', 'top', NetworkView,
-			  this.editorInfluenceTransform,
+			  this.influenceTransform,
 			  {influence: 'editor'});
 	},
 
@@ -1249,8 +1249,6 @@ $(function(){
 			 isNext: data.isNext,
 			 storiesSelected: data.isStoryList,
 			 networkSelected: data.isNetworkList,
-			 getAttrs: (data.influence == 'judge'? 
-				    this.judgeInfluenceTransform : undefined),
 			 data: data.list,
 			 influence: data.influence};
 		    self.setEditionView(view, initParams);
@@ -1380,15 +1378,7 @@ $(function(){
 	},
 
 
-	judgeInfluenceTransform: function(influence) {
-	    var a = _.clone(influence.user);
-	    a.authority = influence.authority;
-	    a.funded = influence.funded;
-	    a.fundedStr = influence.fundedStr;
-	    return a;
-	},
-
-	editorInfluenceTransform: function(influence) {
+	influenceTransform: function(influence) {
 	    var a = _.clone(influence.user);
 	    a.user = _.clone(influence.user); // for passing to link renderer
 	    a.funded = influence.funded;

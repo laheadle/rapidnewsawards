@@ -48,6 +48,25 @@ public class TransitionTask {
 		}).etaMillis(date.getTime()));
 	}
 
+	public static void scheduleTransition(final Transaction txn, final Edition e) {
+		scheduleTransitionAt(txn, e.end);
+	}
+
+	public static void scheduleTransitionAt(final Transaction txn, Date date) {
+		Queue queue = QueueFactory.getDefaultQueue();
+		queue.add(txn, withPayload(new Task() {
+			private static final long serialVersionUID = 1L;
+			@Override
+			public void rnaRun() throws RNAException {
+				d.transition.transitionEdition();
+			}
+			@Override
+			public String fun() {
+				return "doTransition";
+			}		
+		}).etaMillis(date.getTime()));
+	}
+
 	// these are all called, in this order, directly or indirectly by transitionEdition
 
 	public static void setEditionFinished(final Transaction txn, final Key<Edition> e) {

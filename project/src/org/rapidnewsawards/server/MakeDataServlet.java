@@ -89,6 +89,8 @@ public class MakeDataServlet extends HttpServlet {
 			if (doTransition) {
 				Date da = new Date(new Date().getTime());
 				TransitionTask.scheduleTransitionAt(da);
+			} else {
+				TransitionTask.scheduleTransition(editions.get(0));				
 			}
 			
 			if (numLinks > 0) {
@@ -131,6 +133,7 @@ public class MakeDataServlet extends HttpServlet {
 		d.user = olduser;
 		return u;
 	}
+	
 	public static void makeData (int editionCount, long periodSize, Cell<Integer> numUsers) 
 	throws ParseException, RNAException {
 		// add users to first edition
@@ -220,8 +223,7 @@ public class MakeDataServlet extends HttpServlet {
 	}
 
 	 
-	public static ArrayList<Edition> makeEditions(int editionCount, long periodSize) 
-	throws ParseException {
+	public static Periodical makePeriodical(int editionCount) {
 		Objectify o = DAO.instance.ofy();
 		final Root root = new Root();
 		root.id = Periodical.ROOT_ID;
@@ -232,7 +234,12 @@ public class MakeDataServlet extends HttpServlet {
 
 		final Periodical p = new Periodical(Name.AGGREGATOR_NAME);
 		p.numEditions = editionCount;
-		assert(o.put(p) != null);
+		return p;
+	}
+	
+	public static ArrayList<Edition> makeEditions(int editionCount, long periodSize) 
+	throws ParseException {
+		Periodical p = makePeriodical(editionCount);
 
 		assert(d.getPeriodical() != null);
 		
@@ -269,7 +276,7 @@ public class MakeDataServlet extends HttpServlet {
 		for (Edition e : editions) {
 			ScoreRoot parent = new ScoreRoot();
 			parent.id = e.getKey().getName();
-			boolean pinserted = o.put(parent) != null;
+			boolean pinserted = DAO.instance.ofy().put(parent) != null;
 			assert(pinserted);
 
 			ScoreSpace s = new ScoreSpace(parent.id);
@@ -280,19 +287,8 @@ public class MakeDataServlet extends HttpServlet {
 			spaces.size() && spaces.size() == editions.size();
 		assert (inserted);
 
-		// make transition tasks
-		if (!testing) {
-			for (Edition e : editions) {
-				if (e.number == 0 && doTransition) {
-					continue;
-				}
-				TransitionTask.scheduleTransition(e);
-			}
-			
-		}
-		
 		p.setcurrentEditionKey(Edition.createKey(FIRST_EDITION));
-		o.put(p);
+		DAO.instance.ofy().put(p);
 
 		return editions;
 	}
