@@ -86,7 +86,7 @@ public class MakeDataProductionServlet extends HttpServlet {
 		makeEditor("nicholas.diakopoulos@gmail.com");
 		makeEditor("jason.fry@gmail.com");
 		makeEditor("tom.glaisyer@gmail.com");
-		makeEditor("jmcquaid1@gmail.com>");
+		makeEditor("jmcquaid1@gmail.com");
 		makeEditor("scottros@gmail.com");
 		
 		// EditorInflucne

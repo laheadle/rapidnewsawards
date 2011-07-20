@@ -171,6 +171,10 @@ a.help {
     color: black;
 }
 
+.social {
+    padding: 5px 0 5px 0;
+}
+
 .social-links {
     margin-top: 5px;
 }
@@ -418,7 +422,7 @@ a.help {
 .listItem {
     color: black;
     font-size: 1.1em;
-    margin-bottom: .5em;
+    margin-bottom: 10px;
     border-bottom: 1px solid #F0F0F0;
 }
 

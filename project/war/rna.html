@@ -213,7 +213,7 @@
     </script>
 
     <script type="text/template" id="signup-explanation">
-    <div class="editionExplanation"> Empower enough judges to produce a great first edition!  Anyone can join with their <a href="http://gmail.com"> gmail.com </a> account. Funding will start after the signup round is published.  </div> </script>
+    <div class="editionExplanation"> Empower enough judges to produce a great first edition!  Anyone can join as a judge with their <a href="http://gmail.com"> gmail.com </a> account.  The more editors follow a judge, the more funding that judge can distribute.  Funding will start after the signup round is published.  </div> </script>
 
     <script type="text/template" id="recent-socials-explanation">
     <div class="editionExplanation"> Recent follows and unfollows appear on top. 
@@ -334,11 +334,13 @@
 
     <script type="text/template" id="social-template">
       <%= subjectLink %> 
-      <span> <%= on? 'decided to follow' : 'decided to unfollow' %> </span>
-      <%= objectLink %> <span class="smallTime"> <%= timeStr %> </span> </script>
+      <span class="italic"> 
+	<%= on? 'decided to follow' : 'decided to unfollow' %> </span>
+      <%= objectLink %>. <span class="smallTime"> <%= timeStr %> </span> </script>
 
     <script type="text/template" id="welcome-template">
-      <span>Welcome, <%= judge.isEditor === true? 'editor' : 'judge' %> </span> 
+      <span class="italic">
+	Welcome, <%= judge.isEditor === true? 'editor' : 'judge' %> </span> 
       <%= objectLink %>. <span class="smallTime"> <%= timeStr %> </span> </script>
 
     <script type="text/template" id="person-recent-header">
