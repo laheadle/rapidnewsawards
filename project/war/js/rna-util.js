@@ -104,6 +104,10 @@ window.initRNA = function () {
 		flashInfo('The server is busy.  Pleasy try again');
 		return;
 	    }
+	    else if (response.status === 'SERVER_UNRESPONSIVE') { 
+		flashInfo('The server is unresponsive.  Perhaps your network is down.');
+		return;
+	    }
 	    else if (response.status !== 'OK') {
 		flashError("Server Error.  We are looking into it, please try again in a bit.");
 		return;

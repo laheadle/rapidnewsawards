@@ -39,6 +39,8 @@ import org.rapidnewsawards.core.SocialEvent;
 import org.rapidnewsawards.core.User;
 import org.rapidnewsawards.core.Vote;
 import org.rapidnewsawards.messages.AllEditions;
+import org.rapidnewsawards.messages.DonationMessage;
+import org.rapidnewsawards.messages.Donations;
 import org.rapidnewsawards.messages.EditionMessage;
 import org.rapidnewsawards.messages.EditorFundings;
 import org.rapidnewsawards.messages.FullStoryInfo;
@@ -355,7 +357,7 @@ public class DAO extends DAOBase {
 
 		public LinkedList<User_Vote_Link> getLatestUser_Vote_Links(Key<Edition> edition, Key<User> editor) {
 			Set<Key<Vote>> votekeys = new HashSet<Key<Vote>>();
-			for(EditorVote ev : ofy().query(EditorVote.class).filter("editor", editor)) {
+			for(EditorVote ev : ofy().query(EditorVote.class).filter("editor", editor).filter("edition", edition)) {
 				votekeys.add(ev.vote);
 			}
 			List<Vote> votes = new LinkedList<Vote>(ofy().get(votekeys).values());
@@ -1508,6 +1510,9 @@ public class DAO extends DAOBase {
 			if (Strings.isNullOrEmpty(nickname)) {
 				throw new RNAException("A name or nickname is required.");			
 			}
+			if (nickname.length() > 50) {
+				throw new RNAException("That name is too long.");
+			}
 			if (Strings.isNullOrEmpty(webPage)) {
 				throw new RNAException("A web page is required (if not yours, then one you like).");			
 			}
@@ -1802,6 +1807,19 @@ public class DAO extends DAOBase {
 				throw new RNAException("Invalid web page: " + webPage);
 			}
 		}
+	}
+
+	public Donations getDonations() {
+		Donations donations = new Donations();
+		int total = 0;
+		LinkedList<DonationMessage> list = new LinkedList<DonationMessage>();
+		for (Donation d : ofy().query(Donation.class)) {
+			total += d.amount;
+			list.add(new DonationMessage(d.name, d.amount, d.webPage, d.statement));
+		}
+		donations.totalStr = Periodical.moneyPrint(total);
+		donations.list = list;
+		return donations;
 	}
 
 }

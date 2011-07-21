@@ -55,7 +55,7 @@
       </div> </div>
       <div class="menu">
 	<div class="menuBorder"> Thanks </div>
-	<div> <a id="donors"> Donors </a> </div> </div>
+	<div> <a href="/#donors" id="donors"> Donors </a> </div> </div>
     </div>
     
     <div id="main"> 
@@ -214,7 +214,9 @@
     </script>
 
     <script type="text/template" id="signup-explanation">
-    <div class="editionExplanation"> Empower enough judges to produce a great first edition!  Anyone can join as a judge with their <a href="http://gmail.com"> gmail.com </a> account.  The more editors follow a judge, the more funding that judge can distribute.  Funding will start after the signup round is published.  </div> </script>
+    <div class="editionExplanation"> Empower enough judges to produce a great first edition!  Anyone can join as a judge with their <a href="http://gmail.com"> gmail.com </a> account.  The more editors follow a judge, the more funding that judge can distribute.</div>
+    <div class="importantExplanation"> 
+      Funding will start after the signup round is published.  </div> </script>
 
     <script type="text/template" id="recent-socials-explanation">
     <div class="editionExplanation"> Recent follows and unfollows appear on top. 
@@ -230,7 +232,7 @@
     <div class="editionExplanation"> Stories with the most funding for this edition appear on top.  All awards are hypothetical and non-binding. </div> </script>
 
     <script type="text/template" id="funding-amounts-explanation">
-      <span class="fundingExplanation"> 
+      <span class="importantExplanation"> 
 	Award amounts will continue to change until this edition is published. </span> </script>
 
 
@@ -314,9 +316,36 @@
     <script type="text/template" id="story-template">
      <div class="fatBottom">
       <span class="amount"> <%= fundingStr %></span>
+      <span> <%= link.domain %> </span>
       <br>
       <a class="indented-story" href="<%= href %>"> <%= link.title %></a> 
       <div></script>
+
+
+    <script type="text/template" id="donations-template">
+      <div class="mainHeader"> Newskraft.org was made possible by hypothetical donations </div>
+      <div class="item muchSpaceOnBottom"> Total Funding:
+	<span class="amount"> <%= totalStr %> </span> </div>
+      <div class="mainHeader"> Donations List </div>
+    </script>
+
+    <script type="text/template" id="donation-template">
+      <span class="amount"> <%= amountStr %> </span> from
+
+      <% if (webPage) { %> 
+      <a href="<%= webPage %>"> <%= name %> </a>
+      <% } else { %>
+      <span> <%= name %> </span>
+      <% } %>
+
+      <div class="italic">
+      <% if (statement) { %> 
+      "<%= statement %>"
+      <% } else { %>
+      (no statement)
+      <% } %>
+      </div> </script>
+
 
     <script type="text/template" id="collapsed-edition-template">
       <a href="#topStories/<%= number %>"> Number 

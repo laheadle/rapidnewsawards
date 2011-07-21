@@ -267,6 +267,19 @@ public class JSONServlet extends HttpServlet {
 			}
 		});
 
+		commandsMap.put("getDonations", new AbstractCommand() {
+			@Override
+			public void setCacheKeys() throws RNAException {
+				setCacheKeys(new Serializable[]{ 
+						"donations"
+				});
+			}
+			@Override
+			public Object getResult() throws RNAException {
+				return d.getDonations();
+			}
+		});
+
 		commandsMap.put("editorFundings", new AbstractCommand() {
 			@Override
 			public void setCacheKeys() throws RNAException {

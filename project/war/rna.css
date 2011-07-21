@@ -139,6 +139,10 @@ a.title {
     padding: 11px 15px 0 0;
 }
 
+.muchSpaceOnBottom {
+    margin-bottom: 50px;
+}
+
 .floatRight {
     float: right;
 }
@@ -358,7 +362,7 @@ a.help {
     font-size: 1.4em;
 }
 
-.fundingExplanation {
+.importantExplanation {
     font-size: 1.4em;
     font-weight: bold;
 }
@@ -391,7 +395,7 @@ a.help {
 }
 
 .indented-story {
-    padding: 0 0 0 10px;
+    padding: 5px 0 0 10px;
     font-size: 1.1em;
 }
 
@@ -439,7 +443,7 @@ a.help {
     color: black;
     font-size: 1.1em;
     margin-bottom: 10px;
-    border-bottom: 1px solid #F0F0F0;
+    border-bottom: 1px solid black;
 }
 
 .regularSize {

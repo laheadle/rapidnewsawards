@@ -68,6 +68,18 @@ public class DoSomethingServlet extends HttpServlet {
 			welcome(u, new Date().getTime() + 12500, "alkjakldjfkjakdjfkljadslkfja;kdjf;akjdsf;kjad;fkjadsfa kjljlkjj");
 			resp.getWriter().write("ok");			
 		}
+		else if (fun.equals("makeDonations")) {
+			try {
+				DAO.instance.donate("joe", "50", "foo.com", "hello", "true");
+				DAO.instance.donate("jon", "5000", "foo.com", "hello2", "true");
+				DAO.instance.donate("jona", "510", "foo.com", "hello3", "true");
+				DAO.instance.donate("jane", "500", "foo.com", "hello jk lkj lkj lkj lkj klj", "true");
+				DAO.instance.donate("jane", "500", "foo.com", "", "true");
+				resp.getWriter().write("donated");			
+			} catch (RNAException e) {
+				e.printStackTrace();
+			}
+		}
 		else {
 			resp.getWriter().write("huh??");			
 		}

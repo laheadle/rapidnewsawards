@@ -1018,6 +1018,40 @@ $(function(){
 
     });
 
+    //* donors
+
+
+    window.DonorsView = Backbone.View.extend({
+
+	listClass: Backbone.Collection.extend({
+	    view: Backbone.View.extend({
+		className: "listItem", 
+
+		render: function() {
+		    $(this.el).html(rMake('#donation-template', this.model.toJSON()));
+		    return this;
+		}
+	    })
+	}),
+
+	initialize: function() {
+	    var self = this;
+	    this.model.bind('change', function () { self.render() });
+	    this.model.view = this;
+	    // fixme refactor
+	    $(this.el).append(this.make('div', {'class': 'list'}));
+	    // add fundings list
+	    this.list = new GenList({parent: this, 
+				     list: new this.listClass});
+	    this.list.refresh(this.model.get('list'));
+	},
+
+	render: function() {
+	    $(this.el).prepend(rMake('#donations-template', this.model.toJSON()));
+	    return this;
+	}
+    });
+
     //* login
 
     window.LoginView = Backbone.View.extend({
@@ -1111,6 +1145,7 @@ $(function(){
 	personLinkTemplate: _.template($('#person-link-template').html()),
 
 	routes: {
+	    "donors": "donors",
 	    "editorFundings/:edition/:editor": "editorFundings",
 	    "network/:ed": "network",
 	    "nominate": "nominate",
@@ -1317,6 +1352,14 @@ $(function(){
 		      function(data) {
 			      self.setVolumeView({current: data.current, 
 						  data: data.editions});
+		      });
+	},
+
+	donors: function() {
+	    var self = this;
+	    doRequest({ fun: 'getDonations'}, 
+		      function(data) {
+			  self.setMainView(DonorsView, data);
 		      });
 	},
 
