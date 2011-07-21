@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.logging.Logger;
+import java.util.regex.Pattern;
 
 import net.sf.jsr107cache.Cache;
 import net.sf.jsr107cache.CacheManager;
@@ -1508,7 +1509,7 @@ public class DAO extends DAOBase {
 				throw new RNAException("You must log in first");
 			}
 			if (Strings.isNullOrEmpty(nickname)) {
-				throw new RNAException("A name or nickname is required.");			
+				throw new RNAException("A name is required.");			
 			}
 			if (nickname.length() > 50) {
 				throw new RNAException("That name is too long.");

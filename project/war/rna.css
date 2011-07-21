@@ -143,6 +143,12 @@ a.title {
     margin-bottom: 50px;
 }
 
+#debugFooter {
+    position: relative;
+    top: 3000px;
+    z-index: 9999;
+}
+
 .floatRight {
     float: right;
 }

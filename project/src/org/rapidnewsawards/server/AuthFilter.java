@@ -14,6 +14,7 @@ import javax.servlet.FilterConfig;
 import javax.servlet.ServletException;
 import javax.servlet.ServletRequest;
 import javax.servlet.ServletResponse;
+import javax.servlet.http.HttpServletResponse;
 
 import org.rapidnewsawards.core.ShadowUser;
 import org.rapidnewsawards.core.User;
@@ -79,12 +80,19 @@ public class AuthFilter implements Filter {
 			}
 		}
 
-		log.fine("User is " + user);
+		//log.info("User is " + (user == null? "null" : user) + " request: " + request.toString());
 		
-		// response.sendRedirect(userService.createLoginURL(request.getRequestURI())); 
-
 		request.setAttribute("user", user);
+
 		chain.doFilter(request, response);
+		try {
+			HttpServletResponse hr = (HttpServletResponse) response;
+			hr.setHeader("Cache-Control","no-cache"); //HTTP 1.1
+			hr.setHeader("Pragma","no-cache"); //HTTP 1.0
+			hr.setDateHeader ("Expires", 0); //prevents caching at the proxy server
+		} catch (Throwable e) {
+			DAO.log.severe("failed to set cache headers!");
+		}
 	}
 	
 	@Override

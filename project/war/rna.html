@@ -2,24 +2,22 @@
 <html>
 
   <head>
+    <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
     <title>newskraft.org</title>
     <link href="rna.css" media="all" rel="stylesheet" type="text/css"/>
     <script src="js/json2.js"></script>
     <script src="js/jquery-1.4.2.js"></script>
     <script src="js/underscore-1.1.3.js"></script>
     <script src="js/backbone.js"></script>
+    <script src="js/prettyprint.js"></script>
     <script src="js/rna-util.js"></script>
     <script src="js/rna.js"></script>
-    <meta http-equiv="Content-Type" content="text/html;charset=utf-8">
 
-  <style type="text/css">
-    .judgeOnly {
-    display: none;
-    }
-  </style>
-
-
-  </head>
+    <style type="text/css">
+      .judgeOnly {
+      display: none;
+      }
+  </style> </head>
 
   <body>
 
@@ -61,7 +59,10 @@
     <div id="main"> 
       <div id="loadMessage" 
 	   style="color: green; font-size: large; font-weight: bold">
-	Loading... </div> </div> </div> <!-- rna-app -->
+	Loading... </div> </div>
+    <div id="debugFooter"> </div> </div> <!-- rna-app -->
+    
+
 
     <script type="text/template" id="create-account-template"> 
       <div class="fatBottom"> <span class="welcomeTxt"> Welcome to the site. </span>  Please tell us about yourself. </div> <br>
@@ -150,7 +151,8 @@
 	    <%= vote.authority == 1? 'Editor' : 'Editors' %> </div>
 	  <!-- http://en.wikipedia.org/wiki/Geometric_Shapes -->
 	  <span class="italic"> Supported </span> &#9657; 
-	  <a href="#story/<%= vote.edition.raw.name%>/<%= link.id %>"> <%= link.title %> </a>
+	  <a href="#story/<%= vote.edition.raw.name%>/<%= link.id %>"> 
+	    <%= makeSafe(link.title) %> </a>
 	</script>
 
     <script type="text/template" id="followers-template">
@@ -288,7 +290,8 @@
     <script type="text/template" id="full-story-template">
       <div class="mainHeader"> Supported Work </div>
       <div class="item">
-	<a class="titleLink" target="_blank" href="<%= link.url %>"> <%= link.title %> </a>
+	<a class="titleLink" target="_blank" href="<%= link.url %>"> 
+	  <%= makeSafe(link.title) %> </a>
 	<div class="submitterLine"> 
 	  Awarded <span class="amount"> <%= fundingStr %></span>,
 	  nominated by <%= rMake('#person-link-template', submitter) %> 
@@ -318,7 +321,7 @@
       <span class="amount"> <%= fundingStr %></span>
       <span> <%= link.domain %> </span>
       <br>
-      <a class="indented-story" href="<%= href %>"> <%= link.title %></a> 
+      <a class="indented-story" href="<%= href %>"> <%= makeSafe(link.title) %></a> 
       <div></script>
 
 
@@ -326,7 +329,7 @@
       <div class="mainHeader"> Newskraft.org was made possible by hypothetical donations </div>
       <div class="item muchSpaceOnBottom"> Total Funding:
 	<span class="amount"> <%= totalStr %> </span> </div>
-      <div class="mainHeader"> Donations List </div>
+      <div class="mainHeader"> Donations </div>
     </script>
 
     <script type="text/template" id="donation-template">
@@ -379,10 +382,11 @@
 
     <script type="text/template" id="person-template">
       <div class="mainHeader"> 
-	<span class="boldHeader"> <%= nickname %> </span> 
+	<span class="boldHeader"> <%= makeSafe(nickname) %> </span> 
 	<span class="userType"> 
 	  is <%= isEditor? 'an editor' : 'a judge' %> </span> </div> 
-    <div class="item"> Web Page: <a href="<%= webPage %>"> <%= webPage %> </a> </div> </script>
+    <div class="item"> Web Page: <a href="<%= webPage %>"> 
+	<%= makeSafe(webPage) %> </a> </div> </script>
 
     <script type="text/template" id="is-following-template">
       <div class="item"> 
@@ -391,8 +395,8 @@
 	       <%= isFollowing? 'checked="yes"' : '' %>> </input> </div> </script>
 
     <script type="text/template" id="person-link-template">
-      <a class="personLink" href="<%= '#person/' + id %>"><%= nickname %></a></script>
-
+      <a class="personLink" href="<%= '#person/' + id %>">
+	<%= makeSafe(nickname) %></a></script>
 
   </body> 
 

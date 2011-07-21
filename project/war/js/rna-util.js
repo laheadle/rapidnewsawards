@@ -92,6 +92,7 @@ window.initRNA = function () {
 	    self.finish();
 	    flashInfo('');
 	    app.loginView.model.set(response.requester || {cid: 'guest'});
+	    //debugPrint(app.loginView.model.toJSON());
 	    app.loginView.model.change(); // trigger render
 
 	    var payload = response.payload;
@@ -113,7 +114,8 @@ window.initRNA = function () {
 		return;
 	    }
 	    if (!self.state.interrupted) {
-		self.state = function (state, payload) { 
+		self.state = function (state, payload) {
+		    //debugPrint(payload);
 		    var s = success(payload, state);
 		    if (s == undefined) {
 			return state;
@@ -131,7 +133,7 @@ window.initRNA = function () {
 	    if (emp) {
 		finalResponseReceived({status: 'SERVER_UNRESPONSIVE'});
 		return;
-	    }	    
+	    }
 	    log(attrs.fun + ' returned ' + JSON.stringify(data));
 	    var response = JSON.parse(data);
 	    if (empty(response.status)) {
@@ -221,6 +223,11 @@ window.initRNA = function () {
 		  });
     };
 
+    window.debugPrint = function(obj) {
+	var table = prettyPrint(obj);
+	$('#debugFooter').append(table);
+    }
+
     window.redirectForLogout = function(command) {
 	var newUrl = window.location.href;
 	doRequest({ fun: command,
@@ -237,6 +244,15 @@ window.initRNA = function () {
 
     window.rMake = function (templateSelector, args) {
 	return _.template($(templateSelector).html())(args || {});
+    };
+
+    window.makeSafe = function (unsafe) {
+	return unsafe
+	    .replace(/&/g, "&amp;")
+	    .replace(/</g, "&lt;")
+	    .replace(/>/g, "&gt;")
+	    .replace(/"/g, "&quot;")
+	    .replace(/'/g, "&#039;");
     };
 
     $.ajaxSetup({timeout: 30000});
