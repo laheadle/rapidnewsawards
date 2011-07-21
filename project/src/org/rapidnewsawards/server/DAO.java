@@ -786,7 +786,7 @@ public class DAO extends DAOBase {
 					JudgeInfluence ji = new JudgeInfluence(0, parentKey, usr.getKey());
 					// an optimization -- only use transactions for the current edition
 					if (i == curNum) {
-						txn.put(jiset);						
+						txn.put(ji);						
 					}
 					else {
 						jiset.add(ji);
