@@ -656,10 +656,10 @@ $(function(){
 	    // Bookmarklet
 	    if (app.loginView.isCurrentUser(u) && !this.user().isEditor) {
 		var arg='\'http://newskraft-testing.appspot.com/#nominate/\'+encodeURIComponent(document.location.href)'
-		var link = '<a href="javascript:(function(){window.open('+arg+')})()"> Nominate </a>';
+		var link = '<a href="javascript:(function(){window.location.assign('+arg+')})()"> Nominate </a>';
 		flashLog({type: 'reminderNotice', 
 			  header: 'For Easily Nominating Stories:',
-			  content: 'Drag ' + link + ' to your bookmarks toolbar now.'});
+			  content: 'Save the link ' + link + ' to your bookmarks/favorites toolbar.'});
 	    }
 
 	    // isFollowing checkBox
@@ -1092,7 +1092,8 @@ $(function(){
 	checkCreatingAccount: function() {
 	    if (this.isCreatingAccount() && !window.location.hash.match(/#createAccount/)) {
 		flashLog({type: 'redNotice',
-			  content: rMake('#please-finish-registering')});
+			  content: rMake('#please-finish-registering', 
+					 {andThen: encodeURIComponent(window.location)})});
 	    }
 	},
 

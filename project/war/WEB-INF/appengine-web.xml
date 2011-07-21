@@ -10,7 +10,7 @@
 	</system-properties>
 
 <static-files> 
-       <exclude path="/**.html" expiration="0s"/>
+       <exclude path="/**.html" />
 </static-files>   
 	
 </appengine-web-app>

@@ -90,7 +90,7 @@ public class AuthFilter implements Filter {
 			hr.setHeader("Cache-Control","no-cache"); //HTTP 1.1
 			hr.setHeader("Pragma","no-cache"); //HTTP 1.0
 			hr.setDateHeader ("Expires", 0); //prevents caching at the proxy server
-		} catch (Throwable e) {
+		} catch (Exception e) {
 			DAO.log.severe("failed to set cache headers!");
 		}
 	}
