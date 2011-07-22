@@ -14,7 +14,7 @@ $(function(){
 
     function defaultAction() {
 	flashInfo('');
-	if (Backbone.history.getFragment() == '') {
+	if (Backbone.history.getFragment() === '') {
 	    window.app.defaultAction();
 	}
     }
@@ -203,7 +203,7 @@ $(function(){
     window.StoriesView = EditionView.extend({
 
 	constructor: function (options) {
-	    options.list = (options.order == 'top'? 
+	    options.list = (options.order === 'top'? 
 			    new StoriesList : new FundingsList);
 	    this.order = options.order;
 	    // run super.initialize
@@ -237,8 +237,8 @@ $(function(){
 	render: function() {
 	    this.constructor.__super__.render();
 	    var args = 
-		{topSelected: this.order == 'top'? 'selected' : 'unselected',
-		 recentSelected: this.order == 'recent'? 'selected' : 'unselected'};
+		{topSelected: this.order === 'top'? 'selected' : 'unselected',
+		 recentSelected: this.order === 'recent'? 'selected' : 'unselected'};
 	    this.$('#editionTabsMinor').html(rMake('#stories-order-tab-template', args));
 
 	    if (this.edition.number === 0) {
@@ -884,10 +884,10 @@ $(function(){
 
 	render: function() {
 	    var _copy = this.model.get('info');
-	    _copy.funding = '' +_copy.funding / 100;
 	    $(this.el).prepend(rMake('#full-story-template', 
 				     // story info
 				     _copy));
+	    
 	    this.bindEvents(this);
 	    $('.fadeIn').hide().fadeIn(2000);
 	},

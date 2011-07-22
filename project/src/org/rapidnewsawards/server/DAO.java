@@ -1805,7 +1805,7 @@ public class DAO extends DAOBase {
 				new java.net.URL(wp);
 				return wp;
 			} catch (MalformedURLException mfe) {
-				throw new RNAException("Invalid web page: " + webPage);
+				throw new RNAException("Invalid web page");
 			}
 		}
 	}

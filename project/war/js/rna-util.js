@@ -115,7 +115,7 @@ window.initRNA = function () {
 	    }
 	    if (!self.state.interrupted) {
 		self.state = function (state, payload) {
-		    //debugPrint(payload);
+		    debugPrint(payload);
 		    var s = success(payload, state);
 		    if (s == undefined) {
 			return state;
