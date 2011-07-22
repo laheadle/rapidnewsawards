@@ -55,6 +55,10 @@ a.personLink:link, a.personLink:visited {
     text-decoration: underline;
 }
 
+a.personLink:active {
+    color: red;
+}
+
 a.titleLink:active {
     color: blue;
 }
@@ -473,6 +477,12 @@ a.help {
 }
 
 .welcomeTxt {
+    font-size: 1.4em;
+    margin-bottom: 20px;
+    font-weight: bold;
+}
+
+.welcomeTxt2 {
     font-weight: bold;
 }
 

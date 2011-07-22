@@ -29,7 +29,9 @@ window.initRNA = function () {
 	    var type = this.model.get('type');
 	    var header = this.model.get('header');
 	    this.flag(type, header);
-	    this.$('span.content').html(this.model.get('content') || "");
+	    var html = this.model.get('content') || "";
+	    rnaTrace('flash: ' + html);
+	    this.$('span.content').html(html);
 	}
     });
 

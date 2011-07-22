@@ -69,11 +69,6 @@
         <property name="time" direction="desc"/>
     </datastore-index>
 
-    <datastore-index kind="User" ancestor="false" source="auto">
-        <property name="email" direction="asc"/>
-        <property name="domain" direction="asc"/>
-    </datastore-index>
-
     <datastore-index kind="Vote" ancestor="true" source="auto">
         <property name="time" direction="desc"/>
     </datastore-index>

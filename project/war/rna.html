@@ -65,7 +65,30 @@
 
 
     <script type="text/template" id="create-account-template"> 
-      <div class="fatBottom"> <span class="welcomeTxt"> Welcome to the site. </span>  Please tell us about yourself. </div> <br>
+      <div class="fatBottom"> 
+
+	<% if (app.loginView.isEditor()) { %>
+
+	<div class="welcomeTxt"> Our judges need your authorization,
+	editor, to spend our donors' money. </div> Invite great judges to join the site, and
+	watch for new judges as they join.  Follow great judges and
+	unfollow the not-so-great.  <span class="welcomeTxt2"> Follows
+	and unfollows don't take effect until the next edition is
+	  published. </span>
+
+	<% } else { %>
+
+	<div class="welcomeTxt"> Only you can award our donors'
+	money, judge. </div> You start with no authority, but the
+	more editors follow you, the more you can award to high
+	quality journalism.  <span class="welcomeTxt2"> Follows and
+	unfollows don't take effect until the next edition is
+	published, </span> so don't expect any authority until then.
+
+        <% } %>
+
+      </div> <br>
+
       <form>
 	<table> 
 	  <tr> <td> Name </td> 

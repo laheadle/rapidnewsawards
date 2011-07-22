@@ -749,6 +749,7 @@ public class DAO extends DAOBase {
 			LockedPeriodical lp = lockPeriodical();
 			if (lp.periodical.userlocked || lp.periodical.inTransition) {
 				lp.rollback();
+				// idempotent
 				throw new ConcurrentModificationException("waiting to join");
 		 	}
 			lp.setUserLock();
@@ -1253,8 +1254,26 @@ public class DAO extends DAOBase {
 				return null;
 			email = email.toLowerCase();
 			domain = domain.toLowerCase();
-			return ofy().query(User.class).filter("email", email)
-					.filter("domain", domain).get();
+			User result = null;
+			for (User u : ofy().query(User.class).filter("email", email)) {
+				if (result == null) {
+					// first (and hopefully only) User record
+					result = u;
+				}
+				else {
+					if (u.isInitialized) {
+						log.severe("deleting spurious user record: " + result.toString());
+						ofy().delete(result);
+						result = u;
+					}
+					else {
+						log.severe("deleting spurious user record: " + u.toString());
+						ofy().delete(u);
+					}
+					log.severe("keeping user record: " + result.toString());
+				}
+			}
+			return result;
 		}
 
 		public LinkedList<User> getFollowers(Key<User> judge) {
@@ -1527,6 +1546,7 @@ public class DAO extends DAOBase {
 			if (ofy().query(User.class).filter("nickname", nickname).get() != null) {
 				throw new RNAException(String.format("The name '%s' is already in use; please modify yours slightly.", nickname));				
 			}
+			assert(user.id != null);
 			
 			// success
 			user.nickname = nickname;

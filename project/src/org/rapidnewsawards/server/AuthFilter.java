@@ -1,11 +1,7 @@
 package org.rapidnewsawards.server;
 
 import java.io.IOException;
-import java.io.PrintWriter;
-import java.io.Serializable;
-import java.io.StringWriter;
 import java.util.Date;
-import java.util.LinkedList;
 import java.util.logging.Logger;
 
 import javax.servlet.Filter;
@@ -24,6 +20,7 @@ import com.google.appengine.api.users.UserServiceFactory;
 import com.googlecode.objectify.NotFoundException;
 
 public class AuthFilter implements Filter {
+	private static final int SLEEP_AFTER_PUT = 200;
 	private static final Logger log = Logger.getLogger(AuthFilter.class.getName());
 	private static DAO d = DAO.instance;
 	private String adminEmail;
@@ -50,8 +47,13 @@ public class AuthFilter implements Filter {
 			boolean isAdmin = adminEmail.equals(serviceUser.getEmail());
 			if (u == null && !isAdmin) {
 				// first time logging in; create new user unless this is the admin or an editor
+				DAO.log.info("first time login: " + serviceUser.getEmail());
 				u = new User(serviceUser.getEmail(), serviceUser.getAuthDomain(), false);
 				DAO.instance.ofy().put(u);
+				try {
+					// avoid potential race with put() below
+					Thread.sleep(SLEEP_AFTER_PUT);
+				} catch (InterruptedException e1) {}
 				user = u;
 			}
 			else if (isAdmin) {
