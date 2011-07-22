@@ -146,7 +146,7 @@ public class SocialTest extends RNATest {
 				mg.getKey(), jqp.getKey(), e0.getKey(), false);
 		Response r = doSocial;
 		
-		assertEquals(r, Response.ALREADY_ABOUT_TO_UNFOLLOW);
+		assertEquals(r, Response.YOU_ARE_ALREADY_ABOUT_TO_UNFOLLOW_THIS_JUDGE);
 	}
 
 	@Test

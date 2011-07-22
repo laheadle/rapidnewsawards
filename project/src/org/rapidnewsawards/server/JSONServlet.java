@@ -388,7 +388,7 @@ public class JSONServlet extends HttpServlet {
 				catch (MalformedURLException ex2) {
 					// TODO Test on frontend
 					log.warning("bad url " +  url + "submitted by " + getUser()  == null? "anon" : getUser().toString());
-					throw new RNAException("Malformed URL");
+					throw new RNAException("Malformed URL.  Does it start with http://?");
 				}
 			}
 		});

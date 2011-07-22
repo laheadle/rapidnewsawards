@@ -20,12 +20,13 @@ public enum Response {
 	FORBIDDEN_DURING_FINAL("You can't do that because the final edition has been published"), 
 	NOT_AN_EDITOR("Only Editors can do this"), 
 	BAD_URL("Malformed URL.  Does it start with http://?"), 
-	IS_FINISHED("The final edition has been published"), 
-	ALREADY_ABOUT_TO_UNFOLLOW("Already about to unfollow"), 
+	THE_EXPERIMENT_IS_FINISHED("The final edition has been published"), 
+	YOU_ARE_ALREADY_ABOUT_TO_UNFOLLOW_THIS_JUDGE("Already about to unfollow"), 
 	URL_TOO_LONG("The URL is too long"), 
 	TITLE_TOO_LONG("The title is too long"), 
-	VOTING_FORBIDDEN_DURING_SIGNUP("Voting is not permitted during the signup round"), 
-	ONLY_JUDGES_CAN_VOTE("Only judges can vote");
+	VOTING_IS_FORBIDDEN_DURING_SIGNUP("Voting is not permitted during the signup round"), 
+	ONLY_JUDGES_CAN_VOTE("Only judges can vote"), 
+	YOUR_USER_ACCOUNT_IS_NOT_INITIALIZED_YET("You have not finished creating your account");
 	
 	public String s;
 

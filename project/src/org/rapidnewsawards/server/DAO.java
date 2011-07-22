@@ -591,7 +591,7 @@ public class DAO extends DAOBase {
 				return vr;	
 			}
 			else {
-				Link l = users.createLink(url, title, user.getKey());
+				Link l = users.getOrCreateLink(url, title, user.getKey());
 				vr.linkId = l.id;
 				vr.returnVal = users.voteFor(user, e, l, true);
 			}
@@ -994,7 +994,7 @@ public class DAO extends DAOBase {
 				log.warning("Already about to unfollow: " + from + ", "
 						+ to + ", " + e);
 				socialTxn.getTxn().rollback();
-				return Response.ALREADY_ABOUT_TO_UNFOLLOW;
+				return Response.YOU_ARE_ALREADY_ABOUT_TO_UNFOLLOW_THIS_JUDGE;
 			}
 			LockedPeriodical lp = lockPeriodical();
 			
@@ -1223,7 +1223,7 @@ public class DAO extends DAOBase {
 
 	public class Users {
 
-		public Link createLink(String url, String title, Key<User> submitter) 
+		public Link getOrCreateLink(String url, String title, Key<User> submitter) 
 		throws MalformedURLException {
 			assert (submitter != null);
 			Objectify txn = fact().beginTransaction();
@@ -1404,13 +1404,18 @@ public class DAO extends DAOBase {
 					return vr;
 				}
 
+				if (!user.isInitialized) {
+					vr.returnVal = Response.YOUR_USER_ACCOUNT_IS_NOT_INITIALIZED_YET;
+					return vr;
+				}
+
 				if (user.isEditor) {
 					vr.returnVal = Response.ONLY_JUDGES_CAN_VOTE;
 					return vr;
 				}
 
 				if (Edition.getNumber(edition) == 0) {
-					vr.returnVal = Response.VOTING_FORBIDDEN_DURING_SIGNUP;
+					vr.returnVal = Response.VOTING_IS_FORBIDDEN_DURING_SIGNUP;
 					return vr;
 				}
 
@@ -1424,7 +1429,7 @@ public class DAO extends DAOBase {
 					vr.returnVal = voteFor(
 							user, edition, l, on);
 					vr.linkId = l.id;
-					// TODO test user login state for votes
+					// TODO 2.0 test user login state for votes (what is this? LH)
 					vr.authUrl = userService.createLogoutURL("FIXME");
 				}
 				return vr;
@@ -1450,7 +1455,7 @@ public class DAO extends DAOBase {
 			if (lp.periodical.isFinished()) {
 				log.warning("Attempted to vote in finished periodical");
 				lp.rollback();
-				return Response.IS_FINISHED;
+				return Response.THE_EXPERIMENT_IS_FINISHED;
 			}
 
 			if (!lp.periodical.getcurrentEditionKey().equals(e)) {

@@ -696,7 +696,7 @@ $(function(){
     window.NominateView = Backbone.View.extend({
 
 	tagName: "div",
-	id: "nominate",
+	id: "nominateBody",
 
 	initialize: function() {
 	    var self = this;
@@ -965,7 +965,7 @@ $(function(){
 	},
 
 	tagName: 'div',
-	id: 'volume',
+	id: 'volumeBody',
 	
 	initialize: function(attrs) {
 	    this.current = attrs.current;
