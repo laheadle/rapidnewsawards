@@ -1285,8 +1285,8 @@ $(function(){
 			 numEditions: data.numEditions,
 			 isCurrent: data.isCurrent,
 			 isNext: data.isNext,
-			 storiesSelected: data.isStoryList,
-			 networkSelected: data.isNetworkList,
+			 storiesSelected: (data.isStoryList? 'selected' : 'unselected'),
+			 networkSelected: (data.isNetworkList? 'selected' : 'unselected'),
 			 data: data.list,
 			 influence: data.influence};
 		    self.setEditionView(view, initParams);

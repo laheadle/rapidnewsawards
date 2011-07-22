@@ -19,7 +19,7 @@ public enum Response {
 	HAS_NOT_VOTED("You cannot cancel a vote unless you have voted"), 
 	FORBIDDEN_DURING_FINAL("You can't do that because the final edition has been published"), 
 	NOT_AN_EDITOR("Only Editors can do this"), 
-	BAD_URL("Malformed URL"), 
+	BAD_URL("Malformed URL.  Does it start with http://?"), 
 	IS_FINISHED("The final edition has been published"), 
 	ALREADY_ABOUT_TO_UNFOLLOW("Already about to unfollow"), 
 	URL_TOO_LONG("The URL is too long"), 
