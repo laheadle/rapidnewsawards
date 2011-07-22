@@ -602,6 +602,7 @@ public class DAO extends DAOBase {
 			LinkedList<InfluenceMessage> result = new LinkedList<InfluenceMessage>();
 
 			Map<Key<User>, Integer> authorities = new HashMap<Key<User>, Integer>();
+			Map<Key<User>, Date> times = new HashMap<Key<User>, Date>();
 			Map<Key<User>, Set<Key<User>>> followers = new HashMap<Key<User>, Set<Key<User>>>();
 			
 			ArrayList<Key<User>> voters = new ArrayList<Key<User>>();
@@ -610,6 +611,7 @@ public class DAO extends DAOBase {
 					.filter("edition", e)) {
 				authorities.put(v.voter, v.authority);
 				voters.add(v.voter);
+				times.put(v.voter, v.time);
 			}
 
 			if (voters.size() == 0) {
@@ -644,6 +646,7 @@ public class DAO extends DAOBase {
 				InfluenceMessage message = new InfluenceMessage(vmap.get(voters.get(i)),
 						funding(authorities.get(voters.get(i)), space.totalScore, space.balance));
 				addSupportingEditors(message, followers.get(voters.get(i)), allEdObjs);
+				message.setTime(times.get(voters.get(i)));
 				result.add(message);
 			}
 			Collections.sort(result);

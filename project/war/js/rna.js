@@ -858,7 +858,7 @@ $(function(){
 	view: StoryFundingView,
 
 	comparator: function(model) {
-	    return - model.get('authority');
+	    return model.get('timeLong');
 	}
 
     });

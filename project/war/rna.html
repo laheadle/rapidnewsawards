@@ -279,7 +279,7 @@
     <script type="text/template" id="story-funding-template">
 	  <div class="supportedUser"> <span class="amount"> <%= fundedStr %> </span>
 	    <span class="fund-from"> from </span>
-	    <%= rMake('#person-link-template', user) %> 
+	    <%= rMake('#person-link-template', user) %>    <span class="smallTime"> <%= timeStr %> </span> 
 	    <%= rMake('#supporting-editors-template', {eds: supportingEditors}) %> </div> </script>
 
     <script type="text/template" id="supporting-editors-template">
