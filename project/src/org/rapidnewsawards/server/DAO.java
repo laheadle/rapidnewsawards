@@ -1531,7 +1531,11 @@ public class DAO extends DAOBase {
 
 		public User welcomeUser(User user, String nickname, String consent, String webPage) 
 		throws RNAException {
-			editions.getEdition(Editions.CURRENT);
+			Edition e = editions.getEdition(Editions.CURRENT_OR_FINAL);
+			if (e.number == editions.getEdition(Editions.FINAL).number) {
+				// TODO 2.0 small race condition here between this and transition
+				throw new RNAException("Sorry, the experiment is closed because it is ending.");
+			}
 			if (user == null) {
 				throw new RNAException("You must log in first");
 			}
