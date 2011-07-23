@@ -111,23 +111,26 @@
     <!-- Templates -->
 
     <script type="text/template" id="edition-header-template"> 
-      <span id="edition-header" class="spaceOnTop"> <span class="number"> Number 
+      <div id="editionHeader" class="spaceOnTop"> <span class="number"> Number 
 	<%= number %>: </span> <%= finished? 'Awarded' : 'Awarding' %> 
 	<span class="amount"> <%= finished? totalSpendStr : revenueStr %> </span>
-	on <%= endStr %> </span> </script>
+	on <%= endStr %> </div> </script>
 
     <script type="text/template" id="signup-round-template"> 
-      <span id="edition-header"> <span class="signup"> Signup round: </span> 
+      <div id="editionHeader"> <span class="signup"> Signup round: </span> 
 	<%= finished? 'Published' : 'Publishing' %>
-	on <%= endStr %> </span> </script>
+	on <%= endStr %> </div> </script>
 
     <script type="text/template" id="edition-tabs-template"> 
-      <div id="editionTabsMajor"> 
-	<a class="stories <%= storiesSelected %>"> Stories </a>
-	<a class="network <%= networkSelected %>"> Network </a> </div>
-      <!-- fixme change to a TR -->
-      <div id="editionTabsMinor" class="orderBy"> </div> 
-      <div id="influenceTab"> </div> 
+      <div id="editionTabsInner">
+	<div id="editionTabsMajor"> 
+	  <a class="stories <%= storiesSelected %>"> Stories </a>
+	  <a class="network <%= networkSelected %>"> Network </a> </div>
+	<!-- fixme change to a TR -->
+	<div id="editionTabsMinor" class="orderBy"> </div> 
+	<div id="influenceTab"> </div>
+      </div>
+      <div class="clear"/>
     </script>
 
     <script type="text/template" id="please-finish-registering">

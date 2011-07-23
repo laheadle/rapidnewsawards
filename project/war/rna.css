@@ -131,9 +131,8 @@ a.title {
     height: 30px;
 }
 
-#edition-header, .volumeHeader {
+#editionHeader {
     background-color: #F0F0F0;
-    width: 850px;
     font-size: 1.4em;
 }
 
@@ -166,7 +165,6 @@ a.title {
 
 .mainHeader {
     background-color: #F0F0F0;
-    width: 850px;
     font-size: 1.2em;
 }
 
@@ -197,10 +195,6 @@ a.help {
 
 .volumeBody {
     top: 50px;
-}
-
-.volumeHeader {
-    position: absolute;
 }
 
 #main {
@@ -351,13 +345,12 @@ a.help {
 }
 
 #editionTabsMajor {
-    width: 300px;
+
 }
 
 .middleHeader {
     margin-top: 15px;
     background-color: #F0F0F0;
-    width: 850px;
     font-size: 1.2em;
 }
 
@@ -392,11 +385,18 @@ a.help {
 }
 
 .editionTabs {
+    padding: 60px 0 40px 100px;
+}
+
+.clear {
+    clear: both;
+}
+
+#editionTabsInner {
+    float: left;
     border-left: 1px solid black;
     border-right: 1px solid black;
     padding: 0 5px 0 5px;
-    margin: 60px 0 40px 100px;
-    width: 202px;
 }
 
 .fund-from, .via {
@@ -429,8 +429,9 @@ a.help {
     color: green;
 }
 
-.signup {
-    color: green;
+.signup, .number {
+    font-style: italic;
+    font-weight: bold;
 }
 
 .smallTime {

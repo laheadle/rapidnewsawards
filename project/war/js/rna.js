@@ -655,7 +655,7 @@ $(function(){
 
 	    // Bookmarklet
 	    if (app.loginView.isCurrentUser(u) && !this.user().isEditor) {
-		var arg='\'http://newskraft-testing.appspot.com/#nominate/\'+encodeURIComponent(window.location.href)'
+		var arg='\'http://localhost:8888/#nominate/\'+encodeURIComponent(window.location.href)'
 		var link = '<a href="javascript:(function(){window.location.assign('+arg+')})()"> Nominate </a>';
 		flashLog({type: 'reminderNotice', 
 			  header: 'For Easily Nominating Stories:',
