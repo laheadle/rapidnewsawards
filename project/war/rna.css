@@ -21,10 +21,6 @@
     margin-bottom: 1em;
 }
 
-.unselected {
-    color: blue;
-}
-
 .selected {
     color: black;
     font-weight: bold;
@@ -36,27 +32,34 @@ a {
     text-decoration: none;
 }
 
-a.personLink:active {
-    color: blue;
+a:hover {
+    background-color: #c0ffff;
     text-decoration: underline;
 }
 
-a.personLink:hover {
-    background-color: #00ffff;
-    text-decoration: underline;
+a.selected, a.selected:link, a.selected:visited {
+    color: black;
 }
 
-a.personLink {
-    color: #a00060;
+a.selected:active {
+    color: red;
 }
 
 a.personLink:link, a.personLink:visited {
-    color: black;
-    text-decoration: underline;
+    color: #008fff;
+}
+
+a.personLink:hover {
+    background-color: #c0ffff;
 }
 
 a.personLink:active {
     color: red;
+}
+
+
+a.titleLink:link, a.titleLink:visited {
+    color: black;
 }
 
 a.titleLink:active {
@@ -67,9 +70,6 @@ a.titleLink:hover {
     background-color: gray;
 }
 
-a.titleLink:link, a.titleLink:visited {
-    color: black;
-}
 
 a.linkButton:link, a.linkButton:visited {
     background-color: #0060af;
@@ -211,6 +211,14 @@ a.help {
     top: 85px;
 }
 
+#loading {
+    position: fixed;
+    top: 5px;
+    left: 100px;
+    z-index: 9999;
+    background-color: #ffffff;
+}
+
 #flash {
     position: fixed;
     top: 25px;
@@ -243,10 +251,6 @@ a.help {
     padding-bottom: 5px;
 }
 
-#loading {
-    margin-left: 10px;
-}
-
 #leftColumn {
     position:absolute;
     top: 60px;
@@ -265,12 +269,12 @@ a.help {
 }
 
 #login {
+    padding: 11px 0 0 0;
     display: block;
     float: right;
 }
 
 .logout {
-    padding: 11px 0 0 0;
     display: block;
     float: right;
     max-width: 80px;
@@ -279,7 +283,6 @@ a.help {
 }
 
 .login {
-    padding: 11px 0 0 0;
     display: block;
     float: left;
     max-width: 380px;
@@ -344,10 +347,6 @@ a.help {
     position: relative;
     top: 5px;
     width: 850px;
-}
-
-#createAccount {
-
 }
 
 #editionTabsMajor {

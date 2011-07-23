@@ -572,7 +572,7 @@ $(function(){
     //* EditorFundings
     window.EditorFundingsView = Backbone.View.extend({
 	tagName: "div",
-	id: "editorFundings",
+	id: "editorFundingsBody",
 
 	initialize: function() {
 	    var self = this;
@@ -599,7 +599,7 @@ $(function(){
     window.PersonView = Backbone.View.extend({
 
 	tagName: "div",
-	id: "person",
+	id: "personBody",
 
 	initialize: function() {
 	    var self = this;
@@ -766,7 +766,7 @@ $(function(){
     window.FullSubmitView = Backbone.View.extend({
 
 	tagName: "div",
-	id: "fullSubmit",
+	id: "fullSubmitBody",
 
 	initialize: function() {
 	    var self = this;
@@ -807,7 +807,7 @@ $(function(){
     window.CreateAccountView = Backbone.View.extend({
 
 	tagName: "div",
-	id: "createAccount",
+	id: "createAccountBody",
 
 	initialize: function(attrs) {
 	    var self = this;
@@ -878,7 +878,7 @@ $(function(){
     window.FullStoryView = Backbone.View.extend({
 
 	tagName: "div",
-	id: "fullStory",
+	id: "fullStoryBody",
 
 	initialize: function() {
 	    var self = this;
@@ -1384,10 +1384,13 @@ $(function(){
 
 	setHash: function(hash) {
 	    rnaTrace('setHash: ' + hash);
+	    var oldFragment = Backbone.history.getFragment();
 	    window.location.hash = hash;
+	    if (oldFragment == Backbone.history.getFragment()) {
+		Backbone.history.loadUrl();
+	    }
 	},
 	
-	// fixme these don't do anything if you click them a second time
 	hashPerson: function(id) { 
 	    this.setHash('person/' + (id || ''));
 	},
