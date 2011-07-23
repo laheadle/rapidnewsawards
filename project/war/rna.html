@@ -210,29 +210,29 @@
     <script type="text/template" id="nominate-story-template">
         <div class="mainHeader"> Nominate A Work of Journalism for Recognition and Support </div>
 	<div class="mainDescription"> Your funding support will be noted in the next edition of newskraft.org, and you will become the nominating judge of this work. </div>
-      	<table>
-	  <tr> <td> URL of Work: </td> 
-	    <% if (url != '') { %> <td> <input type="text" size="100" value="<%= url %>" name="url"/> </td> 
-	    <% } else { %> <td> <input type="text" size="100" name="url"/> </td> 
-	   <% } %> </tr>
-	  <tr> <td> </td>
-	    <td>
-	      <input type="submit" value="Nominate" name="nominateStory"/> 
-    </td> </tr> </table> </script>
+	<form>
+      	  <table>
+	    <tr> <td> URL of Work: </td> 
+	      <% if (url != '') { %> <td> <input type="text" size="100" value="<%= url %>" name="url"/> </td> 
+	      <% } else { %> <td> <input type="text" size="100" name="url"/> </td> 
+	      <% } %> </tr>
+	    <tr> <td> </td>
+	      <td>
+		<input type="submit" value="Nominate" name="nominateStory"/> </td> </tr> </table> </form> </script>
 
 
     <script type="text/template" id="full-submit-template">
         <div class="mainHeader"> Check Title </div>
 	<div class="mainDescription"> 
 	  <span class="emphatic"> Edit or accept </span> the provided title and submit nomination. </div>
-	<table> <tr> <td> Title: </td>
+	<form> 
+	  <table> <tr> <td> Title: </td>
 	    <td> <input type="text" size="100" name="title" value="<%= title %>"/> </td> </tr>
 	  <tr> <td> URL: </td> 
 	    <td> <input type="text" size="100" name="url" value="<%= link %>" /> </td> </tr>
 	  <tr> <td> </td>
 	    <td>
-	      <input type="submit" value="Nominate Work" name="nominateStory"/> </td> </tr> </table>
-    </td> </tr> </table> </script>
+	      <input type="submit" value="Nominate Work" name="nominateStory"/> </td> </tr> </table> </form> </script>
 
     <script type="text/template" id="help-link">
       <span class="help">[<a target="_blank" class="help" href="/help.html#<%= topic %>">?</a>]</span>

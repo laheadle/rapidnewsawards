@@ -655,7 +655,7 @@ $(function(){
 
 	    // Bookmarklet
 	    if (app.loginView.isCurrentUser(u) && !this.user().isEditor) {
-		var arg='\'http://newskraft-testing.appspot.com/#nominate/\'+encodeURIComponent(document.location.href)'
+		var arg='\'http://newskraft-testing.appspot.com/#nominate/\'+encodeURIComponent(window.location.href)'
 		var link = '<a href="javascript:(function(){window.location.assign('+arg+')})()"> Nominate </a>';
 		flashLog({type: 'reminderNotice', 
 			  header: 'For Easily Nominating Stories:',
@@ -705,39 +705,48 @@ $(function(){
 	    self.render();
 	},
 
-	bindEvents: function(self) {
-	    this.$('input[name=nominateStory]').click(function (event) {
-		event.preventDefault();
-		var link = self.$('input[name=url]').attr('value');
-		doRequest({fun: 'voteFor',
-			   link: link,
-			   edition: NEXT,
-			   fullLink: '',
-			   on: true},
-			  function (data) {
-			      if (data.submit) {
-				  // show full submit form
-				  app.setMainView(FullSubmitView,
-						  {title: data.suggestedTitle,
-						   link: link});
-			      }
-			      else if (data.returnVal == 'SUCCESS') {
-				  window.flashLog({type: 'success',
-						   content: 'Your support is being counted.'});
-			      }
-			      else {
-				  window.flashLog({type: 'error',
-						   content: data.returnval});
-			      }
+	submit: function (event) {
+	    event.preventDefault();
+	    var link = self.$('input[name=url]').attr('value');
+	    doRequest({fun: 'voteFor',
+		       link: link,
+		       edition: NEXT,
+		       fullLink: '',
+		       on: true},
+		      function (data) {
+			  if (data.submit) {
+			      // show full submit form
+			      app.setMainView(FullSubmitView,
+					      {title: data.suggestedTitle,
+					       link: link});
+			  }
+			  else if (data.returnVal == 'SUCCESS') {
+			      window.flashLog({type: 'success',
+					       content: 'Your support is being counted.'});
+			  }
+			  else {
+			      window.flashLog({type: 'error',
+					       content: data.returnval});
+			  }
+		      });
+	},
 
-			  });
-	    });
+	bindEvents: function(self) {
+	    this.$('input[type=submit]').click(this.submit);
+	    this.$('form').submit(this.submit);
 	},
 
 	render: function() {
 	    if (window.app.loginView.isLoggedInJudge()) {
 		if (window.app.loginView.isCreatingAccount()) {
-		    $(this.el).html(rMake('#header-template', {text: 'You must finish creating your account before nominating anything'}));
+		    $(this.el).html(
+			rMake('#header-template', 
+			      {text: 'You must finish creating your account before nominating anything'}));
+		}
+		else if (this.model.get('isSignup')) {
+		    $(this.el).html(
+			rMake('#header-template', 
+			      {text: 'Nominations will begin after the signup round is published.'}));
 		}
 		else {
 		    $(this.el).html(rMake('#nominate-story-template', 
@@ -766,19 +775,22 @@ $(function(){
 	    this.render();
 	},
 
+	submit: function (event) {
+	    event.preventDefault();
+	    var link = self.$('input[name=url]').attr('value');
+	    doRequest({fun: 'submitStory',
+		       url: self.$('input[name=url]').attr('value'),
+		       title: self.$('input[name=title]').attr('value') },
+		      function (data) {
+			  window.flashLog({type: 'success',
+					   content: 'Your support is being counted.'});
+			  app.clearMainView();
+		      });
+	},
+
 	bindEvents: function(self) {
-	    this.$('input[name=nominateStory]').click(function (event) {
-		event.preventDefault();
-		var link = self.$('input[name=url]').attr('value');
-		doRequest({fun: 'submitStory',
-			   url: self.$('input[name=url]').attr('value'),
-			   title: self.$('input[name=title]').attr('value') },
-			  function (data) {
-			      window.flashLog({type: 'success',
-					       content: 'Your support is being counted.'});
-			      app.clearMainView();
-			  });
-	    });
+	    this.$('form').submit(this.submit);
+	    this.$('input[type=submit]').click(this.submit);
 	},
 
 	render: function() {
@@ -1325,7 +1337,9 @@ $(function(){
 	    var self = this;
 	    doRequest({ fun: 'ping'},
 		      function(data) {
-			  self.setMainView(NominateView, {url: url? decodeURIComponent(url) : ''});
+			  self.setMainView(NominateView, {
+			      isSignup: data.isSignup,
+			      url: url? decodeURIComponent(url) : ''});
 		      });
 	},
 
@@ -1450,7 +1464,6 @@ $(function(){
     $('#next').click(function (event) {
 	app.hashTopStories(NEXT);
     });
-
 
     $('#current').click(function (event) {
 	app.hashTopStories(CURRENT);

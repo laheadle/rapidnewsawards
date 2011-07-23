@@ -450,6 +450,7 @@ a.help {
 }
 
 .listItem {
+    padding: 5px 0 5px 0;
     color: black;
     font-size: 1.1em;
     margin-bottom: 10px;

@@ -241,9 +241,17 @@ public class JSONServlet extends HttpServlet {
 		});
 
 		commandsMap.put("ping", new AbstractCommand() {
+			class Result { 
+				@SuppressWarnings("unused") // used by client
+				public boolean isSignup; 
+			}
+			
 			@Override
 			public Object getResult() throws RNAException {
-				return "pong";
+				Result r = new Result();
+				Edition e = d.editions.getEdition(DAO.Editions.CURRENT_OR_FINAL);
+				r.isSignup = e.number == 0;
+				return r;
 			}
 		});
 		
