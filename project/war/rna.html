@@ -25,7 +25,7 @@
     <div id="rna-app">
 
       <div id="header">
-        <a href="http://newskraft.org" class="title">www.newskraft.org</a>
+        <a href="http://www.newskraft.org" class="title">newskraft.org</a>
 	<span id="loading"> <img src="ajax-loader.gif" alt="loader image"/> </span>
 	<span id="login" class="large">
 	  <a class="login"> </a>
@@ -152,13 +152,12 @@
       <%= rMake('#person-link-template', user) %> </script>
 
     <script type="text/template" id="top-editor-template">
-      <div class="halfSize">
 	<span class="amount"> <%= fundedStr %> </span> 
 	<span class="italic"> Overseen by </span>
 	<%= rMake('#person-link-template', user) %>
 	<span class="floatRight">
 	  <a href="#editorFundings/<%= edition.number %>/<%= id %>"> See awards </a> </span> 
-    </div> </script>
+    </script>
     
     <script type="text/template" id="none-followed-template">
 	<div class="empty"> 
@@ -407,7 +406,12 @@
       <div class="mainHeader"> 
 	<span class="boldHeader"> <%= makeSafe(nickname) %> </span> 
 	<span class="userType"> 
-	  is <%= isEditor? 'an editor' : 'a judge' %> </span> </div> 
+	  is <% if (isEditor) { %> 
+	  an <span class="emphatic"> editor</span>
+	  <% } else { %>
+	  a <span class="emphatic"> judge</span> 
+	  <% } %>
+      </span> </div> 
     <div class="item"> Web Page: <a href="<%= webPage %>"> 
 	<%= makeSafe(webPage) %> </a> </div> </script>
 

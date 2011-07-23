@@ -70,10 +70,10 @@ public class DoSomethingServlet extends HttpServlet {
 		}
 		else if (fun.equals("makeDonations")) {
 			try {
-				DAO.instance.donate("joe", "50", "foo.com", "hello", "true");
-				DAO.instance.donate("jon", "5000", "foo.com", "hello2", "true");
-				DAO.instance.donate("jona", "510", "foo.com", "hello3", "true");
-				DAO.instance.donate("jane", "500", "foo.com", "hello jk lkj lkj lkj lkj klj", "true");
+				DAO.instance.donate("joe", "50", "foo.com", "just wanted to give some money.", "true");
+				DAO.instance.donate("jon", "5000", "foo.com", "Hoping to support high quality journalism.", "true");
+				DAO.instance.donate("jona", "510", "foo.com", "Interested in the project.", "true");
+				DAO.instance.donate("jane", "500", "foo.com", "curious.", "true");
 				DAO.instance.donate("jane", "500", "foo.com", "", "true");
 				resp.getWriter().write("donated");			
 			} catch (RNAException e) {

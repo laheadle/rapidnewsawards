@@ -37,6 +37,10 @@ a:hover {
     text-decoration: underline;
 }
 
+a:active {
+    color: red;
+}
+
 a.selected, a.selected:link, a.selected:visited {
     color: black;
 }
@@ -45,18 +49,11 @@ a.selected:active {
     color: red;
 }
 
+
 a.personLink:link, a.personLink:visited {
     color: #008fff;
+    font-weight: bold;
 }
-
-a.personLink:hover {
-    background-color: #c0ffff;
-}
-
-a.personLink:active {
-    color: red;
-}
-
 
 a.titleLink:link, a.titleLink:visited {
     color: black;
@@ -94,6 +91,7 @@ h3, h4 {
 /* foundations */
 
 body {
+    font-family: Arial, sans;
     margin: 0;
     padding: 0;
     border: none;
@@ -125,6 +123,7 @@ a.title {
 }
 
 #header {
+    padding-bottom: 3px;
     position: absolute;
     left: 150px;
     border-bottom: 1px solid black;
@@ -140,7 +139,7 @@ a.title {
 
 #time {
     float: right;
-    padding: 11px 15px 0 0;
+    padding: 14px 15px 0 0;
 }
 
 .muchSpaceOnBottom {
@@ -245,6 +244,7 @@ a.help {
     margin: 0 0 10px 0; 
     padding-left: 0;
     font: 1.1em bold;
+    font-family: Arial, sans;
 }
 
 .menuHeader {
@@ -266,10 +266,11 @@ a.help {
     top: 10px;
     padding-left: 0;
     font: 1.1em bold;
+    font-family: Arial, sans;
 }
 
 #login {
-    padding: 11px 0 0 0;
+    padding: 12px 0 0 0;
     display: block;
     float: right;
 }
@@ -395,7 +396,7 @@ a.help {
     border-right: 1px solid black;
     padding: 0 5px 0 5px;
     margin: 60px 0 40px 100px;
-    width: 200px;
+    width: 202px;
 }
 
 .fund-from, .via {
@@ -413,6 +414,7 @@ a.help {
 
 .amount {
     color: green;
+    font-weight: bold;
 }
 
 .revenue {
