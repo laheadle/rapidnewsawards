@@ -244,23 +244,20 @@ $(function(){
 	    if (this.edition.number === 0) {
 		$(rMake('#signup-explanation')).insertAfter($(this.el).children().first());
 	    }
-	    else if (this.order == 'top') {
-		if (!this.edition.finished) {
-		    $(rMake('#funding-amounts-explanation')).insertAfter($(this.el).children().first());
-		}
-		$(rMake('#top-stories-explanation')).insertAfter($(this.el).children().first());
-	    }
 	    else {
-		if (!this.edition.finished) {
-		    $(rMake('#funding-amounts-explanation')).insertAfter($(this.el).children().first());
-		}
-		$(rMake('#recent-stories-explanation')).insertAfter($(this.el).children().first());
+		$(rMake('#funding-amounts-explanation',
+			{finished: this.edition.finished}))
+		    .insertAfter($(this.el).children().first());
 	    }
 
 	    if (this.order == 'top') {
-		$(rMake('#list-header', {text: 'Top Stories'})).insertAfter(this.$('.editionTabs'));
+		$(rMake('#list-header', {text: 'Top Stories',
+					 subtext: 'Stories with the most funding for this edition appear on top.'}))
+		    .insertAfter(this.$('.editionTabs'));
 	    } else {
-		$(rMake('#list-header', {text: 'Recent Story Awards'})).insertAfter(this.$('.editionTabs'));
+		$(rMake('#list-header', {text: 'Recent Story Awards',
+					 subtext: 'Recent awards for this edition appear on top.'}))
+		    .insertAfter(this.$('.editionTabs'));
 	    }
 
 	    if (this.list.length == 0) {
@@ -512,34 +509,30 @@ $(function(){
 	    if (this.edition.number === 0) {
 		$(rMake('#signup-explanation')).insertAfter($(this.el).children().first());
 	    }
-	    else if (this.order == 'top') {
-		if (this.influence == 'judge') {
-		    $(rMake('#top-judges-explanation'))
-			.insertAfter($(this.el).children().first());
-		}
-		else {
-		    $(rMake('#top-editors-explanation'))
-			.insertAfter($(this.el).children().first());
-		}
-	    }
 	    else {
-		$(rMake('#recent-socials-explanation'))
+		$(rMake('#funding-amounts-explanation',
+			{finished: this.edition.finished}))
 		    .insertAfter($(this.el).children().first());
 	    }
 
 	    // List Header
 	    if (this.order == 'top') {
 		if (this.influence == 'judge') {
-		    $(rMake('#list-header', {text: 'Top Judges'}))
+		    $(rMake('#list-header', {text: 'Top Judges',
+					     subtext: 'The judges who have awarded the most money are on top.'}))
 			.insertAfter(this.$('.editionTabs'));
 		}
 		else {
-		    $(rMake('#list-header', {text: 'Top Editors'}))
+		    $(rMake('#list-header', {text: 'Top Editors',
+					     subtext: 'The editors whose overseen judges have'+
+					     ' awarded the most money are on top.'}))
 			.insertAfter(this.$('.editionTabs'));
 		}
 	    }
 	    else {
-		$(rMake('#list-header', {text: 'Recent Network Activity'}))
+		// <%= rMake('#help-link', {topic: 'follow-unfollow'}) %>
+		$(rMake('#list-header', {text: 'Recent Network Activity',
+					 subtext: 'Recent follows and unfollows appear on top.'}))
 		    .insertAfter(this.$('.editionTabs'));
 	    }
 
@@ -982,7 +975,7 @@ $(function(){
 	initialize: function(attrs) {
 	    this.current = attrs.current;
 	    // fixme refactor
-	    $(this.el).append(this.make('div', {'class': 'mainHeader'}));
+	    $(this.el).append(this.make('div', {'class': 'volumeHeader'}));
 	    $(this.el).append(this.make('div', {'class': 'list'}));
 	    this.glist = 
 		new GenList({parent: this, 
@@ -1022,7 +1015,7 @@ $(function(){
 	    }
 	    var remaining = this.total - 1 - published;
 
-	    this.$('.mainHeader').html(rMake('#volume-template',
+	    this.$('.volumeHeader').html(rMake('#volume-template',
 				     {published: published, remaining: remaining}));
 	    app.selectMenuItem('#recent');
 	    return this;

@@ -131,7 +131,7 @@ a.title {
     height: 30px;
 }
 
-#editionHeader {
+#editionHeader, .volumeHeader {
     background-color: #F0F0F0;
     font-size: 1.4em;
 }
@@ -143,6 +143,10 @@ a.title {
 
 .muchSpaceOnBottom {
     margin-bottom: 50px;
+}
+
+.spaceOnTop {
+    margin-top: 10px;
 }
 
 #debugFooter {
@@ -166,6 +170,8 @@ a.title {
 .mainHeader {
     background-color: #F0F0F0;
     font-size: 1.2em;
+    border-bottom: 2px solid black;
+    margin-bottom: 10px;
 }
 
 .mainDescription {
@@ -366,7 +372,6 @@ a.help {
 }
 
 .importantExplanation {
-    font-size: 1.4em;
     font-weight: bold;
 }
 

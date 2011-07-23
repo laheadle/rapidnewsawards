@@ -241,34 +241,24 @@
     </script>
 
     <script type="text/template" id="signup-explanation">
-    <div class="editionExplanation"> Empower enough judges to produce a great first edition!  Anyone can join as a judge with their <a href="http://gmail.com"> gmail.com </a> account.  The more editors follow a judge, the more funding that judge can distribute.</div>
-    <div class="importantExplanation"> 
-      Funding will start after the signup round is published.  </div> </script>
-
-    <script type="text/template" id="recent-socials-explanation">
-    <div class="editionExplanation"> Recent follows and unfollows appear on top. 
-    <%= rMake('#help-link', {topic: 'follow-unfollow'}) %> </div> </script>
-
-    <script type="text/template" id="top-editors-explanation">
-    <div class="editionExplanation"> The editors whose overseen judges have awarded the most money are on top. </div> </script>
-
-    <script type="text/template" id="top-judges-explanation">
-    <div class="editionExplanation"> The judges who have awarded the most money are on top. </div> </script>
-
-    <script type="text/template" id="top-stories-explanation">
-    <div class="editionExplanation"> Stories with the most funding for this edition appear on top.  All awards are hypothetical and non-binding. </div> </script>
+    <div class="editionExplanation"> Empower enough judges to produce a great first edition!  Anyone can join as a judge with their <a href="http://gmail.com"> gmail.com </a> account.  The more editors follow a judge, the more funding that judge can distribute.
+    <span class="importantExplanation"> 
+      Funding will start after the signup round is published.  </span> </div> </script>
 
     <script type="text/template" id="funding-amounts-explanation">
-      <span class="importantExplanation"> 
-	Award amounts will continue to change until this edition is published. </span> </script>
-
-
-    <script type="text/template" id="recent-stories-explanation">
-    <div class="editionExplanation"> Recent awards for this edition appear on top.  All awards are hypothetical and non-binding.  </div> </script>
-
+      <div class="editionExplanation"> All awards are hypothetical and non-binding.
+	<% if (!finished) { %>
+	<span class="importantExplanation"> 
+	  Award amounts will continue to change until this edition is published. </span> 
+	<% } %>
+    </div> </script>
 
     <script type="text/template" id="list-header">
-    <div class="mainHeader boldHeader"> <%= text %> </div> </script>
+    <div class="mainHeader">
+      <span class="boldHeader">
+	<%= text %></span><% if (typeof subtext !== "undefined") { %>:
+      <%= subtext %><% } %></div>
+    </script>
 
 
     <script type="text/template" id="follows-template">
@@ -336,7 +326,7 @@
 	<% } %>
 	</div>
 
-	<div class="middleHeader"> Funding during 
+	<div class="mainHeader"> Funding during 
 	  <a href="#topStories/<%= edition.number %>"> <%= edition.displayStr %> </a> </div>
 
     </div> </script>
@@ -351,7 +341,7 @@
 
 
     <script type="text/template" id="donations-template">
-      <div class="mainHeader"> Newskraft.org was made possible by hypothetical donations </div>
+      <div class="volumeHeader"> Newskraft.org was made possible by hypothetical donations </div>
       <div class="item muchSpaceOnBottom"> Total Funding:
 	<span class="amount"> <%= totalStr %> </span> </div>
       <div class="mainHeader"> Donations </div>
@@ -386,9 +376,9 @@
 	completed <span class="mediumTime"> <%= endStr %> </span> </span> </script>
 
     <script type="text/template" id="volume-template">
-      <span> <%= published %> 
+      <%= published %> 
 	<%= published == 1? 'edition' : 'editions' %> 
-	published, <%= remaining %> remaining. </span> </script>
+	published, <%= remaining %> remaining.  </script>
 
     <script type="text/template" id="social-template">
       <%= subjectLink %> 
@@ -402,11 +392,11 @@
       <%= objectLink %>. <span class="smallTime"> <%= timeStr %> </span> </script>
 
     <script type="text/template" id="person-recent-header">
-      <div class="middleHeader"> <span class="boldHeader"> Recently </span>
+      <div class="mainHeader spaceOnTop"> <span class="boldHeader"> Recently </span>
 	<%= rMake('#help-link', {topic: 'recently'}) %> </div> </script>
 
     <script type="text/template" id="person-template">
-      <div class="mainHeader"> 
+      <div class="volumeHeader"> 
 	<span class="boldHeader"> <%= makeSafe(nickname) %> </span> 
 	<span class="userType"> 
 	  is <% if (isEditor) { %> 

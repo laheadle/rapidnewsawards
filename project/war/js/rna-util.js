@@ -104,11 +104,11 @@ window.initRNA = function () {
 		return;
 	    }
 	    if (response.status === 'TRY_AGAIN') { 
-		flashInfo('The server is busy.  Pleasy try again');
+		flashError('The server is busy.  Pleasy try again');
 		return;
 	    }
 	    else if (response.status === 'SERVER_UNRESPONSIVE') { 
-		flashInfo('The server is unresponsive.  Perhaps your network is down.');
+		flashError('The server is unresponsive.  Please try again in a bit.');
 		return;
 	    }
 	    else if (response.status !== 'OK') {
