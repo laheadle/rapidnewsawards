@@ -240,6 +240,44 @@ public class JSONServlet extends HttpServlet {
 			}
 		});
 
+		commandsMap.put("defaultNext", new AbstractCommand() {
+
+			@Override
+			public void setCacheKeys() throws RNAException {
+				setCacheKeys(new Serializable[]{ "defaultNext" });
+			}
+
+			@Override
+			public Object getResult() throws RNAException {
+				RecentVotes result = d.editions.getRecentFundings(DAO.Editions.CURRENT_OR_FINAL);
+				if (result.edition.number == DAO.Editions.INITIAL) {
+					return d.social.getRecentSocials((DAO.Editions.INITIAL));
+				}
+				else {
+					return result;
+				}
+			}
+		});
+
+		commandsMap.put("defaultCurrent", new AbstractCommand() {
+
+			@Override
+			public void setCacheKeys() throws RNAException {
+				setCacheKeys(new Serializable[]{ "defaultCurrent" });
+			}
+
+			@Override
+			public Object getResult() throws RNAException {
+				TopStories result = d.editions.getTopStories(DAO.Editions.PREVIOUS);
+				if (result.edition.number == DAO.Editions.INITIAL) {
+					return d.social.getRecentSocials(DAO.Editions.INITIAL);
+				}
+				else {
+					return result;
+				}
+			}
+		});
+
 		commandsMap.put("ping", new AbstractCommand() {
 			class Result { 
 				@SuppressWarnings("unused") // used by client

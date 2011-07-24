@@ -51,7 +51,8 @@ a.selected:active {
 
 
 a.personLink:link, a.personLink:visited {
-    color: #008fff;
+    /* color: #008fff; */
+    color: #000060;
     font-weight: bold;
 }
 

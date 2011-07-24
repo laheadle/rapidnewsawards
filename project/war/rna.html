@@ -116,7 +116,7 @@
     <!-- Templates -->
 
     <script type="text/template" id="edition-header-template"> 
-      <div id="editionHeader" class="spaceOnTop"> <span class="number"> Number 
+      <div id="editionHeader"> <span class="number"> Number 
 	<%= number %>: </span> <%= finished? 'Awarded' : 'Awarding' %> 
 	<span class="amount"> <%= finished? totalSpendStr : revenueStr %> </span>
 	on <%= endStr %> </div> </script>
@@ -249,6 +249,11 @@
     <div class="editionExplanation"> Empower enough judges to produce a great first edition!  Anyone can join as a judge with their <a href="http://gmail.com"> gmail.com </a> account.
     <span class="importantExplanation"> 
       Funding will start after the signup round is published.  </span> </div> </script>
+
+    <script type="text/template" id="signup-finished-explanation">
+      <div class="editionExplanation"> During the signup round, judges joined the site, and editors followed judges.
+    <span class="importantExplanation"> 
+      No funding occurred during the signup round.  </span> </div> </script>
 
     <script type="text/template" id="funding-amounts-explanation">
       <div class="editionExplanation"> All awards are hypothetical and non-binding.

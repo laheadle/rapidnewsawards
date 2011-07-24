@@ -116,6 +116,21 @@ $(function(){
 	    else if (this.isNext) {
 		app.selectMenuItem('#next');
 	    }
+
+	    if (this.edition.number === 0) {
+		if (this.edition.finished) {
+		    $(rMake('#signup-finished-explanation'))
+			.insertAfter($(this.el).children().first());
+		}
+		else {
+		    $(rMake('#signup-explanation'))
+			.insertAfter($(this.el).children().first());
+		}
+	    }
+	    else {
+		$(rMake('#funding-amounts-explanation', {finished: this.edition.finished}))
+		    .insertAfter($(this.el).children().first());
+	    }
 	    return this;
 	},
 
@@ -240,15 +255,6 @@ $(function(){
 		{topSelected: this.order === 'top'? 'selected' : 'unselected',
 		 recentSelected: this.order === 'recent'? 'selected' : 'unselected'};
 	    this.$('#editionTabsMinor').html(rMake('#stories-order-tab-template', args));
-
-	    if (this.edition.number === 0) {
-		$(rMake('#signup-explanation')).insertAfter($(this.el).children().first());
-	    }
-	    else {
-		$(rMake('#funding-amounts-explanation',
-			{finished: this.edition.finished}))
-		    .insertAfter($(this.el).children().first());
-	    }
 
 	    if (this.order == 'top') {
 		$(rMake('#list-header', {text: 'Top Stories',
@@ -505,27 +511,16 @@ $(function(){
 		{topSelected: this.order == 'top'? 'selected' : 'unselected',
 		 recentSelected: this.order == 'recent'? 'selected' : 'unselected'};
 
-	    // Explanation
-	    if (this.edition.number === 0) {
-		$(rMake('#signup-explanation')).insertAfter($(this.el).children().first());
-	    }
-	    else {
-		$(rMake('#funding-amounts-explanation',
-			{finished: this.edition.finished}))
-		    .insertAfter($(this.el).children().first());
-	    }
-
 	    // List Header
 	    if (this.order == 'top') {
 		if (this.influence == 'judge') {
 		    $(rMake('#list-header', {text: 'Top Judges',
-					     subtext: 'The judges who have awarded the most money are on top.'}))
+					     subtext: 'The judges awarding the most money are on top.'}))
 			.insertAfter(this.$('.editionTabs'));
 		}
 		else {
 		    $(rMake('#list-header', {text: 'Top Editors',
-					     subtext: 'The editors whose judges have'+
-					     ' awarded the most money are on top.'}))
+					     subtext: 'The editors enabling the most award money are on top.'}))
 			.insertAfter(this.$('.editionTabs'));
 		}
 	    }
@@ -1153,6 +1148,8 @@ $(function(){
 	routes: {
 	    "briefExplanation": "briefExplanation",
 	    "donors": "donors",
+	    "defaultNext": "defaultNext",
+	    "defaultCurrent": "defaultCurrent",
 	    "editorFundings/:edition/:editor": "editorFundings",
 	    "network/:ed": "network",
 	    "nominate": "nominate",
@@ -1280,7 +1277,7 @@ $(function(){
 	    return this.topStories(edNum);
 	},
 
-	defaultAction: function() {
+	_defaultAction: function(fun) {
 	    var self = this;
 	    var fetch = function(data) { 
 		if (data && data.edition) {
@@ -1298,7 +1295,19 @@ $(function(){
 		    self.setEditionView(view, initParams);
 		}
 	    }
-	    doRequest({fun: 'defaultAction'}, fetch);
+	    doRequest({fun: fun}, fetch);
+	},
+
+	defaultAction: function() {
+	    this._defaultAction('defaultAction');
+	},
+
+	defaultNext: function() {
+	    this._defaultAction('defaultNext');
+	},
+
+	defaultCurrent: function() {
+	    this._defaultAction('defaultCurrent');
 	},
 
 	story: function(edNum, linkId) {
@@ -1446,6 +1455,14 @@ $(function(){
 	    this.setHash('createAccount/');
 	},
 
+	hashDefaultNext: function() {
+	    this.setHash('defaultNext');
+	},
+
+	hashDefaultCurrent: function() {
+	    this.setHash('defaultCurrent');
+	},
+
 	hashRecent: function() {
 	    this.setHash('volume');
 	},
@@ -1475,11 +1492,11 @@ $(function(){
 
     // fixme
     $('#next').click(function (event) {
-	app.hashTopStories(NEXT);
+	app.hashDefaultNext();
     });
 
     $('#current').click(function (event) {
-	app.hashTopStories(CURRENT);
+	app.hashDefaultCurrent();
     });
 
     $('#briefExplanationLink').click(function (event) {
