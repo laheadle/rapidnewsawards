@@ -15,12 +15,13 @@ window.initRNA = function () {
 		error: 'Error',
 		notice: 'Notice',
 		redNotice: 'Notice',
+		yellowNotice: 'Notice',
 		success: 'Ok',
 		info: '',
 	    }
 	    
 	    var span = this.$('span.flag');
-	    span.removeClass('error success info notice reminderNotice redNotice').addClass(type);
+	    span.removeClass('error success info notice reminderNotice redNotice yellowNotice').addClass(type);
 	    span.text(header || text[type]);
 	    span.fadeIn(900);
 	},
@@ -148,7 +149,7 @@ window.initRNA = function () {
 
 	    if (response.status == 'TRY_AGAIN') {
 		if (new Date().getTime() < self.giveUpWhen) {
-		    flashInfo('Working on it...');
+		    flashLog({type: 'yellowNotice', content: 'Working on it...'});
 		    self.request(method, attrs, success, err);
 		}
 		else {

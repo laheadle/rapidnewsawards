@@ -53,6 +53,18 @@ public class User implements Serializable {
 		if(!id.equals(u0.id)) {
 			return false;
 		}
+		if(!email.equals(u0.email)) {
+			return false;
+		}
+		if(isInitialized != u0.isInitialized) {
+			return false;
+		}
+		if(isEditor != u0.isEditor) {
+			return false;
+		}
+		if(!webPage.equals(u0.webPage)) {
+			return false;
+		}
 		return true;
 	}
 

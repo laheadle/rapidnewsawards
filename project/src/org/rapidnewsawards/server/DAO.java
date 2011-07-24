@@ -14,6 +14,7 @@ import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 import java.util.logging.Logger;
 import java.util.regex.Pattern;
@@ -747,6 +748,7 @@ public class DAO extends DAOBase {
 
 		void getLockForJoin(User usr) throws RNAException {
 			LockedPeriodical lp = lockPeriodical();
+
 			if (lp.periodical.userlocked || lp.periodical.inTransition) {
 				lp.rollback();
 				// idempotent
@@ -1552,7 +1554,10 @@ public class DAO extends DAOBase {
 			if (!c && !user.isEditor) {
 				throw new RNAException("You did not check the consent form.");
 			}
-			if (ofy().query(User.class).filter("nickname", nickname).get() != null) {
+			
+			// this is idempotent
+			User existing = ofy().query(User.class).filter("nickname", nickname).get();
+			if (existing != null && !existing.equals(user)) {
 				throw new RNAException(String.format("The name '%s' is already in use; please modify yours slightly.", nickname));				
 			}
 			assert(user.id != null);
