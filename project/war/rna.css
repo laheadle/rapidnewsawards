@@ -170,13 +170,18 @@ a.title {
     margin: 10px 0;
 }
 
-.help {
-    font-size: .8em;
-    color: gray;
+a.help {
+    font-size: .7em;
+    color: black;
+    padding: 0 1px 0 1px;
+    background-color: #efefef;
 }
 
-a.help {
+a.grayHelp {
+    font-size: .7em;
     color: black;
+    padding: 0 1px 0 1px;
+    background-color: #afafaf;
 }
 
 .social {

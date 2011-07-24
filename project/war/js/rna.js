@@ -525,9 +525,9 @@ $(function(){
 		}
 	    }
 	    else {
-		// <%= rMake('#help-link', {topic: 'follow-unfollow'}) %>
 		$(rMake('#list-header', {text: 'Recent Network Activity',
-					 subtext: 'Recent follows and unfollows appear on top.'}))
+					 subtext: 'Recent follows and unfollows appear on top.',
+					 help: 'follow-unfollow'}))
 		    .insertAfter(this.$('.editionTabs'));
 	    }
 
