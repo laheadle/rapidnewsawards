@@ -154,6 +154,10 @@ window.initRNA = function () {
 		}
 		else {
 		    finalResponseReceived(response);
+		    var str = ('----gave up on request: ' + JSON.stringify(attrs));
+		    method.apply($, ['JSONrpc', {fun: 'error', str: str}, 
+				     function() { log('error report received');}]);
+
 		}
 	    }
 	    else {

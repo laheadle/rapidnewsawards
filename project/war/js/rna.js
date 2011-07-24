@@ -269,7 +269,7 @@ $(function(){
 	    if (this.list.length == 0) {
 		if (this.edition.finished) {
  		    var message = this.edition.number > 0 ?
-			"The judges did not act, " + 
+			"The judges did not fund any stories, " + 
 			(this.order == 'top'? 'so there were no top stories.' :
 			 'so there were no recently funded stories.') :
 		    "No awards were given during the signup round, because the signup round was for socializing.";
@@ -278,7 +278,7 @@ $(function(){
 		}
 		else {
  		    var message = this.edition.number > 0 ?
-			"The judges have not acted yet, " + 
+			"The judges have not funded any stories yet, " + 
 			(this.order == 'top'? 'so there are no top stories.' :
 			 'so there are no recently funded stories.') :
 		    "No stories will be funded during the signup round, because the signup round is for socializing.";
@@ -641,18 +641,7 @@ $(function(){
 	    u.isFollowing = this.model.get('isFollowing');
 	    var html = rMake('#person-template', u);
 
-	    // Bookmarklet
-	    if (app.loginView.isCurrentUser(u) && !this.user().isEditor) {
-		var arg='\'http://localhost:8888/#nominate/\'+encodeURIComponent(window.location.href)'
-		var link = '<a href="javascript:(function(){window.location.assign('+arg+')})()"> Nominate </a>';
-		flashLog({type: 'reminderNotice', 
-			  header: 'For Easily Nominating Stories:',
-			  content: 'Save the link ' + link + ' to your bookmarks/favorites toolbar.'});
-	    }
-
 	    // isFollowing checkBox
-	    // TODO BUG: If the logged-in user request returns after the related user,
-	    // this may fail to show a checkbox for an editor.
 	    if (app.loginView.canFollow(u)) {
 		html += rMake('#is-following-template', u);
 	    }
@@ -741,6 +730,7 @@ $(function(){
 					  this.model.toJSON()));
 		    this.bindEvents(this);
 		}
+		$(this.el).append(rMake('#bookmarklet-template'));
 	    }
 	    else {
 		$(this.el).html(rMake('#header-template', {text: 'Only judges can nominate works for funding'}));

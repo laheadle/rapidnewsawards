@@ -54,7 +54,7 @@
       <div class="menu">
 	<div class="menuBorder"> Discussion </div>
 	<div> 
-	  <a href="http://groups.google.com/group/newskraft" id="forum"> Forum </a>
+	  <a href="https://groups.google.com/forum/#!forum/newskraft" id="forum"> Forum </a>
       </div> </div>
       <div class="menu">
 	<div class="menuBorder"> Thanks </div>
@@ -125,6 +125,16 @@
       <div id="editionHeader"> <span class="signup"> Signup round: </span> 
 	<%= finished? 'Published' : 'Publishing' %>
 	on <%= endStr %> </div> </script>
+
+    <script type="text/template" id="bookmarklet-template"> 
+
+      <div class="middleHeader"> Bookmarklet For Easily Nominating Stories </div>
+      <div class="item">
+      Save the link <a href="javascript:(function(){window.location.assign('http://localhost:8888/#nominate/'+encodeURIComponent(window.location.href))})()"> Nominate </a> to your bookmarks/favorites toolbar. </div>
+
+      <div class="item"> This is an experimental feature and may not work in all web browsers. </div>
+
+    </script>
 
     <script type="text/template" id="edition-tabs-template"> 
       <div id="editionTabsInner">
