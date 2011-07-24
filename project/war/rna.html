@@ -293,7 +293,7 @@
 
     <script type="text/template" id="story-funding-template">
 	  <div class="supportedUser"> <span class="amount"> <%= fundedStr %> </span>
-	    <span class="fund-from"> from </span>
+	    <span class="italic"> awarded by </span>
 	    <%= rMake('#person-link-template', user) %>    <span class="smallTime"> <%= timeStr %> </span> 
 	    <%= rMake('#supporting-editors-template', {eds: supportingEditors}) %> </div> </script>
 
@@ -303,7 +303,7 @@
 	&#9657 <%= rMake('#person-set-template', {people: eds}) %> </div> </script>
 
     <script type="text/template" id="full-story-template">
-      <div class="mainHeader"> Supported Work </div>
+      <div class="volumeHeader"> Supported Work </div>
       <div class="item">
 	<a class="titleLink" target="_blank" href="<%= link.url %>"> 
 	  <%= makeSafe(link.title) %> </a>
@@ -327,7 +327,7 @@
 	</div>
 
 	<div class="mainHeader"> Funding during 
-	  <a href="#topStories/<%= edition.number %>"> <%= edition.displayStr %> </a> </div>
+	  <a href="#topStories/<%= edition.number %>"> <%= edition.displayStr %>,</a> earliest awards on top. </div>
 
     </div> </script>
 

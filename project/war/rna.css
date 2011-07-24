@@ -59,15 +59,6 @@ a.titleLink:link, a.titleLink:visited {
     color: black;
 }
 
-a.titleLink:active {
-    color: blue;
-}
-
-a.titleLink:hover {
-    background-color: gray;
-}
-
-
 a.linkButton:link, a.linkButton:visited {
     background-color: #0060af;
     color: white;
