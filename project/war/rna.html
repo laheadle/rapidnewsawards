@@ -47,6 +47,11 @@
 	<div class="menuBorder"> Works </div>
 	<div> <a class="nominate"> Nominate </a> </div> </div> 
       <div class="menu">
+	<div class="menuBorder"> What is this? </div>
+	<div> 
+	  <a id="briefExplanationLink"> Brief Explanation </a>
+      </div> </div>
+      <div class="menu">
 	<div class="menuBorder"> Discussion </div>
 	<div> 
 	  <a href="http://groups.google.com/group/newskraft" id="forum"> Forum </a>
@@ -241,7 +246,7 @@
     </script>
 
     <script type="text/template" id="signup-explanation">
-    <div class="editionExplanation"> Empower enough judges to produce a great first edition!  Anyone can join as a judge with their <a href="http://gmail.com"> gmail.com </a> account.  The more editors follow a judge, the more funding that judge can distribute.
+    <div class="editionExplanation"> Empower enough judges to produce a great first edition!  Anyone can join as a judge with their <a href="http://gmail.com"> gmail.com </a> account.
     <span class="importantExplanation"> 
       Funding will start after the signup round is published.  </span> </div> </script>
 
@@ -290,6 +295,68 @@
           <% });
           } %>
     </script>
+
+    <script type="text/template" id="brief-explanation-template">
+
+            <div class="mainHeader boldHeader"> What is newskraft.org? </div>
+
+	    <div class="summaryItem">
+	      A <span class="emphatic"> periodical </span> that awards
+	      hypothetical <span class="emphatic"> funding </span> to great
+	      works of journalism about journalism. </div>
+
+	    <div class="mainHeader boldHeader"> How does it work? </div>
+
+	    <div class="summaryItem">
+	      The funding is awarded by <span class="emphatic"> judges</span>, and anyone can join
+	      the site as a judge.  Judges are <span class="emphatic"> followed </span>
+		and <span class="emphatic"> unfollowed </span>
+	      by <span class="emphatic"> editors </span> (there are 11). The more editors
+	      follow a judge, the more funding that judge can award.
+	      </div>
+
+	    <div class="summaryItem">
+	      Newskraft.org is like other periodicals: the public
+	      receives the <span class="emphatic"> current edition </span> to read, while editors and judges
+	      prepare the <span class="emphatic"> next edition</span>.  <span class="importantExplanation">
+	      Funding awards, follows, and unfollows take effect
+	      when the next edition is published. </span> Until that
+	      happens, judges can cancel their awards and editors can cancel
+	      their follows and unfollows.
+	      </div>
+
+	    <div class="mainHeader boldHeader"> <lh> Five things about each edition </lh> </div>
+
+	    <div class="summaryListItem">
+		<span class="italic"> Top Stories: </span> The stories receiving the most funding.
+	    </div>
+
+	    <div class="summaryListItem">
+		<span class="italic"> Top Judges: </span>  The judges who awarded the most funding.
+	    </div>
+
+	    <div class="summaryListItem">
+		<span class="italic"> Top Editors:  </span> The editors who enabled the most funding.
+	    </div>
+
+	    <div class="summaryListItem">
+		<span class="italic"> Recent Story Awards: </span> The latest awards.
+	    </div>
+
+	    <div class="summaryListItem">
+		<span class="italic"> Recent Network Activity: </span> The latest follows and unfollows.
+	    </div>
+
+	    <div class="clear">
+
+	    <div class="mainHeader boldHeader"> Is this for real? </div>
+
+	    <div class="summaryItem"> The funding is hypothetical, but this is a real
+	    journalism experiment.  It is also
+	    a <a href="http://rapidnewsawards.org/series.html">
+	    research project. </a> </div>
+
+      </script>
 
     <script type="text/template" id="story-funding-template">
 	  <div class="supportedUser"> <span class="amount"> <%= fundedStr %> </span>

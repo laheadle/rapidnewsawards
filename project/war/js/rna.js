@@ -524,7 +524,7 @@ $(function(){
 		}
 		else {
 		    $(rMake('#list-header', {text: 'Top Editors',
-					     subtext: 'The editors whose overseen judges have'+
+					     subtext: 'The editors whose judges have'+
 					     ' awarded the most money are on top.'}))
 			.insertAfter(this.$('.editionTabs'));
 		}
@@ -1151,6 +1151,7 @@ $(function(){
 	personLinkTemplate: _.template($('#person-link-template').html()),
 
 	routes: {
+	    "briefExplanation": "briefExplanation",
 	    "donors": "donors",
 	    "editorFundings/:edition/:editor": "editorFundings",
 	    "network/:ed": "network",
@@ -1326,6 +1327,21 @@ $(function(){
 		      });
 	},
 
+	briefExplanation: function() {
+	    var clas = Backbone.View.extend({
+		initialize: function() {
+		    this.render();
+		},
+
+		render: function() {
+		    $(this.el).html(rMake('#brief-explanation-template'));
+		    return this;
+		}
+	    });
+	    this.setMainView(new clas);
+	    doRequest({ fun: 'ping'}, function() {}); // initialize
+	},
+
 	nominate: function(url) {
 	    var self = this;
 	    doRequest({ fun: 'ping'},
@@ -1382,6 +1398,7 @@ $(function(){
 	    if (oldFragment == Backbone.history.getFragment()) {
 		Backbone.history.loadUrl();
 	    }
+	    $(window).scrollTop(0);
 	},
 	
 	hashPerson: function(id) { 
@@ -1463,6 +1480,10 @@ $(function(){
 
     $('#current').click(function (event) {
 	app.hashTopStories(CURRENT);
+    });
+
+    $('#briefExplanationLink').click(function (event) {
+	app.setHash('briefExplanation');
     });
 
     $('#recent').click(function (event) {

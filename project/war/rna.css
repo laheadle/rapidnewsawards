@@ -160,7 +160,7 @@ a.title {
 
 .mainHeader {
     background-color: #F0F0F0;
-    font-size: 1.2em;
+    font-size: 1.4em;
     border-bottom: 2px solid black;
     margin-bottom: 10px;
 }
@@ -345,6 +345,10 @@ a.help {
 
 }
 
+#createAccountBody {
+    padding-left: 30px;
+}
+
 .middleHeader {
     margin-top: 15px;
     background-color: #F0F0F0;
@@ -425,7 +429,7 @@ a.help {
     color: green;
 }
 
-.signup, .number {
+.signup, .number, .boldItalic {
     font-style: italic;
     font-weight: bold;
 }
@@ -467,7 +471,6 @@ a.help {
 }
 
 .boldHeader {
-    font-size: 1em;
     font-weight: bold;
 }
 
@@ -485,8 +488,20 @@ a.help {
     font-weight: bold;
 }
 
+
+.summaryItem {
+    font-size: 1.2em;
+    padding: 15px 0 20px 0;
+}
+
+.summaryListItem {
+    font-size: 1.2em;
+    padding: 5px 0 10px 0;
+}
+
 .showText {
     font-weight: bold;
     position: absolute;
     left: 200px;
 }
+
