@@ -231,6 +231,7 @@ window.initRNA = function () {
     };
 
     window.debugPrint = function(obj) {
+	return;
 	var table = prettyPrint(obj);
 	$('#debugFooter').append(table);
     }

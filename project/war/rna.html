@@ -119,12 +119,14 @@
       <div id="editionHeader"> <span class="number"> Number 
 	<%= number %>: </span> <%= finished? 'Awarded' : 'Awarding' %> 
 	<span class="amount"> <%= finished? totalSpendStr : revenueStr %> </span>
-	on <%= endStr %> </div> </script>
+	on <%= endStr %> 
+    	<%= rMake('#gray-help-link', {topic: 'publishing'}) %> </div> </script>
 
     <script type="text/template" id="signup-round-template"> 
       <div id="editionHeader"> <span class="signup"> Signup round: </span> 
 	<%= finished? 'Published' : 'Publishing' %>
-	on <%= endStr %> </div> </script>
+	on <%= endStr %>
+	<%= rMake('#gray-help-link', {topic: 'publishing'}) %> </div> </script>
 
     <script type="text/template" id="bookmarklet-template"> 
 
@@ -199,7 +201,7 @@
     <script type="text/template" id="followers-template">
       <div class="social-links">
         <div class="middleHeader"> <span class="boldHeader"> Followed by </span> or about to be followed by
-	  <%= rMake('#help-link', {topic: 'about-to-follow'}) %> </div>
+	  <%= rMake('#gray-help-link', {topic: 'about-to-follow'}) %> </div>
 	  <div class="item">
           <% if (followers.length == 0) { %>
   	    <%= 'nobody' %>
@@ -220,7 +222,7 @@
 
     <script type="text/template" id="editor-fundings-header-template">
       <div class="mainHeader">
-  	Awards overseen by 
+  	Awards Overseen by 
 	<%= rMake('#person-link-template', editor) %> during 
 	<a href="#topStories/<%= edition.number %>"> <%= edition.displayStr %>  </a>
     <%= rMake('#gray-help-link', {topic: 'overseen'}) %> </div> </script>
@@ -290,7 +292,7 @@
     <script type="text/template" id="follows-template">
       <div class="social-links">
         <div class="middleHeader"> <span class="boldHeader"> Following </span> or About to Follow  
-	  <%= rMake('#help-link', {topic: 'about-to-follow'}) %> </div>
+	  <%= rMake('#gray-help-link', {topic: 'about-to-follow'}) %> </div>
 	<div class="item">
           <% if (follows.length == 0) { %>
   	    <%= 'nobody' %>
@@ -358,7 +360,7 @@
 	    </div>
 
 	    <div class="summaryListItem">
-		<span class="italic"> Top Editors:  </span> The editors who enabled the most funding.
+		<span class="italic"> Top Editors:  </span> The editors who oversaw the most funding.
 	    </div>
 
 	    <div class="summaryListItem">
@@ -389,7 +391,8 @@
     <script type="text/template" id="supporting-editors-template">
       <div class="supportingEditors"> 
 	<span class="italic"> Overseen by </span> 
-	&#9657 <%= rMake('#person-set-template', {people: eds}) %> </div> </script>
+	&#9657 <%= rMake('#person-set-template', {people: eds}) %>
+    <%= rMake('#help-link', {topic: 'overseenJudge'}) %> </div> </script>
 
     <script type="text/template" id="full-story-template">
       <div class="volumeHeader"> Supported Work </div>
@@ -482,7 +485,7 @@
 
     <script type="text/template" id="person-recent-header">
       <div class="mainHeader spaceOnTop"> <span class="boldHeader"> Recently </span>
-	<%= rMake('#help-link', {topic: 'recently'}) %> </div> </script>
+	<%= rMake('#gray-help-link', {topic: 'recently'}) %> </div> </script>
 
     <script type="text/template" id="person-template">
       <div class="volumeHeader"> 

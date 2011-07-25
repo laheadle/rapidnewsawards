@@ -520,7 +520,8 @@ $(function(){
 		}
 		else {
 		    $(rMake('#list-header', {text: 'Top Editors',
-					     subtext: 'The editors enabling the most award money are on top.'}))
+					     subtext: 'The editors overseeing the most award money are on top.',
+					     help: 'overseeing-most'}))
 			.insertAfter(this.$('.editionTabs'));
 		}
 	    }

@@ -1,26 +1,39 @@
 <!doctype html>
 
 <html>
-<head> <title> Help Topics </title> 
+<head> 
+  <meta http-equiv="Content-Type" content="text/html;charset=utf-8"/>
+  <title> Help Topics </title> 
+  <script src="js/jquery-1.4.2.js"></script>
 
-<style type="text/css">
+  <style type="text/css">
 
-.helpItem {
-   margin: 50px 150px 0 150px;
-   font-size: 1.2em;
-}
+    .helpItem {
+    margin: 20px 150px 0 20px;
+    font-size: 1.2em;
+    }
 
-a { 
- display: block;
- font-weight: bold;
- color: red;
- padding-bottom: 5px;
-}
-body {
-   width: 70%;
-}
+    a { 
+    display: block;
+    font-weight: bold;
+    color: red;
+    }
+    body {
+    width: 70%;
+    }
 
-</style>
+  </style>
+
+  <script type="text/javascript">
+    
+    $(function() {
+    var name = window.location.hash.substring(1);
+    $('a[name='+name+']')
+    .css('background-color', '#c0ffff');
+
+    })();
+
+  </script>
 
 </head>
 
@@ -31,12 +44,27 @@ body {
 </div>
 
 <div class="helpItem"> 
- <a name="overseen"> Overseen </a> 
+ <a name="overseen"> Overseen By Editor </a>
 This shows funding activity by the judges the editor is following, during an edition.
 </div>
 
 <div class="helpItem"> 
- <a name="follow-unfollow"> Follow and Unfollow </a> If an editor follows a judge, the judge's funding power will increase
+ <a name="overseenJudge"> Award Overseen By </a>
+This shows the editors who were following the judge when the award was given.
+</div>
+
+<div class="helpItem"> 
+ <a name="overseeing-most"> Editors Overseeing the Most </a> 
+  An editor "oversees" funding if a judge awards money while the editor is following the judge.  This page shows how much funding was overseen by each editor during an edition.
+</div>
+
+<div class="helpItem"> 
+ <a name="publishing"> Publishing an Edition </a> 
+ When newskraft.org publishes the next edition, it becomes the current edition, and all its awards, follows, and unfollows go into effect.  Until then, judges can cancel their awards, and editors can cancel their follows and unfollows. 
+</div>
+
+<div class="helpItem"> 
+ <a name="follow-unfollow"> Follows and Unfollows </a> If an editor follows a judge, the judge's funding power will increase
 when the next edition is published.  An unfollow will result in a
 decrease. </div>
 
