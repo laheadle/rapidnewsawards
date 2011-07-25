@@ -12,7 +12,7 @@ public enum Response {
 	PENDING_FOLLOW_CANCELLED("Pending Follow Cancelled"), 
 	EDITION_NOT_CURRENT("Sorry, that edition is not next"), 
 	FAILED("The operation failed.  Please try again"), 
-	TRANSITION_IN_PROGRESS("An edition is being published.  Please try again"), 
+	PUBLISHING_NEXT_EDITION_PLEASE_WAIT("An edition is being published.  Please try again"), 
 	ILLEGAL_OPERATION("Illegal Operation"), 
 	ALREADY_VOTED("You have already voted for this"),
 	NOT_LOGGED_IN("You must log in first"), 

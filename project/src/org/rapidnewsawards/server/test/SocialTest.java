@@ -44,7 +44,7 @@ public class SocialTest extends RNATest {
 		Response r = DAO.instance.social.doSocial(
 				mg.getKey(), jqp.getKey(), Edition.createKey(0), true);
 		
-		assertEquals(r, Response.TRANSITION_IN_PROGRESS);
+		assertEquals(r, Response.PUBLISHING_NEXT_EDITION_PLEASE_WAIT);
 	}
 
 

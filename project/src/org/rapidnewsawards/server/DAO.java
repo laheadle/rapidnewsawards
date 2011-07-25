@@ -1018,7 +1018,7 @@ public class DAO extends DAOBase {
 			if (lp.periodical.inTransition) {
 				log.warning("Attempted to socialize during transition");
 				lp.rollback(); socialTxn.getTxn().rollback();
-				return Response.TRANSITION_IN_PROGRESS;
+				return Response.PUBLISHING_NEXT_EDITION_PLEASE_WAIT;
 			}
 
 			// we are now clear to commit to the social task
@@ -1469,7 +1469,7 @@ public class DAO extends DAOBase {
 			if (lp.periodical.inTransition) {
 				log.warning("Attempted to vote during transition");
 				lp.rollback();
-				return Response.TRANSITION_IN_PROGRESS;
+				return Response.PUBLISHING_NEXT_EDITION_PLEASE_WAIT;
 			}
 
 			if (lp.periodical.userlocked) {
