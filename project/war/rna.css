@@ -275,7 +275,7 @@ a.grayHelp {
 .logout {
     display: block;
     float: right;
-    max-width: 80px;
+    max-width: 150px;
     height: 25px;
     overflow: hidden;
 }
@@ -500,7 +500,7 @@ a.grayHelp {
     font-weight: bold;
 }
 
-.welcomeTxt2 {
+.welcomeTxt2, .importantItem {
     font-weight: bold;
 }
 

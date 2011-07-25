@@ -45,7 +45,7 @@
 	<div> <a id="recent"> Recent </a> </div> </div>
       <div class="menu judgeOnly">
 	<div class="menuBorder"> Works </div>
-	<div> <a class="nominate"> Nominate </a> </div> </div> 
+	<div> <a class="nominate emphatic"> Nominate </a> </div> </div> 
       <div class="menu">
 	<div class="menuBorder"> What is this? </div>
 	<div> 
@@ -130,7 +130,7 @@
 
       <div class="middleHeader"> Bookmarklet For Easily Nominating Stories </div>
       <div class="item">
-      Save the link <a href="javascript:(function(){window.location.assign('http://localhost:8888/#nominate/'+encodeURIComponent(window.location.href))})()"> Nominate </a> to your bookmarks/favorites toolbar. </div>
+      Save the link <a href="javascript:(function(){window.location.assign('http://localhost:8888/#nominate/'+encodeURIComponent(window.location.href))})()"> Nominate </a> to your bookmarks/favorites toolbar. Then click the bookmarklet while visiting a web page you want to nominate.  No need to cut and paste anything! </div>
 
       <div class="item"> This is an experimental feature and may not work in all web browsers. </div>
 
@@ -403,7 +403,7 @@
 	<div class="fadeIn supported">
 	  <a class="linkButton" target="_blank" href="<%= link.url %>"> VISIT STORY </a> 
         <% if (isCurrent && app.loginView.isLoggedInJudge()) { %>
-          <span> Fund this work: </span>
+          <span class="emphatic"> Fund this work: </span>
 	  <input id="is-funding" type="checkbox" 
 		 <%= userIsFunding? 'checked="yes"' : '' %>> </input>
 
