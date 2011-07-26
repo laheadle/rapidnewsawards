@@ -709,7 +709,14 @@
 
     // Get the cross-browser normalized URL fragment.
     getFragment : function(loc) {
-      return (loc || window.location).hash.replace(hashStrip, '');
+	var getHash = function(loc) {
+	    var rx = /^.*#+/;
+	    if (loc.href.match(rx)) {
+		return loc.href.replace(rx, '');
+	    }
+	    return '';
+	};
+      return getHash(loc || window.location).replace(hashStrip, '');
     },
 
     // Start the hash change handling, returning `true` if the current URL matches
