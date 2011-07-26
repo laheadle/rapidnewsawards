@@ -44,11 +44,6 @@
 	</servlet>
 
 	<servlet-mapping>
-		<servlet-name>killDataServlet</servlet-name>
-		<url-pattern>/killData</url-pattern>
-	</servlet-mapping>
-
-	<servlet-mapping>
 		<servlet-name>JSONServlet</servlet-name>
 		<url-pattern>/JSONrpc</url-pattern>
 	</servlet-mapping>
@@ -63,12 +58,6 @@
 		<servlet-name>makeDataProductionServlet</servlet-name>
 		<url-pattern>/makeProdData</url-pattern>
 	</servlet-mapping>
-
-	<servlet-mapping>
-		<servlet-name>makeDataServlet</servlet-name>
-		<url-pattern>/makeDevelData</url-pattern>
-	</servlet-mapping>
-
 
   <welcome-file-list>
 		<welcome-file>rna.html</welcome-file>

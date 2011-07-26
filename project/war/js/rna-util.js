@@ -60,9 +60,14 @@ window.initRNA = function () {
     };
 
     window.flashView = new FlashView;
-    
+
+    window.isDebugging = false;
+
     // global functions
     window.log = function(options) {
+	if (!window.isDebugging) {
+	    return;
+	}
 	if (options.error) {
 	    alert(options.error.toString());
 	}
@@ -72,6 +77,9 @@ window.initRNA = function () {
     };
 
     window.rnaTrace = function(s) {
+	if (!window.isDebugging) {
+	    return;
+	}
 	try { console.log(s) } catch (e) { }
     };
 

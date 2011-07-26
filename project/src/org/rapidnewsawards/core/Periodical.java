@@ -16,8 +16,8 @@ import com.googlecode.objectify.annotation.Parent;
 @Entity
 public class Periodical {
 
-	// 5k dollars (in pennies)
-	private static final int TEST_INITIAL_BALANCE = 780000;
+	// (in pennies)
+	private static final int INITIAL_BALANCE = 810000;
 
 	public static final long ROOT_ID = 1L;
 	public static final long LINK_ROOT_ID = 2L;
@@ -54,7 +54,7 @@ public class Periodical {
 		this.live = true;
 		this.idName = name.name;
 		// TODO Remove.
-		this.balance = TEST_INITIAL_BALANCE;
+		this.balance = INITIAL_BALANCE;
 	}
 	
 	public static Key<Root> rootKey() {
