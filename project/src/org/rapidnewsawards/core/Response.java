@@ -17,7 +17,7 @@ public enum Response {
 	ALREADY_VOTED("You have already voted for this"),
 	NOT_LOGGED_IN("You must log in first"), 
 	HAS_NOT_VOTED("You cannot cancel a vote unless you have voted"), 
-	FORBIDDEN_DURING_FINAL("You can't do that because the final edition has been published"), 
+	FORBIDDEN_DURING_FINAL("You can't do that during the final edition"), 
 	NOT_AN_EDITOR("Only Editors can do this"), 
 	BAD_URL("Malformed URL.  Does it start with http://?"), 
 	THE_EXPERIMENT_IS_FINISHED("The final edition has been published"), 
