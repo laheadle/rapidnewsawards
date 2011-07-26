@@ -893,9 +893,13 @@ public class DAO extends DAOBase {
 		
 		private void deleteFutureFollowedBys(Key<User> judge, Key<User> editor,
 				Key<Edition> e, Objectify txn) {
-			txn.delete(txn.query(FollowedBy.class)
-					.ancestor(judge).filter("editor", editor)
-					.filter("edition >=", e).fetchKeys());
+			LinkedList<FollowedBy> delete = new LinkedList<FollowedBy>();
+			for (FollowedBy f : txn.query(FollowedBy.class).ancestor(judge).filter("editor", editor)) {
+				if (Edition.getNumber(f.edition) >= Edition.getNumber(e)) {
+					delete.add(f);
+				}
+			}
+			txn.delete(delete);
 		}
 
 		private void insertFutureFollowedBys(Key<User> judge, Key<User> editor,
@@ -917,10 +921,15 @@ public class DAO extends DAOBase {
 			return result;
 		}
 
-		private void deleteFutureFollows(final Key<User> from, final Key<User> to,
+		public void deleteFutureFollows(final Key<User> from, final Key<User> to,
 				final Key<Edition> e, final Objectify txn) {
-			txn.delete(txn.query(Follow.class)
-					.ancestor(from).filter("judge", to).filter("edition >=", e).fetchKeys());
+			LinkedList<Follow> delete = new LinkedList<Follow>();
+			for (Follow f : txn.query(Follow.class).ancestor(from).filter("judge", to)) {
+				if (Edition.getNumber(f.edition) >= Edition.getNumber(e)) {
+					delete.add(f);
+				}
+			}
+			txn.delete(delete);
 		}
 
 		private void insertFutureFollows(final Key<User> from, final Key<User> to,
